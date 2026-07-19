@@ -145,29 +145,67 @@ function renderPendiente(){
     'Cuando esté listo, al volver a entrar verás tu módulo.</p></div>';
 }
 
-const NAV_INTERNO = [
-  {id:'resumen', ic:'▦', tx:'Resumen'},
-  {id:'kpis', ic:'🧭', tx:'Dirección 360', interno:true},
-  {id:'frentes', ic:'🚦', tx:'Frentes', interno:true},
-  {id:'bitacora', ic:'📁', tx:'Bitácora', interno:true},
-  {id:'directorio', ic:'📇', tx:'Directorio', interno:true},
-  {id:'empresas', ic:'🏢', tx:'Empresas'},
-  {id:'clientes', ic:'👥', tx:'Clientes'},
-  {id:'solicitudes', ic:'📄', tx:'Solicitudes'},
-  {id:'tablero', ic:'🗂️', tx:'Tablero', interno:true},
-  {id:'pendientes', ic:'✅', tx:'Pendientes', interno:true},
-  {id:'vinculacion', ic:'🔗', tx:'Vinculación', interno:true},
-  {id:'contabilidad', ic:'📊', tx:'Contabilidad', interno:true},
-  {id:'rentabilidad', ic:'📈', tx:'Rentabilidad', interno:true},
-  {id:'cobranza', ic:'💳', tx:'Cobranza'},
-  {id:'tesoreria', ic:'🏦', tx:'Tesorería', interno:true},
-  {id:'gastos', ic:'💰', tx:'Gastos y costeo', interno:true},
-  {id:'compliance', ic:'🛡️', tx:'Compliance', interno:true},
-  {id:'servicios', ic:'🧩', tx:'Servicios'},
-  {id:'equipo', ic:'🤝', tx:'Equipo'},
-  {id:'captura', ic:'📝', tx:'Captura', interno:true},
-  {id:'altas', ic:'📥', tx:'Altas', interno:true},
-  {id:'accesos', ic:'🔑', tx:'Accesos', interno:true},
+const MERGE_AREAS = [
+  ['Dirección', [
+    ['Resumen ejecutivo','resumen','n'],
+    ['Dirección 360 · KPIs','kpis','n'],
+    ['Frentes · semáforos','frentes','n'],
+    ['Rentabilidad','rentabilidad','n'],
+  ]],
+  ['Comercial', [
+    ['Cotizador de nómina','cotizador','p'],
+    ['Tablero de clientes','clientes','p'],
+    ['Solicitudes','solicitudes','p'],
+    ['Servicios','servicios','p'],
+    ['Alta de cliente','altas','n'],
+    ['Boletín','__soon_boletin','p'],
+  ]],
+  ['Vinculación', [
+    ['Clientes · Expediente','vinculacion','p'],
+    ['Trabajadores · IMSS','trabajadores','p'],
+    ['Clientes (fiscal)','__soon_clifiscal','p'],
+    ['Contratos','__soon_contratos','p'],
+  ]],
+  ['Operaciones', [
+    ['Tareas / entregables','pendientes','p'],
+    ['Tablero operativo','tablero','n'],
+    ['Bitácora + entregables','bitacora','n'],
+    ['Captura','captura','n'],
+    ['Movimientos','__soon_movimientos','p'],
+  ]],
+  ['Jurídico', [
+    ['Actas y poderes','__soon_actas','p'],
+    ['Juicios / defensa fiscal','__soon_juicios','p'],
+    ['Contratos','__soon_contratos2','p'],
+    ['Compliance jurídico','compliance','n'],
+  ]],
+  ['Fiscal', [
+    ['Cumplimiento','compliance','p'],
+    ['Alertas REPSE','compliance','p'],
+    ['Renovaciones','__soon_renov','p'],
+    ['Plan de previsión social','__soon_prevision','p'],
+    ['Adhesiones','__soon_adhesiones','p'],
+  ]],
+  ['Contabilidad', [
+    ['Movimientos bancarios','__soon_bancarios','p'],
+    ['Cuentas','__soon_cuentas','p'],
+    ['Contabilidad / Pólizas','contabilidad','n'],
+  ]],
+  ['Tesorería', [
+    ['Cuentas','tesoreria','p'],
+    ['Cobranza','cobranza','n'],
+    ['Pagos','__soon_pagos','p'],
+  ]],
+  ['Administración', [
+    ['Empresas del grupo','empresas','p'],
+    ['Flujo de efectivo','__soon_flujo','p'],
+    ['Personal interno','equipo','n'],
+    ['Gastos y costeo','gastos','n'],
+    ['Catálogo de gastos','gastos','n'],
+    ['Sustancia / cumplimiento','__soon_sustancia','p'],
+    ['Directorio · oficinas','directorio','n'],
+    ['Accesos y permisos','accesos','n'],
+  ]],
 ];
 
 async function renderInterno(rol){
@@ -201,24 +239,38 @@ async function renderInterno(rol){
 
 function renderNav(rol, depClave){
   const nav=$('#nav'); nav.innerHTML='';
-  if(rol==='consulta'){ nav.appendChild(el('<div style="padding:8px 12px;font-size:11px;color:var(--muted)">Modo solo lectura</div>')); }
-  const dep = (window.__deptos||[]).find(d=>d.clave===depClave);
-  const allow = dep ? dep.modulos : NAV_INTERNO.map(n=>n.id);
-  let items = NAV_INTERNO.filter(n=> allow.includes(n.id));
-  if(rol==='consulta') items = items.filter(n=> !n.interno);
-  if(!items.length) items = NAV_INTERNO.filter(n=>n.id==='resumen');
-  items.forEach((n,i)=>{
-    const a=el(`<a data-v="${n.id}"><span class="ic">${n.ic}</span><span class="tx">${n.tx}</span></a>`);
-    a.onclick=()=>{document.querySelectorAll('.nav a').forEach(x=>x.classList.remove('active'));a.classList.add('active');view(n.id,rol);};
-    if(i===0) a.classList.add('active');
-    nav.appendChild(a);
+  if(rol==='consulta'){ nav.appendChild(el('<div class="dm-note">Modo solo lectura</div>')); }
+  let firstLink=null;
+  MERGE_AREAS.forEach((area,ai)=>{
+    const nombre=area[0], mods=area[1];
+    const badge = ai===0 ? '★' : String(ai);
+    const block=el('<div class="dm-block'+(ai===0?' open':'')+'"></div>');
+    const head=el('<button class="dm-head" type="button"><span class="dm-step">'+badge+'</span><span class="dm-name">'+esc(nombre)+'</span><span class="dm-chev">›</span></button>');
+    head.onclick=()=>{ block.classList.toggle('open'); };
+    const sub=el('<div class="dm-sub"></div>');
+    mods.forEach(m=>{
+      const label=m[0], moduleId=m[1], tipo=m[2];
+      const a=el('<a class="dm-link"><span class="dm-dot'+(tipo==='n'?' dm-dot-n':'')+'"></span><span class="dm-tx">'+esc(label)+'</span></a>');
+      a.onclick=()=>{
+        document.querySelectorAll('#nav .dm-link').forEach(x=>x.classList.remove('active'));
+        a.classList.add('active');
+        view(moduleId, rol, label);
+      };
+      sub.appendChild(a);
+      if(!firstLink) firstLink=a;
+    });
+    block.appendChild(head); block.appendChild(sub);
+    nav.appendChild(block);
   });
-  view(items[0].id, rol);
+  if(firstLink){ firstLink.classList.add('active'); firstLink.onclick(); }
 }
 
-async function view(v, rol){
+async function view(v, rol, label){
   const c=$('#content'); c.innerHTML='<div class="loader">Cargando…</div>';
   try{
+    if(v==='cotizador')    return await viewCotizador(c);
+    if(v==='trabajadores') return await viewTrabajadores(c);
+    if(v && v.indexOf('__soon_')===0) return viewSoon(c, label);
     if(v==='resumen')      return await viewResumen(c);
     if(v==='kpis')         return await viewKpis360(c);
     if(v==='frentes')      return await viewFrentes(c);
@@ -1357,5 +1409,156 @@ async function portalSocio(c){
 }
 
 function esc(s){return (s==null?'':String(s)).replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));}
+
+/* ===== Placeholder · módulo en construcción ===== */
+function viewSoon(c, label){
+  const nombre = label || 'Este módulo';
+  c.innerHTML='<div class="center-msg"><div class="em">🚧</div>'+
+    '<h2>'+esc(nombre)+'</h2>'+
+    '<p>En construcción · próximamente.<br>Este módulo estará disponible en una próxima entrega de PRM&nbsp;360.</p></div>';
+}
+
+/* ===== Cotizador de nómina (escribe en solicitudes) ===== */
+async function viewCotizador(c){
+  if(!window.__cotEmp){
+    const {data}=await sb.from('empresas').select('rfc,razon_social').order('razon_social');
+    window.__cotEmp = data||[];
+  }
+  const emps = window.__cotEmp;
+  const opts = emps.map(e=>'<option value="'+esc(e.rfc)+'">'+esc(e.razon_social||e.rfc)+'</option>').join('') || '<option value="">(sin empresas)</option>';
+  c.innerHTML='<h1 class="pg">Cotizador de nómina</h1>'+
+    '<div class="pgsub">Calcula el honorario y guarda la cotización como solicitud (folio COT-PRM) en Supabase.</div>'+
+    '<div class="card" style="max-width:640px"><h3>Datos de la cotización</h3><div class="body">'+
+      '<div class="frm">'+
+        '<label>Empresa emisora<select id="c_emp" style="min-width:220px">'+opts+'</select></label>'+
+        '<label>N.º de trabajadores<input id="c_emp_n" type="number" value="10" min="0"></label>'+
+        '<label>Nómina mensual (bruto)<input id="c_sueldo" type="number" value="12000" min="0"></label>'+
+        '<label>Honorario por trabajador<input id="c_hon" type="number" value="180" min="0"></label>'+
+        '<label>% de honorario s/nómina<input id="c_pct" type="number" value="0" min="0" step="0.1"></label>'+
+      '</div>'+
+      '<div id="c_out" style="margin-top:14px"></div>'+
+      '<div style="margin-top:14px;display:flex;gap:10px">'+
+        '<button class="btn2" id="c_calc">Calcular</button>'+
+        '<button class="btn2 ghost" id="c_save">Guardar cotización</button>'+
+        '<span id="c_msg" style="font-size:12px;align-self:center"></span>'+
+      '</div>'+
+    '</div></div>';
+  const g=id=>document.getElementById(id);
+  const calc=()=>{
+    const emp=Number(g('c_emp_n').value)||0, hon=Number(g('c_hon').value)||0;
+    const nom=Number(g('c_sueldo').value)||0, pct=Number(g('c_pct').value)||0;
+    const honor = emp*hon + nom*emp*(pct/100);
+    const iva = honor*0.16, total = honor+iva;
+    window._cot = {empleados:emp, honorario_empleado:hon, nomina_mensual:nom, pct_honorario:pct, honorario:honor, iva:iva, total:total};
+    g('c_out').innerHTML='<div style="background:var(--cream);border:1px solid var(--line);border-radius:10px;padding:14px">'+
+      '<div style="display:flex;justify-content:space-between;padding:5px 0">Honorario del despacho<b>'+money(honor)+'</b></div>'+
+      '<div style="display:flex;justify-content:space-between;padding:5px 0">IVA (16%)<b>'+money(iva)+'</b></div>'+
+      '<div style="display:flex;justify-content:space-between;padding:8px 0;border-top:2px solid var(--navy);font-weight:700;font-size:16px">Total<span style="color:var(--gold)">'+money(total)+'</span></div></div>';
+  };
+  g('c_calc').onclick=calc;
+  g('c_save').onclick=async()=>{
+    const msg=g('c_msg');
+    if(!window._cot) calc();
+    const cot=window._cot;
+    const emp=g('c_emp').value;
+    const folio='COT-PRM-'+new Date().getFullYear()+'-'+Date.now().toString().slice(-5);
+    const resumen='Cotización de nómina · '+cot.empleados+' trabajadores · nómina '+money(cot.nomina_mensual)+' · honorario '+money(cot.honorario)+' + IVA '+money(cot.iva)+' = total '+money(cot.total);
+    msg.textContent='Guardando…'; msg.style.color='var(--muted)'; g('c_save').disabled=true;
+    let saved=false, lastErr=null;
+    const intentos=[
+      {folio, empresa_emisora:emp||null, tipo_operacion:'Cotización de nómina', importe:cot.total, estado:'cotizacion', recibido_en:new Date().toISOString(), payload:cot},
+      {folio, empresa_emisora:emp||null, tipo_operacion:'Cotización de nómina', importe:cot.total, estado:'cotizacion'},
+      {folio, tipo:'cotizacion', descripcion:resumen},
+      {folio, estado:'cotizacion'}
+    ];
+    for(const obj of intentos){
+      const {error}=await sb.from('solicitudes').insert(obj);
+      if(!error){ saved=true; break; }
+      lastErr=error;
+    }
+    g('c_save').disabled=false;
+    if(saved){
+      msg.textContent='';
+      g('c_out').innerHTML += '<div style="margin-top:10px;color:var(--ok);font-weight:600;font-size:13px">✓ Folio '+folio+' guardado en solicitudes.</div>';
+    } else {
+      msg.textContent='No se pudo guardar'+(lastErr&&lastErr.message?(': '+lastErr.message):'.'); msg.style.color='var(--danger)';
+    }
+  };
+  calc();
+}
+
+/* ===== Trabajadores · IMSS (búsqueda + ficha detallada) ===== */
+async function viewTrabajadores(c){
+  c.innerHTML='<h1 class="pg">Trabajadores · IMSS</h1>'+
+    '<div class="pgsub">Busca un trabajador y abre su expediente completo.</div>'+
+    '<div class="card"><div class="body"><div class="frm">'+
+      '<label style="flex:1">Búsqueda<input id="tw_q" placeholder="Nombre, NSS, CURP o cliente…" style="min-width:260px"></label>'+
+      '<button class="btn2" id="tw_go" style="align-self:flex-end">Buscar</button>'+
+    '</div></div></div>'+
+    '<div id="tw_res"></div><div id="tw_ficha"></div>';
+  const g=id=>document.getElementById(id);
+  const buscar=async()=>{
+    const res=g('tw_res'); res.innerHTML='<div class="loader">Buscando…</div>';
+    const term=g('tw_q').value.trim();
+    const {data,error}=await sb.rpc('trabajadores_ext_lista',{p_q:term});
+    if(error){ res.innerHTML='<div class="empty">No se pudo buscar: '+esc(error.message||'')+'</div>'; return; }
+    const list = Array.isArray(data) ? data : (data||[]);
+    if(!list.length){ res.innerHTML='<div class="card"><div class="empty">Sin resultados</div></div>'; return; }
+    const rows=list.map(t=>'<tr class="clk" data-id="'+esc(t.id)+'"><td>'+esc(t.nombre||'')+'</td><td>'+esc(t.cliente_nombre||'')+'</td><td>'+esc(t.puesto||'')+'</td><td>'+esc(t.nss||t.NSS||'')+'</td><td><span class="tag '+((t.estatus||'')==='alta'||(t.estatus||'')==='activo'?'on':'off')+'">'+esc(t.estatus||'')+'</span></td></tr>').join('');
+    res.innerHTML='<div class="card"><table><thead><tr><th>Nombre</th><th>Cliente</th><th>Puesto</th><th>NSS</th><th>Estatus</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+    res.querySelectorAll('tr.clk').forEach(tr=>tr.onclick=()=>abrirFicha(tr.dataset.id));
+  };
+  const abrirFicha=async(id)=>{
+    const f=g('tw_ficha'); f.innerHTML='<div class="loader">Cargando ficha…</div>';
+    const {data,error}=await sb.rpc('trabajador_ficha',{p_id:id});
+    if(error){ f.innerHTML='<div class="empty">No se pudo cargar la ficha: '+esc(error.message||'')+'</div>'; return; }
+    f.innerHTML=renderFichaTrab(data||{});
+    f.scrollIntoView({behavior:'smooth',block:'start'});
+  };
+  g('tw_go').onclick=buscar;
+  g('tw_q').onkeydown=(e)=>{ if(e.key==='Enter') buscar(); };
+}
+
+function renderFichaTrab(d){
+  const t=d.trabajador||{};
+  const fila=(k,v)=>'<tr><th>'+esc(k)+'</th><td>'+esc(v==null||v===''?'—':v)+'</td></tr>';
+  const tabla=(rows,cols,empty)=>{
+    const arr=Array.isArray(rows)?rows:[];
+    if(!arr.length) return '<div class="empty">'+(empty||'Sin registros')+'</div>';
+    const head='<tr>'+cols.map(cc=>'<th>'+esc(cc[0])+'</th>').join('')+'</tr>';
+    const body=arr.map(r=>'<tr>'+cols.map(cc=>'<td>'+esc(r[cc[1]]==null?'':r[cc[1]])+'</td>').join('')+'</tr>').join('');
+    return '<table><thead>'+head+'</thead><tbody>'+body+'</tbody></table>';
+  };
+  const inf=d.infonavit||{};
+  let html='<h1 class="pg" style="margin-top:22px">'+esc(t.nombre||'Trabajador')+'</h1>'+
+    '<div class="pgsub">'+esc(t.cliente_nombre||'')+(t.puesto?(' · '+esc(t.puesto)):'')+'</div>';
+  html+='<div class="cols2">';
+  html+='<div class="card"><h3>Identidad</h3><table>'+
+    fila('Nombre',t.nombre)+fila('CURP',t.curp)+fila('RFC',t.rfc)+fila('NSS',t.nss)+'</table></div>';
+  html+='<div class="card"><h3>Relación laboral</h3><table>'+
+    fila('Cliente',t.cliente_nombre)+fila('Registro patronal',t.registro_patronal)+fila('Puesto',t.puesto)+
+    fila('Sucursal',t.sucursal)+fila('Grupo de nómina',t.grupo_nomina)+'</table></div>';
+  html+='<div class="card"><h3>Salarios</h3><table>'+
+    fila('Salario diario',t.salario_diario)+fila('SDI',t.sdi)+fila('Factor de integración',t.factor_integracion)+'</table></div>';
+  html+='<div class="card"><h3>Datos generales</h3><table>'+
+    fila('Fecha de nacimiento',t.fecha_nacimiento)+fila('Tipo de contrato',t.tipo_contrato)+fila('Jornada',t.jornada)+
+    fila('Banco',t.banco)+fila('CLABE',t.clabe)+'</table></div>';
+  html+='<div class="card"><h3>Cumplimiento</h3><table>'+
+    fila('Clase de riesgo',t.clase_riesgo)+fila('Prima de riesgo',t.prima_riesgo)+fila('Modalidad',t.modalidad)+'</table></div>';
+  html+='<div class="card"><h3>INFONAVIT</h3><table>'+
+    fila('Tiene crédito',inf.tiene_credito===true?'Sí':(inf.tiene_credito===false?'No':inf.tiene_credito))+
+    fila('Tipo de descuento',inf.tipo_descuento)+fila('Factor',inf.factor)+
+    fila('Al corriente',inf.al_corriente===true?'Sí':(inf.al_corriente===false?'No':inf.al_corriente))+'</table></div>';
+  html+='</div>';
+  html+='<div class="card"><h3>Movimientos afiliatorios</h3><div class="body">'+
+    tabla(d.movimientos,[['Tipo','tipo'],['Fecha','fecha'],['SDI','sdi'],['Motivo','motivo'],['Estatus IDSE','estatus_idse']])+'</div></div>';
+  html+='<div class="card"><h3>Incidencias</h3><div class="body">'+
+    tabla(d.incidencias,[['Tipo','tipo'],['Ramo','ramo'],['Inicio','fecha_inicio'],['Fin','fecha_fin'],['Días','dias']])+'</div></div>';
+  html+='<div class="card"><h3>Informativas</h3><div class="body">'+
+    tabla(d.informativas,[['Tipo','tipo'],['Cuatrimestre','cuatrimestre'],['Año','anio'],['Estatus','estatus']])+'</div></div>';
+  html+='<div class="card"><h3>Liquidaciones</h3><div class="body">'+
+    tabla(d.liquidaciones,[['Periodo','periodo'],['Tipo','tipo'],['Monto','monto'],['Estatus','estatus']])+'</div></div>';
+  return html;
+}
 
 boot();
