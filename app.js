@@ -158,13 +158,13 @@ const MERGE_AREAS = [
     ['Solicitudes','solicitudes','p'],
     ['Servicios','servicios','p'],
     ['Alta de cliente','altas','n'],
-    ['Boletín','__soon_boletin','p'],
+    ['Boletín','boletin','p'],
   ]],
   ['Vinculación', [
     ['Clientes · Expediente','vinculacion','p'],
     ['Trabajadores · IMSS','trabajadores','p'],
-    ['Clientes (fiscal)','__soon_clifiscal','p'],
-    ['Contratos','__soon_contratos','p'],
+    ['Clientes (fiscal)','clifiscal','p'],
+    ['Contratos','contratos','p'],
   ]],
   ['Operaciones', [
     ['Tareas / entregables','pendientes','p'],
@@ -175,34 +175,34 @@ const MERGE_AREAS = [
   ]],
   ['Jurídico', [
     ['Actas y poderes','__soon_actas','p'],
-    ['Juicios / defensa fiscal','__soon_juicios','p'],
-    ['Contratos','__soon_contratos2','p'],
+    ['Juicios / defensa fiscal','juicios','p'],
+    ['Contratos','contratos','p'],
     ['Compliance jurídico','compliance','n'],
   ]],
   ['Fiscal', [
     ['Cumplimiento','compliance','p'],
     ['Alertas REPSE','compliance','p'],
-    ['Renovaciones','__soon_renov','p'],
-    ['Plan de previsión social','__soon_prevision','p'],
-    ['Adhesiones','__soon_adhesiones','p'],
+    ['Renovaciones','renovaciones','p'],
+    ['Plan de previsión social','prevision','p'],
+    ['Adhesiones','adhesiones','p'],
   ]],
   ['Contabilidad', [
-    ['Movimientos bancarios','__soon_bancarios','p'],
-    ['Cuentas','__soon_cuentas','p'],
+    ['Movimientos bancarios','bancarios','p'],
+    ['Cuentas','cuentas','p'],
     ['Contabilidad / Pólizas','contabilidad','n'],
   ]],
   ['Tesorería', [
     ['Cuentas','tesoreria','p'],
     ['Cobranza','cobranza','n'],
-    ['Pagos','__soon_pagos','p'],
+    ['Pagos','pagos','p'],
   ]],
   ['Administración', [
     ['Empresas del grupo','empresas','p'],
-    ['Flujo de efectivo','__soon_flujo','p'],
+    ['Flujo de efectivo','flujo','p'],
     ['Personal interno','equipo','n'],
     ['Gastos y costeo','gastos','n'],
     ['Catálogo de gastos','gastos','n'],
-    ['Sustancia / cumplimiento','__soon_sustancia','p'],
+    ['Sustancia / cumplimiento','sustancia','p'],
     ['Directorio · oficinas','directorio','n'],
     ['Accesos y permisos','accesos','n'],
   ]],
@@ -270,6 +270,18 @@ async function view(v, rol, label){
   try{
     if(v==='cotizador')    return await viewCotizador(c);
     if(v==='trabajadores') return await viewTrabajadores(c);
+    if(v==='clifiscal')    return await viewClientesFiscal(c);
+    if(v==='contratos')    return await viewContratos(c);
+    if(v==='juicios')      return await viewJuicios(c);
+    if(v==='renovaciones') return await viewRenovaciones(c);
+    if(v==='prevision')    return await viewPrevisionSocial(c);
+    if(v==='adhesiones')   return await viewAdhesiones(c);
+    if(v==='bancarios')    return await viewMovBancarios(c);
+    if(v==='cuentas')      return await viewCuentas(c);
+    if(v==='pagos')        return await viewPagos(c);
+    if(v==='flujo')        return await viewFlujo(c);
+    if(v==='sustancia')    return await viewSustancia(c);
+    if(v==='boletin')      return await viewBoletin(c);
     if(v && v.indexOf('__soon_')===0) return viewSoon(c, label);
     if(v==='resumen')      return await viewResumen(c);
     if(v==='kpis')         return await viewKpis360(c);
@@ -1559,6 +1571,144 @@ function renderFichaTrab(d){
   html+='<div class="card"><h3>Liquidaciones</h3><div class="body">'+
     tabla(d.liquidaciones,[['Periodo','periodo'],['Tipo','tipo'],['Monto','monto'],['Estatus','estatus']])+'</div></div>';
   return html;
+}
+
+/* ===== Módulos en vivo (lectura de tablas Supabase) ===== */
+const mny = n => n==null ? '—' : '$'+Number(n).toLocaleString('es-MX',{maximumFractionDigits:0});
+
+async function viewClientesFiscal(c){
+  const {data,error}=await sb.from('clientes_fiscal').select('razon_social,rfc,grupo,alias,fecha_ingreso').order('razon_social').limit(300);
+  if(error) throw error;
+  const rows=data||[];
+  const draw=list=>list.map(x=>`<tr><td>${esc(x.razon_social||'')}</td><td>${esc(x.rfc||'')}</td><td>${esc(x.grupo||'')}</td><td>${esc(x.fecha_ingreso||'')}</td></tr>`).join('')||'<tr><td colspan=4 class="empty">Sin clientes</td></tr>';
+  c.innerHTML='<h1 class="pg">Clientes (fiscal)</h1><div class="pgsub">'+rows.length+' registros (máx 300)</div>'+
+    '<div class="card"><div class="body"><input id="cf_q" class="mini" placeholder="Buscar por razón social…" style="min-width:260px"></div>'+
+    '<table><thead><tr><th>Razón social</th><th>RFC</th><th>Grupo</th><th>Ingreso</th></tr></thead><tbody id="cf_tb">'+draw(rows)+'</tbody></table></div>';
+  const q=document.getElementById('cf_q'), tb=document.getElementById('cf_tb');
+  q.onkeyup=()=>{ const t=q.value.trim().toLowerCase(); tb.innerHTML=draw(rows.filter(x=>((x.razon_social||'')+' '+(x.rfc||'')+' '+(x.alias||'')).toLowerCase().indexOf(t)>-1)); };
+}
+
+async function viewContratos(c){
+  const {data,error}=await sb.from('contratos').select('folio,tipo,estatus,titulo,firmado_en,fecha_cierta').order('creado_en',{ascending:false}).limit(200);
+  if(error) throw error;
+  const rows=(data||[]).map(x=>{
+    const cls=x.estatus==='firmado'?'on':(x.estatus==='borrador'?'off':'');
+    return `<tr><td>${esc(x.folio||'')}</td><td>${esc(x.tipo||'')}</td><td>${esc(x.titulo||'')}</td><td><span class="tag ${cls}">${esc(x.estatus||'')}</span></td><td>${esc(x.firmado_en||'')}</td></tr>`;
+  }).join('');
+  c.innerHTML='<h1 class="pg">Contratos</h1><div class="pgsub">'+(data?data.length:0)+' contratos</div>'+
+    '<div class="card"><table><thead><tr><th>Folio</th><th>Tipo</th><th>Título</th><th>Estatus</th><th>Firmado</th></tr></thead><tbody>'+
+    (rows||'<tr><td colspan=5 class="empty">Sin contratos</td></tr>')+'</tbody></table></div>';
+}
+
+async function viewJuicios(c){
+  const {data,error}=await sb.from('juicios').select('contribuyente,materia,ejercicio,monto,autoridad,expediente,etapa,estatus,proximo_plazo').order('proximo_plazo',{ascending:true,nullsFirst:false});
+  if(error) throw error;
+  const rows=(data||[]).map(x=>`<tr><td>${esc(x.contribuyente||'')}</td><td>${esc(x.materia||'')}</td><td>${esc(String(x.ejercicio==null?'':x.ejercicio))}</td><td class="num-r">${mny(x.monto)}</td><td>${esc(x.autoridad||'')}</td><td>${esc(x.etapa||'')}</td><td>${esc(x.proximo_plazo||'')}</td><td><span class="tag">${esc(x.estatus||'')}</span></td></tr>`).join('');
+  c.innerHTML='<h1 class="pg">Juicios / defensa fiscal</h1><div class="pgsub">'+(data?data.length:0)+' asuntos</div>'+
+    '<div class="card"><table><thead><tr><th>Contribuyente</th><th>Materia</th><th>Ejercicio</th><th class="num-r">Monto</th><th>Autoridad</th><th>Etapa</th><th>Próximo plazo</th><th>Estatus</th></tr></thead><tbody>'+
+    (rows||'<tr><td colspan=8 class="empty">Sin juicios</td></tr>')+'</tbody></table></div>';
+}
+
+async function viewRenovaciones(c){
+  const today=new Date().toISOString().slice(0,10);
+  const {data,error}=await sb.from('renovaciones').select('empresa,tipo_autorizacion,entidad,registro_folio,vigencia,estatus').order('vigencia',{ascending:true,nullsFirst:false}).limit(300);
+  if(error) throw error;
+  const rows=(data||[]).map(x=>{
+    const venc=x.vigencia&&x.vigencia<today;
+    const vig=x.vigencia?`<span class="tag ${venc?'off':'on'}">${esc(x.vigencia)}</span>`:'—';
+    return `<tr><td>${esc(x.empresa||'')}</td><td>${esc(x.tipo_autorizacion||'')}</td><td>${esc(x.entidad||'')}</td><td>${esc(x.registro_folio||'')}</td><td>${vig}</td><td>${esc(x.estatus||'')}</td></tr>`;
+  }).join('');
+  c.innerHTML='<h1 class="pg">Renovaciones</h1><div class="pgsub">'+(data?data.length:0)+' autorizaciones</div>'+
+    '<div class="card"><table><thead><tr><th>Empresa</th><th>Autorización</th><th>Entidad</th><th>Folio</th><th>Vigencia</th><th>Estatus</th></tr></thead><tbody>'+
+    (rows||'<tr><td colspan=6 class="empty">Sin renovaciones</td></tr>')+'</tbody></table></div>';
+}
+
+async function viewPrevisionSocial(c){
+  const {data,error}=await sb.from('prevision_social').select('empresa_rfc,vigencia,ultima_actualizacion,estatus,notas').order('ultima_actualizacion',{ascending:false,nullsFirst:false}).limit(300);
+  if(error) throw error;
+  const rows=(data||[]).map(x=>`<tr><td>${esc(x.empresa_rfc||'')}</td><td>${esc(x.vigencia||'')}</td><td>${esc(x.ultima_actualizacion||'')}</td><td><span class="tag">${esc(x.estatus||'')}</span></td></tr>`).join('');
+  c.innerHTML='<h1 class="pg">Plan de previsión social</h1><div class="pgsub">'+(data?data.length:0)+' empresas</div>'+
+    '<div class="card"><table><thead><tr><th>Empresa (RFC)</th><th>Vigencia</th><th>Últ. actualización</th><th>Estatus</th></tr></thead><tbody>'+
+    (rows||'<tr><td colspan=4 class="empty">Sin registros</td></tr>')+'</tbody></table></div>';
+}
+
+async function viewAdhesiones(c){
+  const {data,error}=await sb.from('prevision_adhesiones').select('trabajador_nombre,empresa_rfc,firmada,fecha_firma').order('fecha_firma',{ascending:false,nullsFirst:false}).limit(300);
+  if(error) throw error;
+  const rows=(data||[]).map(x=>`<tr><td>${esc(x.trabajador_nombre||'')}</td><td>${esc(x.empresa_rfc||'')}</td><td><span class="tag ${x.firmada?'on':'off'}">${x.firmada?'Sí':'No'}</span></td><td>${esc(x.fecha_firma||'')}</td></tr>`).join('');
+  c.innerHTML='<h1 class="pg">Adhesiones (previsión social)</h1><div class="pgsub">'+(data?data.length:0)+' adhesiones</div>'+
+    '<div class="card"><table><thead><tr><th>Trabajador</th><th>Empresa (RFC)</th><th>Firmada</th><th>Fecha firma</th></tr></thead><tbody>'+
+    (rows||'<tr><td colspan=4 class="empty">Sin adhesiones registradas</td></tr>')+'</tbody></table></div>';
+}
+
+async function viewMovBancarios(c){
+  const cols='fecha,banco,empresa,cuenta,concepto,cargo,abono,saldo,contraparte';
+  const draw=list=>(list||[]).map(x=>`<tr><td>${esc(x.fecha||'')}</td><td>${esc(x.banco||'')}</td><td>${esc(x.empresa||'')}</td><td>${esc(x.concepto||'')}</td><td class="num-r" style="color:var(--danger)">${x.cargo?mny(x.cargo):'—'}</td><td class="num-r" style="color:var(--ok)">${x.abono?mny(x.abono):'—'}</td><td class="num-r">${mny(x.saldo)}</td></tr>`).join('')||'<tr><td colspan=7 class="empty">Sin movimientos</td></tr>';
+  const {data,error}=await sb.from('movimientos_bancarios').select(cols).order('fecha',{ascending:false}).limit(300);
+  if(error) throw error;
+  c.innerHTML='<h1 class="pg">Movimientos bancarios</h1><div class="pgsub">'+(data?data.length:0)+' movimientos (máx 300, usa el buscador)</div>'+
+    '<div class="card"><div class="body"><input id="mb_q" class="mini" placeholder="Buscar por concepto o empresa…" style="min-width:280px"></div>'+
+    '<table><thead><tr><th>Fecha</th><th>Banco</th><th>Empresa</th><th>Concepto</th><th class="num-r">Cargo</th><th class="num-r">Abono</th><th class="num-r">Saldo</th></tr></thead><tbody id="mb_tb">'+draw(data)+'</tbody></table></div>';
+  const q=document.getElementById('mb_q'), tb=document.getElementById('mb_tb');
+  q.onkeyup=async()=>{
+    const t=q.value.trim();
+    let r;
+    if(!t){ ({data:r}=await sb.from('movimientos_bancarios').select(cols).order('fecha',{ascending:false}).limit(300)); }
+    else { ({data:r}=await sb.from('movimientos_bancarios').select(cols).or('concepto.ilike.%'+t+'%,empresa.ilike.%'+t+'%').order('fecha',{ascending:false}).limit(300)); }
+    tb.innerHTML=draw(r);
+  };
+}
+
+async function viewCuentas(c){
+  const {data,error}=await sb.from('tesoreria_cuentas').select('clave,nombre,tipo,banco,moneda,activa').order('nombre').limit(200);
+  if(error) throw error;
+  const rows=(data||[]).map(x=>`<tr><td>${esc(x.clave||'')}</td><td>${esc(x.nombre||'')}</td><td>${esc(x.tipo||'')}</td><td>${esc(x.banco||'')}</td><td>${esc(x.moneda||'')}</td><td><span class="tag ${x.activa?'on':'off'}">${x.activa?'Activa':'Inactiva'}</span></td></tr>`).join('');
+  c.innerHTML='<h1 class="pg">Cuentas (tesorería)</h1><div class="pgsub">'+(data?data.length:0)+' cuentas</div>'+
+    '<div class="card"><table><thead><tr><th>Clave</th><th>Nombre</th><th>Tipo</th><th>Banco</th><th>Moneda</th><th>Activa</th></tr></thead><tbody>'+
+    (rows||'<tr><td colspan=6 class="empty">Sin cuentas</td></tr>')+'</tbody></table></div>';
+}
+
+async function viewPagos(c){
+  const {data,error}=await sb.from('pagos').select('monto,fecha,referencia,registrado_por').order('fecha',{ascending:false,nullsFirst:false}).limit(200);
+  if(error) throw error;
+  const rows=(data||[]).map(x=>`<tr><td>${esc(x.fecha||'')}</td><td class="num-r">${mny(x.monto)}</td><td>${esc(x.referencia||'')}</td><td>${esc(x.registrado_por||'')}</td></tr>`).join('');
+  c.innerHTML='<h1 class="pg">Pagos</h1><div class="pgsub">'+(data?data.length:0)+' pagos</div>'+
+    '<div class="card"><table><thead><tr><th>Fecha</th><th class="num-r">Monto</th><th>Referencia</th><th>Registró</th></tr></thead><tbody>'+
+    (rows||'<tr><td colspan=4 class="empty">Sin pagos registrados</td></tr>')+'</tbody></table></div>';
+}
+
+async function viewFlujo(c){
+  const {data,error}=await sb.from('movimientos_bancarios').select('fecha,abono,cargo,saldo,empresa').order('fecha',{ascending:false}).limit(1000);
+  if(error) throw error;
+  const rows=data||[];
+  const abonos=rows.reduce((s,x)=>s+(Number(x.abono)||0),0);
+  const cargos=rows.reduce((s,x)=>s+(Number(x.cargo)||0),0);
+  const neto=abonos-cargos;
+  const recientes=rows.slice(0,20).map(x=>`<tr><td>${esc(x.fecha||'')}</td><td>${esc(x.empresa||'')}</td><td class="num-r" style="color:var(--ok)">${x.abono?mny(x.abono):'—'}</td><td class="num-r" style="color:var(--danger)">${x.cargo?mny(x.cargo):'—'}</td></tr>`).join('');
+  c.innerHTML='<h1 class="pg">Flujo de efectivo</h1><div class="pgsub">Con base en los '+rows.length+' movimientos más recientes (máx 1000)</div>'+
+    '<div class="kpis">'+tile(mny(abonos),'Ingresos','var(--ok)')+tile(mny(cargos),'Egresos','var(--danger)')+tile(mny(neto),'Neto','var(--navy)')+'</div>'+
+    '<div class="card"><h3>Movimientos recientes</h3><table><thead><tr><th>Fecha</th><th>Empresa</th><th class="num-r">Ingreso</th><th class="num-r">Egreso</th></tr></thead><tbody>'+
+    (recientes||'<tr><td colspan=4 class="empty">Sin movimientos</td></tr>')+'</tbody></table></div>';
+}
+
+async function viewSustancia(c){
+  const {data,error}=await sb.from('compliance_empresa').select('empresa_rfc,aplica,cumplido,fecha_limite,notas').eq('aplica',true).order('fecha_limite',{ascending:true,nullsFirst:false}).limit(300);
+  if(error) throw error;
+  const rows=data||[];
+  const ok=rows.filter(x=>x.cumplido).length, pend=rows.length-ok;
+  const body=rows.map(x=>`<tr><td>${esc(x.empresa_rfc||'')}</td><td><span class="tag ${x.cumplido?'on':'off'}">${x.cumplido?'Sí':'No'}</span></td><td>${esc(x.fecha_limite||'')}</td><td>${esc(x.notas||'')}</td></tr>`).join('');
+  c.innerHTML='<h1 class="pg">Sustancia / cumplimiento</h1><div class="pgsub">'+ok+' cumplidas · '+pend+' pendientes ('+rows.length+' obligaciones)</div>'+
+    '<div class="card"><table><thead><tr><th>Empresa (RFC)</th><th>Cumplido</th><th>Fecha límite</th><th>Notas</th></tr></thead><tbody>'+
+    (body||'<tr><td colspan=4 class="empty">Sin obligaciones</td></tr>')+'</tbody></table></div>';
+}
+
+async function viewBoletin(c){
+  const {data,error}=await sb.from('boletines').select('asunto,destinatarios,estatus,enviado_en').order('enviado_en',{ascending:false,nullsFirst:false}).limit(100);
+  if(error) throw error;
+  const rows=(data||[]).map(x=>`<tr><td>${esc(x.asunto||'')}</td><td>${esc(String(x.destinatarios==null?'':x.destinatarios))}</td><td><span class="tag">${esc(x.estatus||'')}</span></td><td>${esc(x.enviado_en||'')}</td></tr>`).join('');
+  c.innerHTML='<h1 class="pg">Boletín</h1><div class="pgsub">'+(data?data.length:0)+' envíos</div>'+
+    '<div class="card"><table><thead><tr><th>Asunto</th><th>Destinatarios</th><th>Estatus</th><th>Enviado</th></tr></thead><tbody>'+
+    (rows||'<tr><td colspan=4 class="empty">Sin boletines</td></tr>')+'</tbody></table></div>';
 }
 
 boot();
