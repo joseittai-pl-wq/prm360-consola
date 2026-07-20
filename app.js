@@ -113,6 +113,9 @@ $('#btnSignup').onclick = async ()=>{
 };
 
 $('#btnLogout').onclick = async ()=>{ await sb.auth.signOut(); location.reload(); };
+if(document.getElementById('btnExport')){ document.getElementById('btnExport').onclick=exportContentCSV; }
+if(document.getElementById('btnPrint')){ document.getElementById('btnPrint').onclick=function(){ window.print(); }; }
+(function(){ var gs=document.getElementById('gsearch'); if(gs){ gs.onkeydown=function(e){ if(e.key==='Enter'){ window.__gterm=gs.value.trim(); const cc=document.querySelector('#content'); document.querySelectorAll('.dm-link').forEach(function(x){x.classList.remove('active');}); viewBusqueda(cc, window.__gterm); } }; } })();
 
 function traducir(m){
   if(/Invalid login/i.test(m)) return 'Correo o contraseña incorrectos.';
@@ -146,66 +149,15 @@ function renderPendiente(){
 }
 
 const MERGE_AREAS = [
-  ['Dirección', [
-    ['Resumen ejecutivo','resumen','n'],
-    ['Dirección 360 · KPIs','kpis','n'],
-    ['Frentes · semáforos','frentes','n'],
-    ['Rentabilidad','rentabilidad','n'],
-  ]],
-  ['Comercial', [
-    ['Cotizador de nómina','cotizador','p'],
-    ['Tablero de clientes','clientes','p'],
-    ['Solicitudes','solicitudes','p'],
-    ['Servicios','servicios','p'],
-    ['Alta de cliente','altas','n'],
-    ['Boletín','boletin','p'],
-  ]],
-  ['Vinculación', [
-    ['Clientes · Expediente','vinculacion','p'],
-    ['Trabajadores · IMSS','trabajadores','p'],
-    ['Clientes (fiscal)','clifiscal','p'],
-    ['Contratos','contratos','p'],
-  ]],
-  ['Operaciones', [
-    ['Tareas / entregables','pendientes','p'],
-    ['Tablero operativo','tablero','n'],
-    ['Bitácora + entregables','bitacora','n'],
-    ['Captura','captura','n'],
-    ['Movimientos','__soon_movimientos','p'],
-  ]],
-  ['Jurídico', [
-    ['Actas y poderes','__soon_actas','p'],
-    ['Juicios / defensa fiscal','juicios','p'],
-    ['Contratos','contratos','p'],
-    ['Compliance jurídico','compliance','n'],
-  ]],
-  ['Fiscal', [
-    ['Cumplimiento','compliance','p'],
-    ['Alertas REPSE','compliance','p'],
-    ['Renovaciones','renovaciones','p'],
-    ['Plan de previsión social','prevision','p'],
-    ['Adhesiones','adhesiones','p'],
-  ]],
-  ['Contabilidad', [
-    ['Movimientos bancarios','bancarios','p'],
-    ['Cuentas','cuentas','p'],
-    ['Contabilidad / Pólizas','contabilidad','n'],
-  ]],
-  ['Tesorería', [
-    ['Cuentas','tesoreria','p'],
-    ['Cobranza','cobranza','n'],
-    ['Pagos','pagos','p'],
-  ]],
-  ['Administración', [
-    ['Empresas del grupo','empresas','p'],
-    ['Flujo de efectivo','flujo','p'],
-    ['Personal interno','equipo','n'],
-    ['Gastos y costeo','gastos','n'],
-    ['Catálogo de gastos','gastos','n'],
-    ['Sustancia / cumplimiento','sustancia','p'],
-    ['Directorio · oficinas','directorio','n'],
-    ['Accesos y permisos','accesos','n'],
-  ]],
+  ['Dirección', [ ['Tablero General','tabgen','n'],['Rentabilidad','rentabilidad','n'],['Frentes · semáforos','frentes','n'] ]],
+  ['Comercial', [ ['Tablero Comercial','tabcom','n'],['Cotizador de nómina','cotizador','p'],['Solicitud (PDF / editable)','__soon_solicitudpdf','p'],['Checklist de documentos','__soon_checklistcom','p'],['Presentaciones','__soon_presentaciones','p'],['Tablero de clientes','clientes','p'],['Boletín','boletin','p'] ]],
+  ['Vinculación', [ ['Tablero Vinculación','tabvinc','n'],['Clientes','clientescombo','p'],['Trabajadores · IMSS','trabajadorescombo','p'],['Onboarding / KYC','onboarding','n'],['Validación + KYC (CSF/32-D/69)','__soon_kyc','p'],['Checklist de documentos','__soon_checklistvinc','p'],['Control de entregables','__soon_entregables','p'] ]],
+  ['Operaciones', [ ['Tablero Operaciones','tabop','n'],['Trámites','tramitescombo','p'],['Facturación','__soon_facturacion','p'],['Nómina NOMEN','__soon_nomen','p'],['Layout de dispersión','__soon_layout','p'],['Expediente de Materialidad','__soon_materialidad','p'],['Conciliación disp. ↔ CFDI','__soon_concilia','p'],['Descargas SAT / CFDI','descargas','n'],['Calendario de vencimientos','calendario','n'] ]],
+  ['Jurídico', [ ['Tablero Jurídico','tabjur','n'],['Corporativo','corporativocombo','p'],['Bitácora de firmas','__soon_bitacorafirmas','p'],['Vigencias / Renovaciones','renovaciones','p'],['Plantillas de contratos','__soon_plantillas','p'],['Juicios / defensa fiscal','juicios','p'],['Compliance jurídico','compliance','n'] ]],
+  ['Fiscal', [ ['Tablero Fiscal','tabfisc','n'],['Cumplimiento','cumplimientocombo','p'],['Calendario fiscal','__soon_calfiscal','p'],['Calendario REPSE (ICSOE/SISUB)','__soon_calrepse','p'],['Previsión social','previsioncombo','p'],['NOM-035','nom035','p'] ]],
+  ['Contabilidad', [ ['Tablero Contable','tabcont','n'],['Contabilidad / Pólizas','contabilidad','n'],['Captura de servicios','captura','p'],['Descarga XML / CFDI','descargas','n'],['Bancos','bancoscombo','p'],['Motor de conciliación','__soon_motorconcilia','p'] ]],
+  ['Tesorería', [ ['Tablero Tesorería','tabtes','n'],['Cobranza','cobranza','n'],['Cuentas por pagar','__soon_cxp','p'],['Bancos y flujo','flujo','p'],['Cuentas','cuentas','p'],['Pagos','pagos','p'],['Calendario fiscal','__soon_calfiscal2','p'] ]],
+  ['Administración', [ ['Tablero Administración','tabadm','n'],['Empresas del grupo','empresascombo','p'],['Gastos y costeo','gastoscombo','p'],['Accesos y vinculación','accesos','n'],['Contraloría','__soon_contraloria','p'],['Organigrama y matrices','__soon_organigrama','p'],['Directorio','directorio','n'],['Personal interno','equipo','n'],['Reportes','__soon_reportes','p'] ]]
 ];
 
 async function renderInterno(rol){
@@ -271,6 +223,8 @@ async function view(v, rol, label){
     if(v==='cotizador')    return await viewCotizador(c);
     if(v==='trabajadores') return await viewTrabajadores(c);
     if(v==='clifiscal')    return await viewClientesFiscal(c);
+    if(v==='clientescombo') return await viewClientesCombo(c);
+    if(v==='contratoscombo') return await viewContratosCombo(c);
     if(v==='contratos')    return await viewContratos(c);
     if(v==='juicios')      return await viewJuicios(c);
     if(v==='renovaciones') return await viewRenovaciones(c);
@@ -282,6 +236,32 @@ async function view(v, rol, label){
     if(v==='flujo')        return await viewFlujo(c);
     if(v==='sustancia')    return await viewSustancia(c);
     if(v==='boletin')      return await viewBoletin(c);
+    if(v==='actas')        return await viewActas(c);
+    if(v==='movimientos')  return await viewMovimientos(c);
+    if(v==='onboarding')   return await viewOnboarding(c);
+    if(v==='documentos')   return await viewDocumentos(c);
+    if(v==='descargas')    return await viewDescargas(c);
+    if(v==='calendario')   return await viewCalendario(c);
+    if(v==='tabgen')       return await viewTabGen(c);
+    if(v==='tabcom')       return await viewTabCom(c);
+    if(v==='tabvinc')      return await viewTabVinc(c);
+    if(v==='tabop')        return await viewTabOp(c);
+    if(v==='tabjur')       return await viewTabJur(c);
+    if(v==='tabcont')      return await viewTabCont(c);
+    if(v==='tabfisc')      return await viewTabFisc(c);
+    if(v==='tabtes')       return await viewTabTes(c);
+    if(v==='tabadm')       return await viewTabAdm(c);
+    if(v==='trabajadorescombo') return await viewTrabajadoresCombo(c);
+    if(v==='tramitescombo') return await viewTramitesCombo(c);
+    if(v==='corporativocombo') return await viewCorporativoCombo(c);
+    if(v==='bancoscombo')  return await viewBancosCombo(c);
+    if(v==='cumplimientocombo') return await viewCumplimientoCombo(c);
+    if(v==='previsioncombo') return await viewPrevisionCombo(c);
+    if(v==='empresascombo') return await viewEmpresasCombo(c);
+    if(v==='gastoscombo')  return await viewGastosCombo(c);
+    if(v==='nom035')       return await viewNom035(c);
+    if(v==='catalogogastos') return await viewCatalogoGastos(c);
+    if(v==='busqueda') return await viewBusqueda(c, window.__gterm||'');
     if(v && v.indexOf('__soon_')===0) return viewSoon(c, label);
     if(v==='resumen')      return await viewResumen(c);
     if(v==='kpis')         return await viewKpis360(c);
@@ -362,6 +342,7 @@ async function viewResumen(c){
      : '');
 }
 function tile(n,l,color){return `<div class="tile"><div class="bar" style="background:${color}"></div><div class="num">${n}</div><div class="lbl">${l}</div></div>`;}
+function sem(n, mode){ n=Number(n)||0; if(mode==='alert'){ return n>0?'var(--danger)':'var(--ok)'; } if(mode==='pct'){ return n>=80?'var(--ok)':(n>=50?'var(--wait)':'var(--danger)'); } return 'var(--navy)'; }
 
 async function viewEmpresas(c){
   const {data,error}=await sb.from('empresas').select('rfc,razon_social,estatus,repse,timbra_nomina').order('razon_social');
@@ -1432,71 +1413,355 @@ function viewSoon(c, label){
 
 /* ===== Cotizador de nómina (escribe en solicitudes) ===== */
 async function viewCotizador(c){
-  if(!window.__cotEmp){
-    const {data}=await sb.from('empresas').select('rfc,razon_social').order('razon_social');
-    window.__cotEmp = data||[];
+  const NL2 = String.fromCharCode(10);
+  const g = id => document.getElementById(id);
+  const primaDef = {I:0.54, II:1.13, III:2.59, IV:4.65, V:7.58};
+  const claseList = ['I','II','III','IV','V'];
+  const jorList = ['Diurna','Mixta','Nocturna'];
+  const perList = ['Diaria','Semanal','Decenal','Catorcenal','Quincenal','28 días','Mensual'];
+  const estados = ['Aguascalientes','Baja California','Baja California Sur','Campeche','Chiapas','Chihuahua','Ciudad de México','Coahuila','Colima','Durango','Estado de México','Guanajuato','Guerrero','Hidalgo','Jalisco','Michoacán','Morelos','Nayarit','Nuevo León','Oaxaca','Puebla','Querétaro','Quintana Roo','San Luis Potosí','Sinaloa','Sonora','Tabasco','Tamaulipas','Tlaxcala','Veracruz','Yucatán','Zacatecas'];
+
+  function blank(){
+    return {puesto:'', descripcion:'', clase:'I', prima:String(primaDef.I), jornada:'Diurna', periodicidad:'Mensual', salario:'', num:'1'};
   }
-  const emps = window.__cotEmp;
-  const opts = emps.map(e=>'<option value="'+esc(e.rfc)+'">'+esc(e.razon_social||e.rfc)+'</option>').join('') || '<option value="">(sin empresas)</option>';
-  c.innerHTML='<h1 class="pg">Cotizador de nómina</h1>'+
-    '<div class="pgsub">Calcula el honorario y guarda la cotización como solicitud (folio COT-PRM) en Supabase.</div>'+
-    '<div class="card" style="max-width:640px"><h3>Datos de la cotización</h3><div class="body">'+
-      '<div class="frm">'+
-        '<label>Empresa emisora<select id="c_emp" style="min-width:220px">'+opts+'</select></label>'+
-        '<label>N.º de trabajadores<input id="c_emp_n" type="number" value="10" min="0"></label>'+
-        '<label>Nómina mensual (bruto)<input id="c_sueldo" type="number" value="12000" min="0"></label>'+
-        '<label>Honorario por trabajador<input id="c_hon" type="number" value="180" min="0"></label>'+
-        '<label>% de honorario s/nómina<input id="c_pct" type="number" value="0" min="0" step="0.1"></label>'+
-      '</div>'+
-      '<div id="c_out" style="margin-top:14px"></div>'+
-      '<div style="margin-top:14px;display:flex;gap:10px">'+
-        '<button class="btn2" id="c_calc">Calcular</button>'+
-        '<button class="btn2 ghost" id="c_save">Guardar cotización</button>'+
-        '<span id="c_msg" style="font-size:12px;align-self:center"></span>'+
-      '</div>'+
-    '</div></div>';
-  const g=id=>document.getElementById(id);
-  const calc=()=>{
-    const emp=Number(g('c_emp_n').value)||0, hon=Number(g('c_hon').value)||0;
-    const nom=Number(g('c_sueldo').value)||0, pct=Number(g('c_pct').value)||0;
-    const honor = emp*hon + nom*emp*(pct/100);
-    const iva = honor*0.16, total = honor+iva;
-    window._cot = {empleados:emp, honorario_empleado:hon, nomina_mensual:nom, pct_honorario:pct, honorario:honor, iva:iva, total:total};
-    g('c_out').innerHTML='<div style="background:var(--cream);border:1px solid var(--line);border-radius:10px;padding:14px">'+
-      '<div style="display:flex;justify-content:space-between;padding:5px 0">Honorario del despacho<b>'+money(honor)+'</b></div>'+
-      '<div style="display:flex;justify-content:space-between;padding:5px 0">IVA (16%)<b>'+money(iva)+'</b></div>'+
-      '<div style="display:flex;justify-content:space-between;padding:8px 0;border-top:2px solid var(--navy);font-weight:700;font-size:16px">Total<span style="color:var(--gold)">'+money(total)+'</span></div></div>';
-  };
-  g('c_calc').onclick=calc;
-  g('c_save').onclick=async()=>{
-    const msg=g('c_msg');
-    if(!window._cot) calc();
-    const cot=window._cot;
-    const emp=g('c_emp').value;
-    const folio='COT-PRM-'+new Date().getFullYear()+'-'+Date.now().toString().slice(-5);
-    const resumen='Cotización de nómina · '+cot.empleados+' trabajadores · nómina '+money(cot.nomina_mensual)+' · honorario '+money(cot.honorario)+' + IVA '+money(cot.iva)+' = total '+money(cot.total);
-    msg.textContent='Guardando…'; msg.style.color='var(--muted)'; g('c_save').disabled=true;
-    let saved=false, lastErr=null;
-    const intentos=[
-      {folio, empresa_emisora:emp||null, tipo_operacion:'Cotización de nómina', importe:cot.total, estado:'cotizacion', recibido_en:new Date().toISOString(), payload:cot},
-      {folio, empresa_emisora:emp||null, tipo_operacion:'Cotización de nómina', importe:cot.total, estado:'cotizacion'},
-      {folio, tipo:'cotizacion', descripcion:resumen},
-      {folio, estado:'cotizacion'}
-    ];
-    for(const obj of intentos){
-      const {error}=await sb.from('solicitudes').insert(obj);
-      if(!error){ saved=true; break; }
-      lastErr=error;
+  function canon(val, list, def){
+    const v = String(val==null?'':val).trim();
+    for(let i=0;i<list.length;i++){ if(list[i].toLowerCase()===v.toLowerCase()) return list[i]; }
+    return def;
+  }
+  if(!Array.isArray(window.__cocRows) || window.__cocRows.length===0){
+    window.__cocRows = [blank()];
+  }
+
+  const params = [
+    ['r_uma','UMA diaria',113.14],
+    ['r_ceav','% Cesantía y Vejez patronal',3.15],
+    ['r_retiro','Retiro/SAR %',2],
+    ['r_infonavit','Infonavit %',5],
+    ['r_eymfija','IMSS EyM cuota fija %UMA',20.40],
+    ['r_eymexc','EyM excedente >3UMA %',1.10],
+    ['r_eympd','EyM prestaciones dinero %',0.70],
+    ['r_eymgmp','EyM gastos médicos pensionados %',1.05],
+    ['r_iv','Invalidez y vida %',1.75],
+    ['r_guard','Guarderías %',1.00],
+    ['r_isn','ISN %',3.00],
+    ['r_aguinaldo','Aguinaldo días',15],
+    ['r_vac','Vacaciones días',12],
+    ['r_primavac','Prima vacacional %',25],
+    ['r_honorario','% Honorario despacho',8],
+    ['r_iva','IVA %',16]
+  ];
+
+  const estOpts = estados.map(e=>'<option>'+esc(e)+'</option>').join('');
+  const parHtml = params.map(p=>'<label>'+esc(p[1])+'<input id="'+p[0]+'" type="number" step="0.01" value="'+p[2]+'"></label>').join('');
+
+  c.innerHTML =
+    '<h1 class="pg">Cotizador de nómina</h1>'+
+    '<div class="pgsub">Cotizador interactivo multi-puesto con importación de Excel/CSV y propuesta en PDF.</div>'+
+    '<div class="card"><h3>Datos del cliente</h3><div class="body"><div class="frm">'+
+      '<label>Cliente / razón social<input id="coc_cliente" style="min-width:240px"></label>'+
+      '<label>Registro patronal<input id="coc_rp"></label>'+
+      '<label>Estado (ISN)<select id="coc_estado" style="min-width:180px">'+estOpts+'</select></label>'+
+      '<label>Promotor<input id="coc_prom"></label>'+
+      '<label>Actividad principal (ref. REPSE)<input id="coc_actividad" placeholder="Ej. Comercio al por mayor…" style="min-width:240px"></label>'+
+      '<label>Prima de riesgo del patrón (%)<input id="coc_prima_patron" type="number" step="0.00001" value="2.59840"></label>'+
+      '<label>Tipo de contrato con los trabajadores<select id="coc_tipocontrato" style="min-width:220px"><option>Por tiempo determinado</option><option>Por tiempo indeterminado</option><option>Por obra o tiempo determinado</option><option>Servicios especializados (REPSE)</option></select></label>'+
+      '<label>Periodicidad de pago<select id="coc_periodicidad" style="min-width:160px">'+perList.map(k=>'<option>'+esc(k)+'</option>').join('')+'</select></label>'+
+      '<label>Honorario por empleado (MXN)<input id="coc_honorario_emp" type="number" step="0.01" value="180"></label>'+
+      '<label style="flex-direction:row;align-items:center;gap:6px"><input id="coc_provisiones" type="checkbox" style="width:auto">Incluir provisiones prorrateadas (aguinaldo, prima vacacional, finiquito)</label>'+
+    '</div></div></div>'+
+    '<div class="card"><h3>Puestos a cotizar</h3><div class="body">'+
+      '<div style="overflow-x:auto"><table id="coc_tbl"><thead><tr>'+
+        '<th>Puesto</th><th>Descripción de funciones</th><th>Clase</th><th class="num-r">Prima %</th>'+
+        '<th>Jornada</th><th>Periodicidad</th><th class="num-r">Salario mensual</th><th class="num-r">Nº trab.</th><th></th>'+
+      '</tr></thead><tbody id="coc_body"></tbody></table></div>'+
+      '<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">'+
+        '<button class="btn2 ghost" id="coc_add">➕ Agregar puesto/trabajador</button>'+
+        '<button class="btn2 ghost" id="coc_tpl">⬇ Descargar plantilla</button>'+
+        '<button class="btn2 ghost" id="coc_imp">📄 Importar Excel/CSV</button>'+
+        '<input type="file" id="coc_file" accept=".xlsx,.xls,.csv" style="display:none">'+
+        '<span id="coc_impmsg" style="align-self:center;font-size:12px"></span>'+
+      '</div></div></div>'+
+    '<div class="card"><h3 id="coc_partog" style="cursor:pointer">Tasas y parámetros (editables) ▾</h3>'+
+      '<div class="body" id="coc_parbody"><div class="frm">'+parHtml+'</div>'+
+      '<div style="font-size:12px;color:var(--muted);margin-top:6px">Tasas estándar 2026 — verifíquelas/ajústelas. Se afinará con su COT-PRM-002.</div>'+
+      '</div></div>'+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px" class="no-print">'+
+      '<button class="btn2" id="coc_calc">Calcular</button>'+
+      '<button class="btn2 ghost" id="coc_pdf">📄 Generar propuesta (PDF)</button>'+
+      '<button class="btn2 ghost" id="coc_save">Guardar cotización</button>'+
+      '<span id="coc_msg" style="align-self:center;font-size:12px"></span>'+
+    '</div>'+
+    '<div id="coc_desglose"></div>';
+
+  function rowHtml(r, idx){
+    const claseOpts = claseList.map(k=>'<option value="'+k+'"'+(r.clase===k?' selected':'')+'>'+k+'</option>').join('');
+    const jorOpts = jorList.map(k=>'<option'+(r.jornada===k?' selected':'')+'>'+esc(k)+'</option>').join('');
+    const perOpts = perList.map(k=>'<option'+(r.periodicidad===k?' selected':'')+'>'+esc(k)+'</option>').join('');
+    return '<tr>'+
+      '<td><input class="ci_puesto" value="'+esc(r.puesto)+'" style="min-width:130px"></td>'+
+      '<td><input class="ci_desc" value="'+esc(r.descripcion)+'" style="min-width:160px"></td>'+
+      '<td><select class="ci_clase">'+claseOpts+'</select></td>'+
+      '<td><input class="ci_prima num-r" type="number" step="0.01" value="'+esc(r.prima)+'" style="width:80px"></td>'+
+      '<td><select class="ci_jornada">'+jorOpts+'</select></td>'+
+      '<td><select class="ci_per">'+perOpts+'</select></td>'+
+      '<td><input class="ci_sal" type="number" step="0.01" value="'+esc(r.salario)+'" style="width:120px"></td>'+
+      '<td><input class="ci_num" type="number" step="1" value="'+esc(r.num)+'" style="width:70px"></td>'+
+      '<td><button class="mini ci_del" data-idx="'+idx+'" title="Quitar" style="background:var(--danger)">🗑</button></td>'+
+    '</tr>';
+  }
+  function syncRows(){
+    const tb = g('coc_body');
+    if(!tb) return;
+    const trs = tb.getElementsByTagName('tr');
+    const arr = [];
+    for(let i=0;i<trs.length;i++){
+      const tr = trs[i];
+      const q = cl => { const e = tr.getElementsByClassName(cl)[0]; return e ? e.value : ''; };
+      arr.push({
+        puesto:q('ci_puesto'), descripcion:q('ci_desc'), clase:q('ci_clase'),
+        prima:q('ci_prima'), jornada:q('ci_jornada'), periodicidad:q('ci_per'),
+        salario:q('ci_sal'), num:q('ci_num')
+      });
     }
-    g('c_save').disabled=false;
-    if(saved){
-      msg.textContent='';
-      g('c_out').innerHTML += '<div style="margin-top:10px;color:var(--ok);font-weight:600;font-size:13px">✓ Folio '+folio+' guardado en solicitudes.</div>';
-    } else {
-      msg.textContent='No se pudo guardar'+(lastErr&&lastErr.message?(': '+lastErr.message):'.'); msg.style.color='var(--danger)';
+    window.__cocRows = arr;
+  }
+  function renderRows(){
+    const tb = g('coc_body');
+    tb.innerHTML = window.__cocRows.map((r,i)=>rowHtml(r,i)).join('');
+    const dels = tb.getElementsByClassName('ci_del');
+    for(let i=0;i<dels.length;i++){
+      dels[i].onclick = function(){
+        syncRows();
+        const idx = Number(this.getAttribute('data-idx'));
+        window.__cocRows.splice(idx,1);
+        if(window.__cocRows.length===0) window.__cocRows=[blank()];
+        renderRows();
+      };
     }
+    const cls = tb.getElementsByClassName('ci_clase');
+    for(let i=0;i<cls.length;i++){
+      cls[i].onchange = function(){
+        const tr = this.closest('tr');
+        const p = tr.getElementsByClassName('ci_prima')[0];
+        if(p && primaDef[this.value]!=null) p.value = primaDef[this.value];
+      };
+    }
+  }
+  renderRows();
+
+  g('coc_partog').onclick = function(){
+    const b = g('coc_parbody');
+    const hidden = b.style.display==='none';
+    b.style.display = hidden ? '' : 'none';
+    this.textContent = 'Tasas y parámetros (editables) ' + (hidden ? '▾' : '▸');
   };
-  calc();
+
+  g('coc_add').onclick = function(){ syncRows(); window.__cocRows.push(blank()); renderRows(); };
+
+  g('coc_tpl').onclick = function(){
+    const header = ['puesto','descripcion','clase_riesgo','prima','jornada','periodicidad','salario_mensual','num_trabajadores'].join(',');
+    const ejemplo = ['Auxiliar administrativo','Apoyo general de oficina','I','0.54','Diurna','Mensual','12000','1'].join(',');
+    const csv = header + NL2 + ejemplo + NL2;
+    const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'plantilla_cotizador_nomina.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  g('coc_imp').onclick = function(){ g('coc_file').click(); };
+  g('coc_file').onchange = function(ev){
+    const impmsg = g('coc_impmsg');
+    const f = ev.target.files && ev.target.files[0];
+    if(!f) return;
+    const reader = new FileReader();
+    reader.onload = function(e){
+      try{
+        const data = new Uint8Array(e.target.result);
+        const wb = XLSX.read(data, {type:'array'});
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const json = XLSX.utils.sheet_to_json(ws, {defval:''});
+        if(!json.length){ impmsg.style.color='var(--danger)'; impmsg.textContent='El archivo no tiene filas.'; g('coc_file').value=''; return; }
+        const rows = json.map(function(o){
+          const low = {};
+          Object.keys(o).forEach(function(k){ low[String(k).trim().toLowerCase()] = o[k]; });
+          const pick = function(){ for(let i=0;i<arguments.length;i++){ const kk=arguments[i]; if(low[kk]!=null && String(low[kk]).trim()!=='') return low[kk]; } return ''; };
+          const clase = canon(pick('clase_riesgo','clase','clase de riesgo'), claseList, 'I');
+          let prima = pick('prima','prima_riesgo','prima de riesgo');
+          if(prima==='' || prima==null){ prima = primaDef[clase]!=null ? primaDef[clase] : ''; }
+          return {
+            puesto: String(pick('puesto','puestos')||''),
+            descripcion: String(pick('descripcion','descripción','descripcion de funciones','funciones')||''),
+            clase: clase,
+            prima: String(prima),
+            jornada: canon(pick('jornada'), jorList, 'Diurna'),
+            periodicidad: canon(pick('periodicidad','periodo'), perList, 'Mensual'),
+            salario: String(pick('salario_mensual','salario','salario mensual','sueldo')||''),
+            num: String(pick('num_trabajadores','no_trabajadores','trabajadores','num','n')||'1')
+          };
+        });
+        window.__cocRows = rows;
+        renderRows();
+        impmsg.style.color='var(--ok)'; impmsg.textContent='Importados '+rows.length+' registros.';
+      }catch(err){
+        impmsg.style.color='var(--danger)'; impmsg.textContent='No se pudo leer el archivo. Verifique el formato.';
+      }
+      g('coc_file').value='';
+    };
+    reader.readAsArrayBuffer(f);
+  };
+
+  function num(id){ const v = parseFloat(g(id).value); return isNaN(v) ? 0 : v; }
+  function calc(){
+    syncRows();
+    const UMA = num('r_uma');
+    const ceav = num('r_ceav'), retiro = num('r_retiro'), infonavit = num('r_infonavit');
+    const eymfija = num('r_eymfija'), eymexc = num('r_eymexc'), eympd = num('r_eympd'), eymgmp = num('r_eymgmp');
+    const rIv = num('r_iv'), rGuard = num('r_guard'), rIsn = num('r_isn');
+    const agu = num('r_aguinaldo'), vac = num('r_vac'), primavac = num('r_primavac');
+    const rHonorario = num('r_honorario'), rIva = num('r_iva');
+    const d304 = 30.4;
+    const det = [];
+    let subtotal = 0, cuotaTot = 0, isnTot = 0, numTot = 0;
+    window.__cocRows.forEach(function(r){
+      const salMen = parseFloat(r.salario) || 0;
+      const nTrab = parseInt(r.num,10) || 0;
+      const prima = parseFloat(r.prima) || 0;
+      const salDia = salMen/30;
+      const FI = 1 + (agu/365) + ((primavac/100)*(vac/365));
+      let SBC = salDia*FI;
+      const SDI = SBC;
+      const cap = 25*UMA;
+      if(SBC>cap) SBC = cap;
+      const eymFijaC = (eymfija/100)*UMA*d304;
+      const eymExcC = SBC>3*UMA ? (eymexc/100)*(SBC-3*UMA)*d304 : 0;
+      const pdC = (eympd/100)*SBC*d304;
+      const gmpC = (eymgmp/100)*SBC*d304;
+      const ivC = (rIv/100)*SBC*d304;
+      const guardC = (rGuard/100)*SBC*d304;
+      const riesgoC = (prima/100)*SBC*d304;
+      const retiroC = (retiro/100)*SBC*d304;
+      const ceavC = (ceav/100)*SBC*d304;
+      const infC = (infonavit/100)*SBC*d304;
+      const cuotaUno = eymFijaC+eymExcC+pdC+gmpC+ivC+guardC+riesgoC+retiroC+ceavC+infC;
+      const isnUno = (rIsn/100)*salMen;
+      const costoUno = salMen + cuotaUno + isnUno;
+      const costoPuesto = costoUno*nTrab;
+      subtotal += costoPuesto;
+      cuotaTot += cuotaUno*nTrab;
+      isnTot += isnUno*nTrab;
+      numTot += nTrab;
+      det.push({puesto:r.puesto, num:nTrab, salario:salMen, sdi:SDI, cuota:cuotaUno*nTrab, isn:isnUno*nTrab, costo:costoPuesto});
+    });
+    const honorario = (rHonorario/100)*subtotal;
+    const base = subtotal + honorario;
+    const iva = (rIva/100)*base;
+    const total = base + iva;
+    window.__cocResult = {det:det, subtotal:subtotal, honorario:honorario, iva:iva, total:total, numTot:numTot, cuotaTot:cuotaTot, isnTot:isnTot};
+    renderDesglose();
+  }
+
+  function sline(l,v){ return '<div style="display:flex;justify-content:space-between;padding:5px 0">'+esc(l)+'<b>'+mny(v)+'</b></div>'; }
+  function desgloseTablaHtml(R){
+    const body = R.det.map(function(d){
+      return '<tr><td>'+esc(d.puesto||'—')+'</td><td class="num-r">'+d.num+'</td>'+
+        '<td class="num-r">'+mny(d.salario)+'</td><td class="num-r">'+mny(d.sdi)+'</td>'+
+        '<td class="num-r">'+mny(d.cuota)+'</td><td class="num-r">'+mny(d.isn)+'</td>'+
+        '<td class="num-r">'+mny(d.costo)+'</td></tr>';
+    }).join('');
+    const totRow = '<tr style="font-weight:700;background:var(--cream)"><td>Totales</td><td class="num-r">'+R.numTot+'</td>'+
+      '<td></td><td></td><td class="num-r">'+mny(R.cuotaTot)+'</td><td class="num-r">'+mny(R.isnTot)+'</td><td class="num-r">'+mny(R.subtotal)+'</td></tr>';
+    return '<div style="overflow-x:auto"><table><thead><tr>'+
+      '<th>Puesto</th><th class="num-r">Nº</th><th class="num-r">Salario</th><th class="num-r">SDI</th>'+
+      '<th class="num-r">Cuota IMSS+Inf</th><th class="num-r">ISN</th><th class="num-r">Costo mensual</th>'+
+      '</tr></thead><tbody>'+body+totRow+'</tbody></table></div>';
+  }
+  function renderDesglose(){
+    const R = window.__cocResult;
+    const out = g('coc_desglose');
+    if(!R){ out.innerHTML=''; return; }
+    out.innerHTML =
+      '<div class="card"><h3>Desglose</h3><div class="body">'+desgloseTablaHtml(R)+'</div></div>'+
+      '<div class="card"><h3>Resumen</h3><div class="body">'+
+        sline('Subtotal costo', R.subtotal)+
+        sline('Honorario despacho', R.honorario)+
+        sline('IVA', R.iva)+
+        '<div style="display:flex;justify-content:space-between;padding:10px 0;border-top:2px solid var(--navy);font-weight:800;font-size:22px;margin-top:6px">Total mensual<span style="color:var(--gold)">'+mny(R.total)+'</span></div>'+
+      '</div></div>';
+  }
+
+  g('coc_calc').onclick = calc;
+
+  g('coc_pdf').onclick = async function(){
+    calc();
+    const R = window.__cocResult;
+    const cliente = (g('coc_cliente') && g('coc_cliente').value) || '';
+    const rp = (g('coc_rp') && g('coc_rp').value) || '';
+    const estado = (g('coc_estado') && g('coc_estado').value) || '';
+    const prom = (g('coc_prom') && g('coc_prom').value) || '';
+    const actividad = (g('coc_actividad') && g('coc_actividad').value) || '';
+    const primaPatron = (g('coc_prima_patron') && g('coc_prima_patron').value) || '';
+    const tipoContrato = (g('coc_tipocontrato') && g('coc_tipocontrato').value) || '';
+    const periodicidad = (g('coc_periodicidad') && g('coc_periodicidad').value) || '';
+    let n = 1;
+    try{
+      const res = await sb.from('solicitudes').select('id',{count:'exact',head:true}).eq('tipo','cotizacion');
+      if(res && typeof res.count==='number') n = res.count + 1;
+    }catch(e){}
+    const folio = 'COT-PRM-' + String(n).padStart(4,'0');
+    const fecha = new Date().toLocaleDateString('es-MX',{year:'numeric',month:'long',day:'numeric'});
+    c.innerHTML =
+      '<div style="max-width:900px;margin:0 auto;padding:10px">'+
+      '<div style="display:flex;gap:8px;margin-bottom:16px" class="no-print">'+
+        '<button class="btn2" id="coc_print">🖨 Imprimir / Guardar PDF</button>'+
+        '<button class="btn2 ghost" id="coc_volver">← Volver</button>'+
+      '</div>'+
+      '<div style="border-bottom:3px solid var(--navy);padding-bottom:12px;margin-bottom:18px">'+
+        '<div style="font-size:22px;font-weight:800;color:var(--navy)">PR&amp;M Business Group</div>'+
+        '<div style="font-size:14px;color:var(--gold);font-weight:700">Cotización de nómina</div>'+
+      '</div>'+
+      '<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px;font-size:13px">'+
+        '<div><b>Folio:</b> '+esc(folio)+'<br><b>Fecha:</b> '+esc(fecha)+'</div>'+
+        '<div><b>Cliente:</b> '+esc(cliente||'—')+'<br><b>Registro patronal:</b> '+esc(rp||'—')+'<br><b>Estado:</b> '+esc(estado||'—')+'<br><b>Promotor:</b> '+esc(prom||'—')+'</div>'+
+        '<div><b>Actividad principal:</b> '+esc(actividad||'—')+'<br><b>Prima de riesgo del patrón:</b> '+esc(primaPatron?primaPatron+' %':'—')+'<br><b>Tipo de contrato:</b> '+esc(tipoContrato||'—')+'<br><b>Periodicidad de pago:</b> '+esc(periodicidad||'—')+'</div>'+
+      '</div>'+
+      '<div style="font-weight:700;color:var(--navy);margin-bottom:8px">Desglose de puestos</div>'+
+      desgloseTablaHtml(R)+
+      '<div style="max-width:360px;margin-left:auto;margin-top:18px">'+
+        sline('Subtotal costo', R.subtotal)+
+        sline('Honorario despacho', R.honorario)+
+        sline('IVA', R.iva)+
+        '<div style="display:flex;justify-content:space-between;padding:10px 0;border-top:2px solid var(--navy);font-weight:800;font-size:20px">Total mensual<span style="color:var(--gold)">'+mny(R.total)+'</span></div>'+
+      '</div>'+
+      '<div style="margin-top:26px;font-size:11px;color:var(--muted);border-top:1px solid var(--line);padding-top:10px">Tasas estándar 2026 sujetas a verificación. Documento generado por PRM 360.</div>'+
+      '</div>';
+    g('coc_print').onclick = function(){ window.print(); };
+    g('coc_volver').onclick = function(){ viewCotizador(c); };
+  };
+
+  g('coc_save').onclick = async function(){
+    const msg = g('coc_msg');
+    if(!window.__cocResult) calc();
+    const R = window.__cocResult;
+    const cliente = (g('coc_cliente') && g('coc_cliente').value) || 'Cliente';
+    const desc = cliente + ' - Total mensual ' + mny(R.total);
+    msg.style.color='var(--muted)'; msg.textContent='Guardando…';
+    g('coc_save').disabled = true;
+    let ok = false, lastErr = null;
+    const intentos = [{tipo:'cotizacion', descripcion:desc}, {descripcion:desc}];
+    for(let i=0;i<intentos.length;i++){
+      try{
+        const {error} = await sb.from('solicitudes').insert(intentos[i]);
+        if(!error){ ok = true; break; }
+        lastErr = error;
+      }catch(e){ lastErr = e; }
+    }
+    g('coc_save').disabled = false;
+    if(ok){ msg.style.color='var(--ok)'; msg.textContent='✓ Cotización guardada.'; }
+    else { msg.style.color='var(--danger)'; msg.textContent='No se pudo guardar'+(lastErr&&lastErr.message?(': '+lastErr.message):'.'); }
+  };
 }
 
 /* ===== Trabajadores · IMSS (búsqueda + ficha detallada) ===== */
@@ -1711,4 +1976,316 @@ async function viewBoletin(c){
     (rows||'<tr><td colspan=4 class="empty">Sin boletines</td></tr>')+'</tbody></table></div>';
 }
 
+async function viewActas(c){
+  const {data,error}=await sb.from('actas_poderes').select('empresa,tipo_acto,instrumento,notario,fecha_acto,apoderado,tipo_poder,vigencia,estatus').order('fecha_acto',{ascending:false,nullsFirst:false}).limit(300);
+  if(error) throw error;
+  const rows=(data||[]).map(x=>{
+    const e=(x.estatus||'').toLowerCase();
+    const cls=e==='vigente'?'on':e==='revocado'?'off':'';
+    return `<tr><td>${esc(x.empresa||'')}</td><td>${esc(x.tipo_acto||'')}</td><td>${esc(x.instrumento||'')}</td><td>${esc(x.notario||'')}</td><td>${esc(x.fecha_acto||'')}</td><td>${esc(x.apoderado||'')}</td><td>${esc(x.tipo_poder||'')}</td><td>${esc(x.vigencia||'')}</td><td><span class="tag ${cls}">${esc(x.estatus||'')}</span></td></tr>`;
+  }).join('');
+  c.innerHTML='<h1 class="pg">Actas y poderes</h1><div class="pgsub">'+(data?data.length:0)+' registros</div>'+
+    '<div class="card"><table><thead><tr><th>Empresa</th><th>Tipo de acto</th><th>Instrumento</th><th>Notario</th><th>Fecha</th><th>Apoderado</th><th>Tipo de poder</th><th>Vigencia</th><th>Estatus</th></tr></thead><tbody>'+
+    (rows||'<tr><td colspan=9 class="empty">Sin actas ni poderes capturados</td></tr>')+'</tbody></table></div>';
+}
+
+async function viewMovimientos(c){
+  const {data,error}=await sb.from('operaciones_movimientos').select('fecha,empresa,tramite,movimiento,responsable,estatus,referencia').order('fecha',{ascending:false,nullsFirst:false}).limit(300);
+  if(error) throw error;
+  const rows=(data||[]).map(x=>{
+    const cls=x.estatus==='Confirmado'?'on':'off';
+    return `<tr><td>${esc(x.fecha||'')}</td><td>${esc(x.empresa||'')}</td><td>${esc(x.tramite||'')}</td><td>${esc(x.movimiento||'')}</td><td>${esc(x.responsable||'')}</td><td><span class="tag ${cls}">${esc(x.estatus||'')}</span></td><td>${esc(x.referencia||'')}</td></tr>`;
+  }).join('');
+  c.innerHTML='<h1 class="pg">Movimientos (Operaciones)</h1><div class="pgsub">'+(data?data.length:0)+' movimientos (máx 300)</div>'+
+    '<div class="card"><table><thead><tr><th>Fecha</th><th>Empresa</th><th>Trámite</th><th>Movimiento</th><th>Responsable</th><th>Estatus</th><th>Referencia</th></tr></thead><tbody>'+
+    (rows||'<tr><td colspan=7 class="empty">Sin movimientos</td></tr>')+'</tbody></table></div>';
+}
+
+async function viewOnboarding(c){
+  const {data,error}=await sb.from('onboarding_cliente').select('referencia,razon_social,rfc,contacto,correo,giro,estatus,creado_en').order('creado_en',{ascending:false,nullsFirst:false}).limit(200);
+  if(error) throw error;
+  const rows=(data||[]).map(x=>`<tr><td>${esc(x.referencia||'')}</td><td>${esc(x.razon_social||'')}</td><td>${esc(x.rfc||'')}</td><td>${esc(x.contacto||'')}</td><td>${esc(x.correo||'')}</td><td>${esc(x.giro||'')}</td><td><span class="tag">${esc(x.estatus||'')}</span></td></tr>`).join('');
+  c.innerHTML='<h1 class="pg">Onboarding / KYC</h1><div class="pgsub">'+(data?data.length:0)+' expedientes</div>'+
+    '<div class="card"><table><thead><tr><th>Referencia</th><th>Razón social</th><th>RFC</th><th>Contacto</th><th>Correo</th><th>Giro</th><th>Estatus</th></tr></thead><tbody>'+
+    (rows||'<tr><td colspan=7 class="empty">Sin expedientes de onboarding aún — listo para capturar</td></tr>')+'</tbody></table></div>';
+}
+
+async function viewDocumentos(c){
+  const {data,error}=await sb.from('documentos_expediente').select('empresa,tipo,nombre,vigencia,estatus,fecha').order('fecha',{ascending:false,nullsFirst:false}).limit(300);
+  if(error) throw error;
+  const rows=(data||[]).map(x=>{
+    const e=(x.estatus||'').toLowerCase();
+    const cls=e==='vigente'?'on':(e==='faltante'||e==='por_actualizar')?'off':'';
+    return `<tr><td>${esc(x.empresa||'')}</td><td>${esc(x.tipo||'')}</td><td>${esc(x.nombre||'')}</td><td>${esc(x.vigencia||'')}</td><td><span class="tag ${cls}">${esc(x.estatus||'')}</span></td><td>${esc(x.fecha||'')}</td></tr>`;
+  }).join('');
+  c.innerHTML='<h1 class="pg">Documentos del expediente</h1><div class="pgsub">'+(data?data.length:0)+' documentos</div>'+
+    '<div class="card"><table><thead><tr><th>Empresa</th><th>Tipo</th><th>Nombre</th><th>Vigencia</th><th>Estatus</th><th>Fecha</th></tr></thead><tbody>'+
+    (rows||'<tr><td colspan=6 class="empty">Sin documentos cargados aún</td></tr>')+'</tbody></table></div>';
+}
+
+async function viewDescargas(c){
+  const {data,error}=await sb.from('descarga_solicitudes').select('rfc,tipo,fecha_inicio,fecha_fin,estado,num_cfdis,solicitada_en').order('solicitada_en',{ascending:false,nullsFirst:false}).limit(200);
+  if(error) throw error;
+  const rows=(data||[]).map(x=>`<tr><td>${esc(x.rfc||'')}</td><td>${esc(x.tipo||'')}</td><td>${esc((x.fecha_inicio||'')+' a '+(x.fecha_fin||''))}</td><td><span class="tag">${esc(x.estado||'')}</span></td><td class="num-r">${x.num_cfdis==null?'—':x.num_cfdis}</td><td>${esc(x.solicitada_en||'')}</td></tr>`).join('');
+  c.innerHTML='<h1 class="pg">Descargas SAT / CFDI</h1><div class="pgsub">'+(data?data.length:0)+' solicitudes</div>'+
+    '<div class="card"><table><thead><tr><th>RFC</th><th>Tipo</th><th>Periodo</th><th>Estado</th><th class="num-r">No. CFDI</th><th>Solicitada</th></tr></thead><tbody>'+
+    (rows||'<tr><td colspan=6 class="empty">Sin solicitudes de descarga SAT aún</td></tr>')+'</tbody></table></div>';
+}
+
+async function viewCalendario(c){
+  const hoy=new Date(); hoy.setHours(0,0,0,0);
+  const [r1,r2,r3]=await Promise.all([
+    sb.from('renovaciones').select('empresa,tipo_autorizacion,vigencia,estatus').not('vigencia','is',null),
+    sb.from('alertas_repse').select('razon_social,folio_repse,vigencia_repse,estado_alerta').not('vigencia_repse','is',null),
+    sb.from('compliance_empresa').select('empresa_rfc,fecha_limite,notas').eq('aplica',true).eq('cumplido',false).not('fecha_limite','is',null)
+  ]);
+  const items=[];
+  (r1.data||[]).forEach(x=>items.push({fecha:x.vigencia,fuente:'Renovación',empresa:x.empresa||'',detalle:x.tipo_autorizacion||'',estatus:x.estatus||''}));
+  (r2.data||[]).forEach(x=>items.push({fecha:x.vigencia_repse,fuente:'REPSE',empresa:x.razon_social||'',detalle:x.folio_repse||'',estatus:x.estado_alerta||''}));
+  (r3.data||[]).forEach(x=>items.push({fecha:x.fecha_limite,fuente:'Compliance',empresa:x.empresa_rfc||'',detalle:x.notas||'',estatus:''}));
+  items.sort((a,b)=>String(a.fecha).localeCompare(String(b.fecha)));
+  const list=items.slice(0,120);
+  const diasDe=f=>{const d=new Date(f); d.setHours(0,0,0,0); return Math.round((d-hoy)/86400000);};
+  const vencidos=list.filter(x=>diasDe(x.fecha)<0).length;
+  const rows=list.map(x=>{
+    const dias=diasDe(x.fecha);
+    const diasTx = dias<0 ? '<span style="color:var(--danger)">vencido hace '+(-dias)+' d</span>' : 'en '+dias+' d';
+    return `<tr><td>${esc(x.fecha||'')}</td><td><span class="tag">${esc(x.fuente)}</span></td><td>${esc(x.empresa)}</td><td>${esc(x.detalle)}</td><td>${diasTx}</td><td>${esc(x.estatus)}</td></tr>`;
+  }).join('');
+  c.innerHTML='<h1 class="pg">Calendario de vencimientos</h1><div class="pgsub">'+list.length+' vencimientos · '+vencidos+' vencidos</div>'+
+    '<div class="card"><table><thead><tr><th>Fecha</th><th>Fuente</th><th>Empresa</th><th>Detalle</th><th>Días</th><th>Estatus</th></tr></thead><tbody>'+
+    (rows||'<tr><td colspan=6 class="empty">Sin vencimientos próximos</td></tr>')+'</tbody></table></div>';
+}
+
 boot();
+
+/* ===== Menus con submenus (pestanas) ===== */
+function comboTabs(c, title, tabs){
+  c.innerHTML='<h1 class="pg">'+title+'</h1>'+
+    '<div style="display:flex;gap:6px;margin:0 0 16px;border-bottom:1px solid var(--line);flex-wrap:wrap">'+
+    tabs.map(function(t,i){return '<button class="cbtab" data-i="'+i+'" style="border:0;background:none;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;color:'+(i===0?'var(--navy)':'var(--muted)')+';border-bottom:3px solid '+(i===0?'var(--gold)':'transparent')+'">'+t.label+'</button>';}).join('')+
+    '</div><div id="combobody"><div class="loader">Cargando…</div></div>';
+  var body=document.getElementById('combobody');
+  var btns=c.querySelectorAll('.cbtab');
+  function sel(i){ btns.forEach(function(b,j){ b.style.color=(j==i)?'var(--navy)':'var(--muted)'; b.style.borderBottom='3px solid '+((j==i)?'var(--gold)':'transparent'); }); try{ tabs[i].fn(body); }catch(e){ body.innerHTML='<div class="empty">Error: '+(e.message||e)+'</div>'; } }
+  btns.forEach(function(b){ b.onclick=function(){ sel(+b.dataset.i); }; });
+  sel(0);
+}
+async function viewClientesCombo(c){ comboTabs(c,'Clientes',[{label:'Expediente / Vinculación',fn:viewVinculacion},{label:'Datos fiscales',fn:viewClientesFiscal},{label:'Contratos',fn:viewContratos},{label:'Servicios',fn:viewServicios},{label:'Documentos',fn:viewDocumentos}]); }
+async function viewContratosCombo(c){ comboTabs(c,'Contratos',[{label:'Contrato',fn:viewContratos},{label:'Contrato individual de trabajo',fn:viewContratoIndividual}]); }
+async function viewContratoIndividual(c){
+  const {data,error}=await sb.from('trabajadores').select('nombre,cliente_nombre,puesto,tipo_contrato,jornada,fecha_alta,salario_diario,estatus').order('nombre').limit(300);
+  if(error) throw error;
+  const rows=(data||[]).map(function(x){return '<tr><td>'+esc(x.nombre||'')+'</td><td>'+esc(x.cliente_nombre||'')+'</td><td>'+esc(x.puesto||'')+'</td><td>'+esc(x.tipo_contrato||'—')+'</td><td>'+esc(x.jornada||'—')+'</td><td>'+esc(x.fecha_alta||'')+'</td><td class="num-r">'+mny(x.salario_diario)+'</td><td><span class="tag '+(x.estatus==='activo'?'on':'off')+'">'+esc(x.estatus||'')+'</span></td></tr>';}).join('');
+  c.innerHTML='<div class="pgsub">'+((data?data.length:0))+' contratos individuales de trabajo (máx 300)</div>'+
+    '<div class="card"><table><thead><tr><th>Trabajador</th><th>Empresa</th><th>Puesto</th><th>Tipo contrato</th><th>Jornada</th><th>Ingreso</th><th class="num-r">Salario diario</th><th>Estatus</th></tr></thead><tbody>'+
+    (rows||'<tr><td colspan=8 class="empty">Sin trabajadores</td></tr>')+'</tbody></table></div>';
+}
+
+/* ===== Tableros por área ===== */
+async function viewTabGen(c){
+  c.innerHTML='<h1 class="pg">Tablero General</h1><div class="pgsub">Vista de mando · integra todos los departamentos</div>';
+  const [emp,repse,cli,trab,alr,ren,con,jui,tar,mov]=await Promise.all([
+    cnt('empresas'), cnt('empresas',[['repse',true]]), cnt('clientes'),
+    cnt('trabajadores',[['estatus','activo']]), cnt('alertas_repse'), cnt('renovaciones'),
+    cnt('contratos'), cnt('juicios'), cnt('tareas'), cnt('movimientos_bancarios')
+  ]);
+  c.innerHTML += '<div class="kpis">'+
+    tile(emp,'Empresas','var(--navy)')+
+    tile(repse,'Empresas REPSE','var(--teal)')+
+    tile(cli,'Clientes','var(--navy)')+
+    tile(trab,'Trabajadores activos','var(--ok)')+
+    tile(alr,'Alertas REPSE',sem(alr,'alert'))+
+    tile(ren,'Renovaciones','var(--wait)')+
+    tile(con,'Contratos','var(--navy)')+
+    tile(jui,'Juicios','var(--navy)')+
+    tile(tar,'Tareas',sem(tar,'alert'))+
+    tile(mov,'Mov. bancarios','var(--teal)')+
+    '</div>';
+}
+async function viewTabCom(c){
+  c.innerHTML='<h1 class="pg">Tablero Comercial</h1><div class="pgsub">Prospección, cotización y cartera de clientes</div>';
+  const [sol,serv,cli,cot]=await Promise.all([
+    cnt('solicitudes'), cnt('servicios'), cnt('clientes'), cnt('solicitudes')
+  ]);
+  c.innerHTML += '<div class="kpis">'+
+    tile(sol,'Solicitudes','var(--navy)')+
+    tile(serv,'Servicios','var(--teal)')+
+    tile(cli,'Clientes','var(--navy)')+
+    tile(cot,'Cotizaciones','var(--wait)')+
+    '</div>';
+}
+async function viewTabVinc(c){
+  c.innerHTML='<h1 class="pg">Tablero Vinculación</h1><div class="pgsub">Expediente, IMSS y onboarding de clientes</div>';
+  const [cli,trab,onb,con]=await Promise.all([
+    cnt('clientes'), cnt('trabajadores',[['estatus','activo']]), cnt('onboarding_cliente'), cnt('contratos')
+  ]);
+  c.innerHTML += '<div class="kpis">'+
+    tile(cli,'Clientes','var(--navy)')+
+    tile(trab,'Trabajadores activos','var(--ok)')+
+    tile(onb,'Onboarding','var(--wait)')+
+    tile(con,'Contratos','var(--navy)')+
+    '</div>';
+}
+async function viewTabOp(c){
+  c.innerHTML='<h1 class="pg">Tablero Operaciones</h1><div class="pgsub">Trámites, movimientos y descargas SAT</div>';
+  const [tar,mov,des,bit]=await Promise.all([
+    cnt('tareas'), cnt('operaciones_movimientos'), cnt('descarga_solicitudes'), cnt('bitacora')
+  ]);
+  c.innerHTML += '<div class="kpis">'+
+    tile(tar,'Tareas',sem(tar,'alert'))+
+    tile(mov,'Movimientos','var(--teal)')+
+    tile(des,'Descargas SAT','var(--wait)')+
+    tile(bit,'Bitácora','var(--navy)')+
+    '</div>';
+}
+async function viewTabJur(c){
+  c.innerHTML='<h1 class="pg">Tablero Jurídico</h1><div class="pgsub">Contratos, juicios y gobierno corporativo</div>';
+  const [con,jui,act]=await Promise.all([
+    cnt('contratos'), cnt('juicios'), cnt('actas_poderes')
+  ]);
+  c.innerHTML += '<div class="kpis">'+
+    tile(con,'Contratos','var(--navy)')+
+    tile(jui,'Juicios','var(--danger)')+
+    tile(act,'Actas y poderes','var(--navy)')+
+    '</div>';
+}
+async function viewTabCont(c){
+  c.innerHTML='<h1 class="pg">Tablero Contable</h1><div class="pgsub">Pólizas, bancos y conciliación</div>';
+  const [mov,cta]=await Promise.all([
+    cnt('movimientos_bancarios'), cnt('tesoreria_cuentas')
+  ]);
+  c.innerHTML += '<div class="kpis">'+
+    tile(mov,'Mov. bancarios','var(--teal)')+
+    tile(cta,'Cuentas','var(--navy)')+
+    '</div>';
+}
+async function viewTabFisc(c){
+  c.innerHTML='<h1 class="pg">Tablero Fiscal</h1><div class="pgsub">Cumplimiento, REPSE y previsión social</div>';
+  const tot=await cnt('compliance_empresa',[['aplica',true]]);
+  const ok=await cnt('compliance_empresa',[['aplica',true],['cumplido',true]]);
+  const pct=tot?Math.round(ok/tot*100):0;
+  const [alr,ren,prev]=await Promise.all([
+    cnt('alertas_repse'), cnt('renovaciones'), cnt('prevision_social')
+  ]);
+  c.innerHTML += '<div class="kpis">'+
+    tile(pct+'%','Cumplimiento',sem(pct,'pct'))+
+    tile(alr,'Alertas REPSE',sem(alr,'alert'))+
+    tile(ren,'Renovaciones','var(--wait)')+
+    tile(prev,'Previsión social','var(--navy)')+
+    '</div>';
+}
+async function viewTabTes(c){
+  c.innerHTML='<h1 class="pg">Tablero Tesorería</h1><div class="pgsub">Cuentas, cobranza y pagos</div>';
+  const [cta,cob,pag]=await Promise.all([
+    cnt('tesoreria_cuentas'), cnt('cobranza'), cnt('pagos')
+  ]);
+  c.innerHTML += '<div class="kpis">'+
+    tile(cta,'Cuentas','var(--navy)')+
+    tile(cob,'Cobranza','var(--teal)')+
+    tile(pag,'Pagos','var(--wait)')+
+    '</div>';
+}
+async function viewTabAdm(c){
+  c.innerHTML='<h1 class="pg">Tablero Administración</h1><div class="pgsub">Empresas del grupo, gastos y personal interno</div>';
+  const [emp,gas,per,ofi]=await Promise.all([
+    cnt('empresas'), cnt('gastos'), cnt('perfiles'), cnt('oficinas')
+  ]);
+  c.innerHTML += '<div class="kpis">'+
+    tile(emp,'Empresas','var(--navy)')+
+    tile(gas,'Gastos','var(--teal)')+
+    tile(per,'Personal','var(--navy)')+
+    tile(ofi,'Oficinas','var(--wait)')+
+    '</div>';
+}
+
+function exportContentCSV(){
+  var t=document.querySelector('#content table');
+  if(!t){ alert('No hay tabla para exportar en esta vista.'); return; }
+  var NL=String.fromCharCode(10);
+  var BOM=String.fromCharCode(65279);
+  var csv=[];
+  t.querySelectorAll('tr').forEach(function(tr){
+    var cells=[].slice.call(tr.querySelectorAll('th,td')).map(function(td){
+      var s=(td.innerText||'');
+      s=s.split(String.fromCharCode(13)).join(' ');
+      s=s.split(String.fromCharCode(10)).join(' ');
+      s=s.split(String.fromCharCode(9)).join(' ');
+      while(s.indexOf('  ')>=0){ s=s.split('  ').join(' '); }
+      s=s.trim();
+      s=s.split('"').join('""');
+      return '"'+s+'"';
+    });
+    csv.push(cells.join(','));
+  });
+  var blob=new Blob([BOM+csv.join(NL)],{type:'text/csv;charset=utf-8;'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url; a.download='PRM360_export.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+async function viewBusqueda(c, term){
+  term=(term||'').trim();
+  if(!term){ c.innerHTML='<h1 class="pg">Búsqueda</h1><div class="empty">Escribe un RFC o nombre y presiona Enter.</div>'; return; }
+  var sources=[
+    { t:'Clientes', head:['Razón social','RFC','Grupo'], cols:['razon_social','rfc','grupo'],
+      p:sb.from('clientes').select('razon_social,rfc,grupo').or('razon_social.ilike.%'+term+'%,rfc.ilike.%'+term+'%').limit(20) },
+    { t:'Clientes (fiscal)', head:['Razón social','RFC','Grupo'], cols:['razon_social','rfc','grupo'],
+      p:sb.from('clientes_fiscal').select('razon_social,rfc,grupo').or('razon_social.ilike.%'+term+'%,rfc.ilike.%'+term+'%').limit(20) },
+    { t:'Trabajadores', head:['Nombre','NSS','RFC','Cliente'], cols:['nombre','nss','rfc','cliente_nombre'],
+      p:sb.from('trabajadores').select('nombre,nss,rfc,cliente_nombre').or('nombre.ilike.%'+term+'%,rfc.ilike.%'+term+'%,nss.ilike.%'+term+'%').limit(20) },
+    { t:'Empresas', head:['Razón social','RFC','Estatus'], cols:['razon_social','rfc','estatus'],
+      p:sb.from('empresas').select('razon_social,rfc,estatus').or('razon_social.ilike.%'+term+'%,rfc.ilike.%'+term+'%').limit(20) },
+    { t:'Contratos', head:['Folio','Título','Estatus'], cols:['folio','titulo','estatus'],
+      p:sb.from('contratos').select('folio,titulo,estatus').or('folio.ilike.%'+term+'%,titulo.ilike.%'+term+'%').limit(20) }
+  ];
+  var results=await Promise.all(sources.map(function(s){
+    return s.p.then(function(r){ return { s:s, rows:(r&&r.data)||[] }; }).catch(function(){ return { s:s, rows:[] }; });
+  }));
+  var html='<h1 class="pg">Resultados: "'+esc(term)+'"</h1>';
+  var any=false;
+  results.forEach(function(res){
+    if(!res.rows.length) return;
+    any=true;
+    html+='<div class="card"><h3>'+esc(res.s.t)+'</h3><div class="body"><table><tr>';
+    res.s.head.forEach(function(h){ html+='<th>'+esc(h)+'</th>'; });
+    html+='</tr>';
+    res.rows.forEach(function(row){
+      html+='<tr>';
+      res.s.cols.forEach(function(col){ html+='<td>'+esc(row[col])+'</td>'; });
+      html+='</tr>';
+    });
+    html+='</table></div></div>';
+  });
+  if(!any) html+='<div class="empty">Sin coincidencias</div>';
+  c.innerHTML=html;
+}
+
+/* ===== Combos por área ===== */
+async function viewTrabajadoresCombo(c){ comboTabs(c,'Trabajadores · IMSS',[{label:'Ficha / IMSS',fn:viewTrabajadores},{label:'Contrato individual',fn:viewContratoIndividual},{label:'NOM-035',fn:viewNom035},{label:'Plan de previsión (firmado)',fn:viewAdhesiones}]); }
+async function viewTramitesCombo(c){ comboTabs(c,'Trámites',[{label:'Tablero',fn:viewTablero},{label:'Tareas / entregables',fn:viewTareas},{label:'Bitácora',fn:viewBitacora},{label:'Captura',fn:viewCaptura},{label:'Movimientos',fn:viewMovimientos}]); }
+async function viewCorporativoCombo(c){ comboTabs(c,'Corporativo',[{label:'Actas y poderes',fn:viewActas},{label:'Contratos',fn:viewContratos}]); }
+async function viewBancosCombo(c){ comboTabs(c,'Bancos',[{label:'Movimientos bancarios',fn:viewMovBancarios},{label:'Cuentas',fn:viewCuentas}]); }
+async function viewCumplimientoCombo(c){ comboTabs(c,'Cumplimiento',[{label:'Cumplimiento / REPSE',fn:viewCompliance},{label:'Renovaciones',fn:viewRenovaciones}]); }
+async function viewPrevisionCombo(c){ comboTabs(c,'Previsión social',[{label:'Plan por empresa',fn:viewPrevisionSocial},{label:'Adhesiones firmadas',fn:viewAdhesiones}]); }
+async function viewEmpresasCombo(c){ comboTabs(c,'Empresas del grupo',[{label:'Empresas',fn:viewEmpresas},{label:'Plan de previsión social',fn:viewPrevisionSocial},{label:'Sustancia / cumplimiento',fn:viewSustancia}]); }
+async function viewGastosCombo(c){ comboTabs(c,'Gastos y costeo',[{label:'Gastos',fn:viewGastos},{label:'Catálogo',fn:viewCatalogoGastos}]); }
+
+/* ===== Leaf views nuevas ===== */
+async function viewNom035(c){
+  const {data,error}=await sb.from('nom035_respuestas').select('folio,area,fecha,total,nivel,guia').order('fecha',{ascending:false,nullsFirst:false}).limit(200);
+  if(error) throw error;
+  const rows=(data||[]).map(x=>'<tr><td>'+esc(x.folio||'')+'</td><td>'+esc(x.area||'')+'</td><td>'+esc(x.fecha||'')+'</td><td class="num-r">'+(x.total==null?'—':x.total)+'</td><td><span class="tag">'+esc(x.nivel||'')+'</span></td><td>'+esc(x.guia||'')+'</td></tr>').join('');
+  c.innerHTML='<h1 class="pg">NOM-035</h1><div class="pgsub">'+(data?data.length:0)+' cuestionarios (máx 200)</div>'+
+    '<div class="card"><table><thead><tr><th>Folio</th><th>Área</th><th>Fecha</th><th class="num-r">Total</th><th>Nivel</th><th>Guía</th></tr></thead><tbody>'+
+    (rows||'<tr><td colspan=6 class="empty">Sin cuestionarios NOM-035</td></tr>')+'</tbody></table></div>';
+}
+async function viewCatalogoGastos(c){
+  const {data,error}=await sb.from('gastos_catalogo').select('clave,nombre,tipo,activo').order('nombre').limit(200);
+  if(error) throw error;
+  const rows=(data||[]).map(x=>'<tr><td>'+esc(x.clave||'')+'</td><td>'+esc(x.nombre||'')+'</td><td><span class="tag '+(x.tipo==='fijo'?'on':'off')+'">'+esc(x.tipo||'')+'</span></td><td><span class="tag '+(x.activo?'on':'off')+'">'+(x.activo?'Sí':'No')+'</span></td></tr>').join('');
+  c.innerHTML='<h1 class="pg">Catálogo de gastos</h1><div class="pgsub">'+(data?data.length:0)+' conceptos (máx 200)</div>'+
+    '<div class="card"><table><thead><tr><th>Clave</th><th>Nombre</th><th>Tipo</th><th>Activo</th></tr></thead><tbody>'+
+    (rows||'<tr><td colspan=4 class="empty">Sin catálogo</td></tr>')+'</tbody></table></div>';
+}

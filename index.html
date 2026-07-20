@@ -24,7 +24,8 @@
 #nav a.dm-link .dm-dot{width:7px;height:7px;flex:none;border-radius:50%;background:#8ea3ac}
 #nav a.dm-link .dm-dot.dm-dot-n{background:#33c06a}
 #nav a.dm-link .dm-tx{flex:1}
-@media(max-width:760px){#nav.nav{width:292px}}</style>
+@media(max-width:760px){#nav.nav{width:292px}}
+@media print{ #nav,.topbar{display:none!important} #content{padding:0!important} .no-print{display:none!important} }</style>
 </head>
 <body>
 <div id="login">
@@ -50,6 +51,9 @@
       <span id="who"></span>
       <span class="rolebadge" id="roleBadge">—</span>
       <select id="deptPreview" class="hidden" style="background:var(--gold);color:#fff;border:0;border-radius:20px;font-size:11px;font-weight:700;padding:3px 8px;cursor:pointer"></select>
+      <input id="gsearch" placeholder="Buscar RFC o nombre…" style="padding:6px 10px;border:0;border-radius:8px;font-size:12.5px;width:180px">
+      <span class="linkout" id="btnExport" title="Exportar a Excel/CSV">⬇ Exportar</span>
+      <span class="linkout" id="btnPrint" title="Imprimir / PDF">🖨</span>
       <span class="linkout" id="btnLogout">Salir</span>
     </div>
   </div>
@@ -59,6 +63,7 @@
   </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
