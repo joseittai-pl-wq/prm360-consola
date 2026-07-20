@@ -150,14 +150,14 @@ function renderPendiente(){
 
 const MERGE_AREAS = [
   ['Dirección', [ ['Tablero General','tabgen','n'],['Rentabilidad','rentabilidad','n'],['Frentes · semáforos','frentes','n'] ]],
-  ['Comercial', [ ['Tablero Comercial','tabcom','n'],['Cotizador de nómina','cotizador','p'],['Solicitud (PDF / editable)','solicitudpdf','p'],['Checklist de documentos','__soon_checklistcom','p'],['Presentaciones','__soon_presentaciones','p'],['Tablero de clientes','clientes','p'],['Boletín','boletin','p'] ]],
-  ['Vinculación', [ ['Tablero Vinculación','tabvinc','n'],['Clientes','clientescombo','p'],['Trabajadores · IMSS','trabajadorescombo','p'],['Onboarding / KYC','onboarding','n'],['Validación + KYC (CSF/32-D/69)','kyc','p'],['Checklist de documentos','__soon_checklistvinc','p'],['Control de entregables','entregables','p'] ]],
+  ['Comercial', [ ['Tablero Comercial','tabcom','n'],['Cotizador de nómina','cotizador','p'],['Solicitud (PDF / editable)','solicitudpdf','p'],['Checklist de documentos','checklistdocs','p'],['Presentaciones','bibliopresenta','p'],['Tablero de clientes','clientes','p'],['Boletín','boletin','p'] ]],
+  ['Vinculación', [ ['Tablero Vinculación','tabvinc','n'],['Clientes','clientescombo','p'],['Trabajadores · IMSS','trabajadorescombo','p'],['Onboarding / KYC','onboarding','n'],['Validación + KYC (CSF/32-D/69)','kyc','p'],['Checklist de documentos','checklistdocs','p'],['Control de entregables','entregables','p'] ]],
   ['Operaciones', [ ['Tablero Operaciones','tabop','n'],['Trámites','tramitescombo','p'],['Facturación','facturacion','p'],['Nómina NOMEN','__soon_nomen','p'],['Layout de dispersión','__soon_layout','p'],['Expediente de Materialidad','materialidad','p'],['Conciliación disp. ↔ CFDI','__soon_concilia','p'],['Descargas SAT / CFDI','descargas','n'],['Calendario de vencimientos','calendario','n'] ]],
-  ['Jurídico', [ ['Tablero Jurídico','tabjur','n'],['Corporativo','corporativocombo','p'],['Bitácora de firmas','bitacorafirmas','p'],['Vigencias / Renovaciones','renovaciones','p'],['Plantillas de contratos','__soon_plantillas','p'],['Juicios / defensa fiscal','juicios','p'],['Compliance jurídico','compliance','n'] ]],
-  ['Fiscal', [ ['Tablero Fiscal','tabfisc','n'],['Cumplimiento','cumplimientocombo','p'],['Calendario fiscal','calfiscal','p'],['Calendario REPSE (ICSOE/SISUB)','__soon_calrepse','p'],['Previsión social','previsioncombo','p'],['NOM-035','nom035','p'] ]],
+  ['Jurídico', [ ['Tablero Jurídico','tabjur','n'],['Corporativo','corporativocombo','p'],['Bitácora de firmas','bitacorafirmas','p'],['Vigencias / Renovaciones','renovaciones','p'],['Gobierno y Padrones','padrones','n'],['Licitaciones y contratos','licitaciones','n'],['Plantillas de contratos','biblioplantillas','p'],['Juicios / defensa fiscal','juicios','p'],['Compliance jurídico','compliance','n'] ]],
+  ['Fiscal', [ ['Tablero Fiscal','tabfisc','n'],['Cumplimiento','cumplimientocombo','p'],['Calendario fiscal','calfiscal','p'],['Calendario REPSE (ICSOE/SISUB)','calrepse','p'],['Previsión social','previsioncombo','p'],['NOM-035','nom035','p'],['Cuestionario NOM-035','nom035cuest','n'] ]],
   ['Contabilidad', [ ['Tablero Contable','tabcont','n'],['Contabilidad / Pólizas','contabilidad','n'],['Captura de servicios','captura','p'],['Descarga XML / CFDI','descargas','n'],['Bancos','bancoscombo','p'],['Motor de conciliación','__soon_motorconcilia','p'] ]],
   ['Tesorería', [ ['Tablero Tesorería','tabtes','n'],['Cobranza','cobranza','n'],['Cuentas por pagar','cxp','p'],['Bancos y flujo','flujo','p'],['Cuentas','cuentas','p'],['Pagos','pagos','p'],['Calendario fiscal','calfiscal','p'] ]],
-  ['Administración', [ ['Tablero Administración','tabadm','n'],['Empresas del grupo','empresascombo','p'],['Gastos y costeo','gastoscombo','p'],['Importador de reportes','importador','n'],['Accesos y vinculación','accesos','n'],['Contraloría','contraloria','p'],['Organigrama y matrices','__soon_organigrama','p'],['Directorio','directorio','n'],['Personal interno','equipo','n'],['Reportes','__soon_reportes','p'] ]]
+  ['Administración', [ ['Tablero Administración','tabadm','n'],['Empresas del grupo','empresascombo','p'],['Gastos y costeo','gastoscombo','p'],['Costeo por cliente','costeo','n'],['Importador de reportes','importador','n'],['Accesos y vinculación','accesos','n'],['Contraloría','contraloria','p'],['Organigrama y matrices','biblioorg','p'],['Directorio','directorio','n'],['Personal interno','equipo','n'],['Reportes','reportes','p'] ]]
 ];
 
 async function renderInterno(rol){
@@ -260,6 +260,10 @@ async function view(v, rol, label){
     if(v==='empresascombo') return await viewEmpresasCombo(c);
     if(v==='gastoscombo')  return await viewGastosCombo(c);
     if(v==='nom035')       return await viewNom035(c);
+    if(v==='nom035cuest')  return await viewNom035Cuest(c);
+    if(v==='biblioplantillas') return await viewBiblioteca(c,'plantillas_contratos','Plantillas de contratos');
+    if(v==='bibliopresenta') return await viewBiblioteca(c,'presentaciones','Presentaciones');
+    if(v==='biblioorg')    return await viewBiblioteca(c,'organigrama','Organigrama y matrices');
     if(v==='catalogogastos') return await viewCatalogoGastos(c);
     if(v==='busqueda') return await viewBusqueda(c, window.__gterm||'');
     if(v==='facturacion')  return await viewFacturacion(c);
@@ -272,6 +276,12 @@ async function view(v, rol, label){
     if(v==='solicitudpdf') return await viewSolicitudPdf(c);
     if(v==='entregables')  return await viewEntregables(c);
     if(v==='contraloria')  return await viewContraloria(c);
+    if(v==='calrepse')     return await viewCalRepse(c);
+    if(v==='checklistdocs') return await viewChecklistDocs(c);
+    if(v==='reportes')     return await viewReportes(c);
+    if(v==='costeo')       return await viewCosteo(c);
+    if(v==='padrones')     return await viewPadrones(c);
+    if(v==='licitaciones') return await viewLicitaciones(c);
     if(v && v.indexOf('__soon_')===0) return viewSoon(c, label);
     if(v==='resumen')      return await viewResumen(c);
     if(v==='kpis')         return await viewKpis360(c);
@@ -3124,4 +3134,788 @@ async function viewContraloria(c){
       tile(oVenc,'Obligaciones fiscales vencidas',sem(oVenc,'alert'))+
     '</div>'+
     '<div class="card"><h3>Excepciones que requieren atención</h3><div class="body">'+excHtml+'</div></div>';
+}
+
+/* ===== Calendario REPSE (ICSOE / SISUB) ===== */
+async function viewCalRepse(c, ftipo, fcuat){
+  ftipo=ftipo||''; fcuat=fcuat||'';
+  let q=sb.from('repse_informativas').select('id,registro_patronal,tipo,cuatrimestre,anio,estatus,fecha_presentacion,acuse,notas')
+    .order('anio').order('cuatrimestre').order('notas').limit(300);
+  if(ftipo) q=q.eq('tipo',ftipo);
+  if(fcuat) q=q.eq('cuatrimestre',Number(fcuat));
+  const {data,error}=await q;
+  if(error) throw error;
+  const lista=data||[];
+  const porP=lista.filter(x=>x.estatus==='por_presentar').length;
+  const venc=lista.filter(x=>x.estatus==='vencida_revisar').length;
+  const pres=lista.filter(x=>x.estatus==='presentada').length;
+  const tagEst=e=> e==='presentada'?'on':(e==='vencida_revisar'?'off':'repse');
+  const lblEst=e=> e==='vencida_revisar'?'vencida · revisar':(e==='por_presentar'?'por presentar':e);
+  const rows=lista.map(x=>{
+    const btn=x.estatus!=='presentada'?'<button class="mini rp-pres" data-id="'+x.id+'">Presentada</button>':'';
+    return '<tr><td><b>'+esc(x.notas||'')+'</b></td><td>'+esc(x.registro_patronal||'')+'</td>'+
+      '<td><span class="tag repse">'+esc(x.tipo||'')+'</span></td>'+
+      '<td>C'+esc(x.cuatrimestre)+' · '+esc(x.anio)+'</td>'+
+      '<td><span class="tag '+tagEst(x.estatus)+'">'+esc(lblEst(x.estatus||''))+'</span></td>'+
+      '<td>'+esc(x.fecha_presentacion||'—')+'</td>'+
+      '<td><input class="rp-acuse" data-id="'+x.id+'" value="'+esc(x.acuse||'')+'" placeholder="Acuse" style="width:130px"></td>'+
+      '<td>'+btn+'</td></tr>';
+  }).join('');
+  const selTipo='<label>Tipo<select id="rp_tipo"><option value="">Todos</option>'+
+    '<option value="ICSOE"'+(ftipo==='ICSOE'?' selected':'')+'>ICSOE</option>'+
+    '<option value="SISUB"'+(ftipo==='SISUB'?' selected':'')+'>SISUB</option></select></label>';
+  const selCuat='<label>Cuatrimestre<select id="rp_cuat"><option value="">Todos</option>'+
+    [1,2,3].map(n=>'<option value="'+n+'"'+(String(fcuat)===String(n)?' selected':'')+'>C'+n+'</option>').join('')+'</select></label>';
+  c.innerHTML='<h1 class="pg">Calendario REPSE (ICSOE / SISUB)</h1>'+
+    '<div class="pgsub">ICSOE (IMSS) y SISUB (Infonavit) cuatrimestrales por empresa REPSE — se siembran automáticamente.</div>'+
+    '<div class="kpis">'+
+      tile(porP,'Por presentar',porP>0?'#e67e22':'var(--ok)')+
+      tile(venc,'Vencidas por revisar',venc>0?'#c0392b':'var(--ok)')+
+      tile(pres,'Presentadas','var(--ok)')+
+    '</div>'+
+    '<div class="card"><div class="body"><div class="frm">'+selTipo+selCuat+'</div></div></div>'+
+    '<div class="card"><table><thead><tr><th>Empresa</th><th>RFC</th><th>Tipo</th><th>Cuatrimestre</th><th>Estatus</th><th>Fecha presentación</th><th>Acuse</th><th></th></tr></thead><tbody>'+
+    (rows||'<tr><td colspan=8 class="empty">Sin informativas registradas</td></tr>')+'</tbody></table></div>';
+  const rerender=()=>viewCalRepse(c, document.getElementById('rp_tipo').value, document.getElementById('rp_cuat').value);
+  document.getElementById('rp_tipo').onchange=rerender;
+  document.getElementById('rp_cuat').onchange=rerender;
+  c.querySelectorAll('input.rp-acuse').forEach(i=>i.onblur=async()=>{
+    const {error:e}=await sb.from('repse_informativas').update({acuse:i.value.trim()||null}).eq('id',i.dataset.id);
+    if(e) alert('Error: '+e.message);
+  });
+  c.querySelectorAll('button.rp-pres').forEach(b=>b.onclick=async()=>{
+    b.disabled=true;
+    const {error:e}=await sb.from('repse_informativas').update({estatus:'presentada',fecha_presentacion:matHoy()}).eq('id',b.dataset.id);
+    if(e){ alert('Error: '+e.message); b.disabled=false; return; }
+    rerender();
+  });
+}
+
+/* ===== Checklist de documentos (catálogo editable) ===== */
+async function viewChecklistDocs(c){
+  comboTabs(c,'Checklist de documentos',[
+    {label:'Expediente (Vinculación)',fn:function(b){ chkDocsAmbito(b,'expediente'); }},
+    {label:'Cotización (Comercial)',fn:function(b){ chkDocsAmbito(b,'cotizacion'); }}
+  ]);
+}
+async function chkDocsAmbito(body, ambito){
+  body.innerHTML='<div class="loader">Cargando…</div>';
+  const {data,error}=await sb.from('checklist_documentos').select('id,orden,documento,obligatorio,activo').eq('ambito',ambito).eq('activo',true).order('orden');
+  if(error){ body.innerHTML='<div class="empty">Error: '+esc(error.message)+'</div>'; return; }
+  const lista=data||[];
+  const rows=lista.map(x=>'<tr><td>'+(x.orden!=null?x.orden:'')+'</td>'+
+    '<td><input class="cd-doc" data-id="'+x.id+'" value="'+esc(x.documento||'')+'" style="min-width:280px;width:100%"></td>'+
+    '<td style="text-align:center"><input type="checkbox" class="cd-obl" data-id="'+x.id+'"'+(x.obligatorio?' checked':'')+'></td>'+
+    '<td><button class="mini cd-del" data-id="'+x.id+'">Quitar</button></td></tr>').join('');
+  body.innerHTML='<div class="pgsub">Catálogo editable — ajústalo a tu checklist oficial; los cambios aplican de inmediato.</div>'+
+    '<div class="card"><table><thead><tr><th>#</th><th>Documento</th><th>Obligatorio</th><th></th></tr></thead><tbody>'+
+    (rows||'<tr><td colspan=4 class="empty">Sin documentos en este checklist</td></tr>')+'</tbody></table>'+
+    '<div class="body"><div class="frm"><label>Nuevo documento<input id="cd_new" style="min-width:280px"></label></div>'+
+    '<div style="margin-top:8px"><button class="btn2" id="cd_add">➕ Agregar</button> <span id="cd_msg" style="font-size:12px;margin-left:8px"></span></div></div></div>';
+  body.querySelectorAll('input.cd-doc').forEach(i=>i.onblur=async()=>{
+    const v=i.value.trim(); if(!v) return;
+    const {error:e}=await sb.from('checklist_documentos').update({documento:v}).eq('id',i.dataset.id);
+    if(e) alert('Error: '+e.message);
+  });
+  body.querySelectorAll('input.cd-obl').forEach(i=>i.onchange=async()=>{
+    const {error:e}=await sb.from('checklist_documentos').update({obligatorio:i.checked}).eq('id',i.dataset.id);
+    if(e) alert('Error: '+e.message);
+  });
+  body.querySelectorAll('button.cd-del').forEach(b=>b.onclick=async()=>{
+    b.disabled=true;
+    const {error:e}=await sb.from('checklist_documentos').update({activo:false}).eq('id',b.dataset.id);
+    if(e){ alert('Error: '+e.message); b.disabled=false; return; }
+    chkDocsAmbito(body, ambito);
+  });
+  document.getElementById('cd_add').onclick=async()=>{
+    const msg=document.getElementById('cd_msg');
+    const v=document.getElementById('cd_new').value.trim();
+    if(!v){ msg.textContent='Escribe el nombre del documento.'; msg.style.color='var(--danger)'; return; }
+    const next=lista.reduce((m,x)=>Math.max(m,Number(x.orden)||0),0)+1;
+    msg.textContent='Guardando…'; msg.style.color='var(--muted)';
+    const {error:e}=await sb.from('checklist_documentos').insert({ambito:ambito, orden:next, documento:v, obligatorio:true, activo:true});
+    if(e){ msg.textContent='Error: '+e.message; msg.style.color='var(--danger)'; return; }
+    chkDocsAmbito(body, ambito);
+  };
+}
+
+/* ===== Reportes ejecutivos ===== */
+function repLetterhead(titulo){
+  const f=new Date().toLocaleDateString('es-MX',{year:'numeric',month:'long',day:'numeric'});
+  return '<div style="text-align:center;margin-bottom:16px">'+
+    '<div style="font-size:18px;font-weight:800;letter-spacing:1px">PR&amp;M Business Group</div>'+
+    '<div style="font-size:14px;margin-top:2px">'+titulo+'</div>'+
+    '<div style="font-size:12px;color:#555;margin-top:2px">'+f+'</div></div>';
+}
+function repBtns(){
+  return '<div class="no-print" style="margin-bottom:12px;display:flex;gap:8px">'+
+    '<button class="btn2" id="rep_print">🖨 Imprimir</button>'+
+    '<button class="btn2 ghost" id="rep_volver">← Volver</button></div>';
+}
+function repBind(c){
+  document.getElementById('rep_print').onclick=()=>window.print();
+  document.getElementById('rep_volver').onclick=()=>viewReportes(c);
+}
+async function viewReportes(c){
+  c.innerHTML='<h1 class="pg">Reportes ejecutivos</h1><div class="pgsub">Reportes imprimibles para juntas de dirección y seguimiento semanal</div>'+
+    '<div class="card"><h3>Generar reporte</h3><div class="body" style="display:flex;gap:8px;flex-wrap:wrap">'+
+    '<button class="btn2" id="rep_sem">📄 Reporte ejecutivo semanal</button>'+
+    '<button class="btn2" id="rep_dir">📄 Reporte de dirección (KPIs)</button>'+
+    '</div></div>';
+  document.getElementById('rep_sem').onclick=()=>repSemanal(c);
+  document.getElementById('rep_dir').onclick=()=>repDireccion(c);
+}
+async function repSemanal(c){
+  c.innerHTML='<div class="loader">Generando reporte…</div>';
+  const hoy=new Date().toISOString().slice(0,10);
+  const [tareas,renov,emps,comp,fact,mat,cxp,calf]=await Promise.all([
+    sb.from('tareas').select('estatus,prioridad,vence').then(r=>r.data||[]).catch(()=>[]),
+    sb.from('renovaciones').select('estatus').then(r=>r.data||[]).catch(()=>[]),
+    sb.from('empresas').select('estatus').then(r=>r.data||[]).catch(()=>[]),
+    sb.from('compliance_empresa').select('aplica,cumplido').eq('aplica',true).then(r=>r.data||[]).catch(()=>[]),
+    sb.from('facturacion_conceptos').select('estatus,total').then(r=>r.data||[]).catch(()=>[]),
+    sb.from('materialidad_expedientes').select('estatus,fecha_limite').then(r=>r.data||[]).catch(()=>[]),
+    sb.from('cuentas_por_pagar').select('estatus,fecha_vence').then(r=>r.data||[]).catch(()=>[]),
+    sb.from('calendario_fiscal').select('estatus,fecha').then(r=>r.data||[]).catch(()=>[])
+  ]);
+  const cerradas=['cerrada','cancelada','completada'];
+  const tPend=tareas.filter(x=>cerradas.indexOf(String(x.estatus||''))<0).length;
+  const rVenc=renov.filter(x=>String(x.estatus||'').toLowerCase().indexOf('venc')>=0).length;
+  const eAct=emps.filter(x=>x.estatus==='activa').length, eTot=emps.length;
+  const cTot=comp.length, cCum=comp.filter(x=>x.cumplido).length, cFal=cTot-cCum;
+  const pct=cTot>0?Math.round(cCum*100/cTot):100;
+  const fBorr=fact.filter(x=>x.estatus==='borrador').length;
+  const mAb=mat.filter(x=>x.estatus==='abierto').length;
+  const cxpV=cxp.filter(x=>x.fecha_vence&&String(x.fecha_vence).slice(0,10)<hoy&&x.estatus!=='pagado').length;
+  const oVenc=calf.filter(x=>x.fecha&&String(x.fecha).slice(0,10)<hoy&&x.estatus==='pendiente').length;
+  const inds=[
+    ['Pendientes abiertos',tPend],
+    ['Renovaciones vencidas',rVenc],
+    ['Empresas activas',eAct+' de '+eTot],
+    ['Cumplimiento',pct+'%'],
+    ['Facturación sin validar',fBorr],
+    ['Expedientes de materialidad abiertos',mAb],
+    ['Cuentas por pagar vencidas',cxpV],
+    ['Obligaciones fiscales vencidas',oVenc]
+  ];
+  const exc=[];
+  if(tPend>0) exc.push('⚠ '+tPend+' tarea(s) pendientes abiertas — Operación diaria');
+  if(rVenc>0) exc.push('⚠ '+rVenc+' renovaciones vencidas — Jurídico');
+  if(cFal>0) exc.push('⚠ '+cFal+' obligaciones de compliance sin cumplir ('+pct+'% de cumplimiento) — Compliance');
+  if(fBorr>0) exc.push('⚠ '+fBorr+' conceptos de facturación en borrador sin validar — Operaciones');
+  if(mAb>0) exc.push('⚠ '+mAb+' expedientes de materialidad abiertos — Operaciones');
+  if(cxpV>0) exc.push('⚠ '+cxpV+' cuentas por pagar vencidas — Tesorería');
+  if(oVenc>0) exc.push('⚠ '+oVenc+' obligaciones fiscales vencidas — Fiscal');
+  c.innerHTML=repBtns()+repLetterhead('Reporte ejecutivo semanal')+
+    '<h3 style="font-size:14px;margin:14px 0 6px">Indicadores</h3>'+
+    '<table><tbody>'+inds.map(x=>'<tr><td>'+x[0]+'</td><td class="num-r"><b>'+x[1]+'</b></td></tr>').join('')+'</tbody></table>'+
+    '<h3 style="font-size:14px;margin:14px 0 6px">Excepciones que requieren atención</h3>'+
+    (exc.length
+      ? exc.map(t=>'<div style="padding:6px 4px;border-bottom:1px solid #eee;font-size:13px">'+t+'</div>').join('')
+      : '<div class="empty">Sin excepciones — todo en orden</div>')+
+    '<div style="margin-top:24px;font-size:12px;color:#555">Generado desde PRM 360 · Contraloría</div>';
+  repBind(c);
+}
+async function repDireccion(c){
+  c.innerHTML='<div class="loader">Generando reporte…</div>';
+  const [empT,empA,repse,cli,trab]=await Promise.all([
+    cnt('empresas'), cnt('empresas',[['estatus','activa']]), cnt('empresas',[['repse',true]]),
+    cnt('clientes'), cnt('trabajadores',[['estatus','activo']])
+  ]);
+  const [comp,fact,renov,calf]=await Promise.all([
+    sb.from('compliance_empresa').select('aplica,cumplido').eq('aplica',true).then(r=>r.data||[]).catch(()=>[]),
+    sb.from('facturacion_conceptos').select('estatus,total').then(r=>r.data||[]).catch(()=>[]),
+    sb.from('renovaciones').select('estatus').then(r=>r.data||[]).catch(()=>[]),
+    sb.from('calendario_fiscal').select('estatus,fecha').then(r=>r.data||[]).catch(()=>[])
+  ]);
+  const cTot=comp.length, cCum=comp.filter(x=>x.cumplido).length;
+  const pct=cTot>0?Math.round(cCum*100/cTot):100;
+  const fSum=fact.reduce((s,x)=>s+(Number(x.total)||0),0);
+  const rVenc=renov.filter(x=>String(x.estatus||'').toLowerCase().indexOf('venc')>=0).length;
+  const prox7=calf.filter(x=>{const d=matDias(x.fecha); return x.estatus==='pendiente'&&d!==null&&d>=0&&d<=7;}).length;
+  const kpis=[
+    ['Empresas activas',empA+' / '+empT],
+    ['Empresas REPSE',repse],
+    ['Clientes',cli],
+    ['Trabajadores activos',trab],
+    ['Cumplimiento',pct+'%'],
+    ['Facturación (conceptos)',fact.length+' · '+mny(fSum)],
+    ['Renovaciones vencidas',rVenc],
+    ['Obligaciones fiscales próximas 7 días',prox7]
+  ];
+  c.innerHTML=repBtns()+repLetterhead('Reporte de dirección (KPIs)')+
+    '<table><thead><tr><th>Indicador</th><th class="num-r">Valor</th></tr></thead><tbody>'+
+    kpis.map(x=>'<tr><td>'+x[0]+'</td><td class="num-r"><b>'+x[1]+'</b></td></tr>').join('')+
+    '</tbody></table>'+
+    '<div style="margin-top:24px;font-size:12px;color:#555">Generado desde PRM 360 · Administración</div>';
+  repBind(c);
+}
+
+/* ===== Costeo por cliente (prorrateo por ingresos) ===== */
+async function viewCosteo(c){
+  const {data,error}=await sb.rpc('costeo_por_cliente');
+  if(error) throw error;
+  const d=data||{};
+  const gastos=Number(d.gastos_totales)||0, ing=Number(d.ingresos_totales)||0;
+  const margen=ing-gastos;
+  const clientes=Array.isArray(d.clientes)?d.clientes:[];
+  const rows=clientes.map(x=>'<tr><td><b>'+esc(x.razon_social||'')+'</b></td>'+
+    '<td class="num-r">'+mny(x.honorario)+'</td>'+
+    '<td class="num-r">'+mny(x.costo_asignado)+'</td>'+
+    '<td class="num-r"'+(Number(x.margen)<0?' style="color:#c0392b;font-weight:700"':'')+'>'+mny(x.margen)+'</td></tr>').join('');
+  c.innerHTML='<h1 class="pg">Costeo por cliente (prorrateo por ingresos)</h1>'+
+    '<div class="pgsub">Fase 2 del costeo: los gastos se prorratean entre clientes según su peso en los ingresos.</div>'+
+    '<div class="kpis">'+
+      tile(mny(gastos),'Gastos totales','var(--navy)')+
+      tile(mny(ing),'Ingresos (honorarios activos)','var(--teal)')+
+      tile(mny(margen),'Margen global',margen>0?'var(--ok)':(margen<0?'#c0392b':'var(--navy)'))+
+    '</div>'+
+    (clientes.length
+      ? '<div class="card"><table><thead><tr><th>Cliente</th><th class="num-r">Honorario</th><th class="num-r">Costo asignado</th><th class="num-r">Margen</th></tr></thead><tbody>'+rows+'</tbody></table></div>'
+      : '<div class="empty">Aún sin servicios activos capturados — en cuanto Captura registre honorarios y Gastos tenga movimientos, este reporte se calcula solo.</div>');
+}
+
+/* ===== Biblioteca de documentos (plantillas / presentaciones / organigrama) ===== */
+async function viewBiblioteca(c, seccion, titulo){
+  const {data,error}=await sb.from('biblioteca').select('id,nombre,descripcion,archivo_path,archivo_nombre,creado_en').eq('seccion',seccion).order('creado_en',{ascending:false}).limit(300);
+  if(error) throw error;
+  const rows=(data||[]).map(x=>'<tr><td><b>'+esc(x.nombre||'')+'</b></td><td>'+esc(x.descripcion||'')+'</td>'+
+    '<td>'+(x.archivo_path?'<a href="#" class="bib-dl" data-path="'+esc(x.archivo_path)+'">📎 '+esc(x.archivo_nombre||'archivo')+'</a>':'—')+'</td>'+
+    '<td>'+esc((x.creado_en||'').slice(0,10))+'</td></tr>').join('');
+  c.innerHTML='<h1 class="pg">'+esc(titulo)+'</h1>'+
+    '<div class="pgsub">Biblioteca de documentos del despacho — sube y consulta desde aquí.</div>'+
+    '<div class="card"><h3>Subir documento</h3><div class="body"><div class="frm">'+
+      '<label>Nombre<input id="bib_nombre" placeholder="Nombre del documento"></label>'+
+      '<label>Descripción<input id="bib_desc" placeholder="Descripción (opcional)"></label>'+
+      '<label>&nbsp;<button class="btn2" id="bib_btn">📄 Subir archivo</button></label>'+
+      '<input type="file" id="bib_file" style="display:none">'+
+    '</div><div class="mini" id="bib_msg" style="margin-top:6px"></div></div></div>'+
+    '<div class="card"><table><thead><tr><th>Nombre</th><th>Descripción</th><th>Archivo</th><th>Fecha</th></tr></thead><tbody>'+
+    (rows||'<tr><td colspan=4 class="empty">Aún sin documentos — sube el primero.</td></tr>')+'</tbody></table></div>';
+  const msg=document.getElementById('bib_msg');
+  const fileInp=document.getElementById('bib_file');
+  document.getElementById('bib_btn').onclick=()=>fileInp.click();
+  fileInp.onchange=async()=>{
+    const file=fileInp.files&&fileInp.files[0]; if(!file) return;
+    const nombre=(document.getElementById('bib_nombre').value||'').trim()||file.name;
+    const desc=(document.getElementById('bib_desc').value||'').trim()||null;
+    msg.style.color=''; msg.textContent='Subiendo '+file.name+'…';
+    let limpio=file.name.split('').filter(ch=>/[a-zA-Z0-9._-]/.test(ch)).join('');
+    if(!limpio) limpio='archivo';
+    const path='biblioteca/'+seccion+'/'+Date.now()+'_'+limpio;
+    try{
+      const up=await sb.storage.from('expedientes').upload(path, file);
+      if(up.error) throw up.error;
+      const {error:e2}=await sb.from('biblioteca').insert({seccion:seccion, nombre:nombre, descripcion:desc, archivo_path:path, archivo_nombre:file.name, subido_por:window.__email||null});
+      if(e2) throw e2;
+      viewBiblioteca(c, seccion, titulo);
+    }catch(err){
+      msg.style.color='#c0392b';
+      msg.textContent='No se pudo subir el documento (revisa permisos del almacén o la tabla biblioteca): '+((err&&err.message)||err);
+      fileInp.value='';
+    }
+  };
+  c.querySelectorAll('a.bib-dl').forEach(a=>a.onclick=async(ev)=>{
+    ev.preventDefault();
+    try{
+      const {data:d2,error:e3}=await sb.storage.from('expedientes').createSignedUrl(a.dataset.path, 3600);
+      if(e3) throw e3;
+      window.open(d2.signedUrl);
+    }catch(err){ alert('No se pudo abrir el archivo (permisos de almacén): '+((err&&err.message)||err)); }
+  });
+}
+
+/* ===== Cuestionario NOM-035 · Guía de Referencia II (16 a 50 trabajadores) ===== */
+const N35_OPTS=['Siempre','Casi siempre','Algunas veces','Casi nunca','Nunca'];
+const N35_SECS=[
+  {h:'Para responder las preguntas siguientes considere las condiciones de su centro de trabajo, así como la cantidad y ritmo de trabajo.', items:[
+    [1,'Mi trabajo me exige hacer mucho esfuerzo físico'],
+    [2,'Me preocupa sufrir un accidente en mi trabajo'],
+    [3,'Considero que las actividades que realizo son peligrosas'],
+    [4,'Por la cantidad de trabajo que tengo debo quedarme tiempo adicional a mi turno'],
+    [5,'Por la cantidad de trabajo que tengo debo trabajar sin parar'],
+    [6,'Considero que es necesario mantener un ritmo de trabajo acelerado'],
+    [7,'Mi trabajo exige que esté muy concentrado'],
+    [8,'Mi trabajo requiere que memorice mucha información'],
+    [9,'Mi trabajo exige que atienda varios asuntos al mismo tiempo']
+  ]},
+  {h:'Las preguntas siguientes están relacionadas con las actividades que realiza en su trabajo y las responsabilidades que tiene.', items:[
+    [10,'En mi trabajo soy responsable de cosas de mucho valor'],
+    [11,'Respondo ante mi jefe por los resultados de toda mi área de trabajo'],
+    [12,'En mi trabajo me dan órdenes contradictorias'],
+    [13,'Considero que en mi trabajo me piden hacer cosas innecesarias']
+  ]},
+  {h:'Las preguntas siguientes están relacionadas con el tiempo destinado a su trabajo y sus responsabilidades familiares.', items:[
+    [14,'Trabajo horas extras más de tres veces a la semana'],
+    [15,'Mi trabajo me exige laborar en días de descanso, festivos o fines de semana'],
+    [16,'Considero que el tiempo en el trabajo es mucho y perjudica mis actividades familiares o personales'],
+    [17,'Pienso en las actividades familiares o personales cuando estoy en mi trabajo']
+  ]},
+  {h:'Las preguntas siguientes están relacionadas con las decisiones que puede tomar en su trabajo.', items:[
+    [18,'Mi trabajo permite que desarrolle nuevas habilidades'],
+    [19,'En mi trabajo puedo aspirar a un mejor puesto'],
+    [20,'Durante mi jornada de trabajo puedo tomar pausas cuando las necesito'],
+    [21,'Puedo decidir la velocidad a la que realizo mis actividades en mi trabajo'],
+    [22,'Puedo cambiar el orden de las actividades que realizo en mi trabajo']
+  ]},
+  {h:'Las preguntas siguientes están relacionadas con la capacitación e información que recibe sobre su trabajo.', items:[
+    [23,'Me informan con claridad cuáles son mis funciones'],
+    [24,'Me explican claramente los resultados que debo obtener en mi trabajo'],
+    [25,'Me informan con quién puedo resolver problemas o asuntos de trabajo'],
+    [26,'Me permiten asistir a capacitaciones relacionadas con mi trabajo'],
+    [27,'Recibo capacitación útil para hacer mi trabajo']
+  ]},
+  {h:'Las preguntas siguientes se refieren a las relaciones con sus compañeros de trabajo y su jefe.', items:[
+    [28,'Mi jefe tiene en cuenta mis puntos de vista y opiniones'],
+    [29,'Mi jefe ayuda a solucionar los problemas que se presentan en el trabajo'],
+    [30,'Puedo confiar en mis compañeros de trabajo'],
+    [31,'Cuando tenemos que realizar trabajo de equipo los compañeros colaboran'],
+    [32,'Mis compañeros de trabajo me ayudan cuando tengo dificultades'],
+    [33,'En mi trabajo puedo expresarme libremente sin interrupciones'],
+    [34,'Recibo críticas constantes a mi persona y/o trabajo'],
+    [35,'Recibo burlas, calumnias, difamaciones, humillaciones o ridiculizaciones'],
+    [36,'Se ignora mi presencia o se me excluye de las reuniones de trabajo y en la toma de decisiones'],
+    [37,'Se manipulan las situaciones de trabajo para hacerme parecer un mal trabajador'],
+    [38,'Se ignoran mis éxitos laborales y se atribuyen a otros trabajadores'],
+    [39,'Me bloquean o impiden las oportunidades que tengo para obtener ascenso o mejora en mi trabajo'],
+    [40,'He presenciado actos de violencia en mi centro de trabajo']
+  ]}
+];
+const N35_S7={g:'En mi trabajo debo brindar servicio a clientes o usuarios:', items:[
+  [41,'Atiendo clientes o usuarios muy enojados'],
+  [42,'Mi trabajo me exige atender personas muy necesitadas de ayuda o enfermas'],
+  [43,'Para hacer mi trabajo debo demostrar sentimientos distintos a los míos']
+]};
+const N35_S8={g:'Soy jefe de otros trabajadores:', items:[
+  [44,'Comunican tarde los asuntos de trabajo'],
+  [45,'Dificultan el logro de los resultados del trabajo'],
+  [46,'Ignoran las sugerencias para mejorar su trabajo']
+]};
+const N35_CATS=[
+  {key:'ambiente_trabajo', label:'Ambiente de trabajo', items:[1,2,3], cuts:[3,5,7,9]},
+  {key:'factores_actividad', label:'Factores propios de la actividad', items:[4,5,6,7,8,9,10,11,12,13,18,19,20,21,22,26,27,41,42,43], cuts:[10,20,30,40]},
+  {key:'organizacion_tiempo', label:'Organización del tiempo de trabajo', items:[14,15,16,17], cuts:[4,6,9,12]},
+  {key:'liderazgo_relaciones', label:'Liderazgo y relaciones en el trabajo', items:[23,24,25,28,29,30,31,32,33,34,35,36,37,38,39,40,44,45,46], cuts:[10,18,28,38]}
+];
+function n35Score(num, idx){ return (num>=18&&num<=33) ? idx : (4-idx); }
+function n35Nivel(v, cuts){ if(v<cuts[0]) return 'Nulo'; if(v<cuts[1]) return 'Bajo'; if(v<cuts[2]) return 'Medio'; if(v<cuts[3]) return 'Alto'; return 'Muy alto'; }
+function n35Color(n){ return (n==='Nulo'||n==='Bajo') ? '#2f9e6b' : (n==='Medio' ? '#d68910' : '#c0392b'); }
+function n35Item(it){
+  const opts=N35_OPTS.map((o,j)=>'<label style="font-weight:400;display:inline-flex;align-items:center;gap:4px;margin:0;cursor:pointer"><input type="radio" name="n35_i'+it[0]+'" value="'+j+'">'+o+'</label>').join('');
+  return '<div id="n35_row'+it[0]+'" style="padding:8px 0;border-bottom:1px solid var(--line)">'+
+    '<div style="font-size:13px;margin-bottom:6px"><b>'+it[0]+'.</b> '+esc(it[1])+'</div>'+
+    '<div style="display:flex;gap:16px;flex-wrap:wrap;font-size:12px">'+opts+'</div></div>';
+}
+async function viewNom035Cuest(c){
+  c.innerHTML='<h1 class="pg">Cuestionario NOM-035</h1>'+
+    '<div class="pgsub">Identificación de factores de riesgo psicosocial · aplicación individual</div>'+
+    '<div class="card"><h3>Cuestionario de factores de riesgo psicosocial · NOM-035-STPS-2018 · Guía de Referencia II</h3><div class="body">'+
+      '<div style="font-size:13px;margin-bottom:12px">Tus respuestas son confidenciales y se usan solo para identificar factores de riesgo psicosocial. No hay respuestas buenas o malas.</div>'+
+      '<div class="frm">'+
+        '<label>Folio del trabajador<input id="n35_folio" placeholder="TRB-018"></label>'+
+        '<label>Área o departamento (opcional)<input id="n35_area" placeholder="Área o departamento"></label>'+
+      '</div>'+
+      '<label style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13px;cursor:pointer"><input type="checkbox" id="n35_acepta"> Acepto responder de forma voluntaria y sincera</label>'+
+      '<div style="margin-top:12px"><button class="btn2" id="n35_start" disabled>Comenzar</button></div>'+
+      '<div class="mini" id="n35_introMsg" style="margin-top:6px"></div>'+
+    '</div></div>'+
+    '<div id="n35_form"></div>';
+  const chk=document.getElementById('n35_acepta');
+  const btn=document.getElementById('n35_start');
+  chk.onchange=()=>{ btn.disabled=!chk.checked; };
+  btn.onclick=()=>{
+    const folio=(document.getElementById('n35_folio').value||'').trim();
+    const area=(document.getElementById('n35_area').value||'').trim();
+    const im=document.getElementById('n35_introMsg');
+    if(!folio){ im.style.color='#c0392b'; im.textContent='Indica el folio del trabajador para comenzar.'; return; }
+    im.textContent='';
+    n35Form(c, folio, area);
+  };
+}
+function n35Form(c, folio, area){
+  const romanos=['I','II','III','IV','V','VI'];
+  const secHtml=N35_SECS.map((s,i)=>
+    '<div class="card"><h3>Sección '+romanos[i]+'</h3><div class="body">'+
+    '<div style="font-size:13px;font-weight:700;margin-bottom:6px">'+esc(s.h)+'</div>'+
+    s.items.map(n35Item).join('')+'</div></div>').join('');
+  const gate=(id, texto, sec, items)=>
+    '<div class="card"><h3>Sección '+sec+'</h3><div class="body">'+
+    '<div style="font-size:13px;font-weight:700;margin-bottom:6px">'+esc(texto)+'</div>'+
+    '<div style="display:flex;gap:16px;font-size:13px;margin-bottom:6px">'+
+      '<label style="font-weight:400;display:inline-flex;align-items:center;gap:4px;margin:0;cursor:pointer"><input type="radio" name="'+id+'" value="si"> Sí</label>'+
+      '<label style="font-weight:400;display:inline-flex;align-items:center;gap:4px;margin:0;cursor:pointer"><input type="radio" name="'+id+'" value="no"> No</label>'+
+    '</div>'+
+    '<div id="'+id+'_blk" style="display:none">'+items.map(n35Item).join('')+'</div>'+
+    '</div></div>';
+  c.innerHTML='<h1 class="pg">Cuestionario NOM-035 · Guía de Referencia II</h1>'+
+    '<div class="pgsub">Folio '+esc(folio)+(area?(' · '+esc(area)):'')+' · responde todas las preguntas de cada sección.</div>'+
+    secHtml+
+    gate('n35_srv', N35_S7.g, 'VII', N35_S7.items)+
+    gate('n35_jefe', N35_S8.g, 'VIII', N35_S8.items)+
+    '<div class="no-print" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:4px 0 10px">'+
+      '<button class="btn2" id="n35_calc">Calcular y guardar</button>'+
+      '<span class="mini" id="n35_msg"></span>'+
+    '</div>'+
+    '<div class="mini" style="color:var(--muted)">Reactivos conforme a la Guía de Referencia II de la NOM-035-STPS-2018 (centros de 16 a 50 trabajadores). El resultado orienta la identificación; las acciones se definen conforme a la Norma.</div>';
+  const gateVal=id=>{ const r=c.querySelector('input[name="'+id+'"]:checked'); return r?r.value:null; };
+  const bindGate=id=>{ c.querySelectorAll('input[name="'+id+'"]').forEach(r=>r.onchange=()=>{ document.getElementById(id+'_blk').style.display = (gateVal(id)==='si') ? '' : 'none'; }); };
+  bindGate('n35_srv'); bindGate('n35_jefe');
+  document.getElementById('n35_calc').onclick=async()=>{
+    const msg=document.getElementById('n35_msg');
+    msg.style.color='#c0392b';
+    const srv=gateVal('n35_srv'), jefe=gateVal('n35_jefe');
+    if(!srv){ msg.textContent='Falta responder: "En mi trabajo debo brindar servicio a clientes o usuarios" (Sí/No).'; return; }
+    if(!jefe){ msg.textContent='Falta responder: "Soy jefe de otros trabajadores" (Sí/No).'; return; }
+    let visibles=[]; for(let n=1;n<=40;n++) visibles.push(n);
+    if(srv==='si') visibles=visibles.concat([41,42,43]);
+    if(jefe==='si') visibles=visibles.concat([44,45,46]);
+    const resp={};
+    for(const n of visibles){
+      const r=c.querySelector('input[name="n35_i'+n+'"]:checked');
+      if(!r){
+        msg.textContent='Falta responder la pregunta '+n+'.';
+        const row=document.getElementById('n35_row'+n);
+        if(row) row.scrollIntoView({behavior:'smooth',block:'center'});
+        return;
+      }
+      resp[n]=n35Score(n, Number(r.value));
+    }
+    msg.style.color=''; msg.textContent='Calculando…';
+    let total=0; visibles.forEach(n=>{ total+=resp[n]; });
+    const nivel=n35Nivel(total,[20,45,70,90]);
+    const categorias={};
+    const catRows=N35_CATS.map(cat=>{
+      let s=0; cat.items.forEach(n=>{ if(resp[n]!=null) s+=resp[n]; });
+      const nv=n35Nivel(s, cat.cuts);
+      categorias[cat.key]={label:cat.label, puntos:s, nivel:nv};
+      return '<tr><td>'+esc(cat.label)+'</td><td class="num-r">'+s+'</td>'+
+        '<td><span class="tag" style="color:'+n35Color(nv)+';border-color:'+n35Color(nv)+'">'+nv+'</span></td></tr>';
+    }).join('');
+    let guardado='Resultado guardado en el histórico NOM-035.';
+    try{
+      const {error:e}=await sb.from('nom035_respuestas').insert({
+        folio:folio, area:area||null, fecha:new Date().toISOString().slice(0,10),
+        total:total, max:184, nivel:nivel, guia:'II', categorias:categorias
+      });
+      if(e) throw e;
+    }catch(err){
+      guardado='El resultado se calculó pero no se pudo guardar: '+((err&&err.message)||err);
+    }
+    c.innerHTML='<h1 class="pg">Resultado · Cuestionario NOM-035 · Guía de Referencia II</h1>'+
+      '<div class="pgsub">Folio '+esc(folio)+(area?(' · '+esc(area)):'')+' · '+new Date().toISOString().slice(0,10)+'</div>'+
+      '<div class="card"><h3>Calificación final</h3><div class="body">'+
+        '<div style="font-size:14px">Puntuación total: <b>'+total+'</b> de 184</div>'+
+        '<div style="font-size:30px;font-weight:800;margin:8px 0;color:'+n35Color(nivel)+'">'+nivel+'</div>'+
+        '<div style="font-size:12px;color:var(--muted)">Nivel de riesgo psicosocial conforme a los puntos de corte de la Guía de Referencia II.</div>'+
+      '</div></div>'+
+      '<div class="card"><h3>Resultado por categoría</h3><table><thead><tr><th>Categoría</th><th class="num-r">Puntos</th><th>Nivel</th></tr></thead><tbody>'+catRows+'</tbody></table></div>'+
+      '<div class="mini" style="margin:6px 0">'+esc(guardado)+'</div>'+
+      '<div class="no-print" style="display:flex;gap:8px;margin-top:8px">'+
+        '<button class="btn2" id="n35_print">🖨 Imprimir resultado</button>'+
+        '<button class="btn2 ghost" id="n35_new">Nuevo cuestionario</button>'+
+      '</div>'+
+      '<div class="mini" style="color:var(--muted);margin-top:10px">Reactivos conforme a la Guía de Referencia II de la NOM-035-STPS-2018 (centros de 16 a 50 trabajadores). El resultado orienta la identificación; las acciones se definen conforme a la Norma.</div>';
+    document.getElementById('n35_print').onclick=()=>window.print();
+    document.getElementById('n35_new').onclick=()=>viewNom035Cuest(c);
+  };
+}
+
+/* ===== Gobierno y Padrones (empadronamientos + licitaciones) ===== */
+async function viewPadrones(c){
+  comboTabs(c,'Gobierno y Padrones',[{label:'Plan de empadronamiento',fn:padPlan},{label:'Matriz empresa × entidad',fn:padMatriz},{label:'Trámites y kit documental',fn:padTramites}]);
+}
+function padNivelTag(n){ return n==='A'?'on':(n==='B'?'repse':'off'); }
+function padEstTag(e){ return e==='vigente'?'on':(e==='por_vencer'?'repse':'off'); }
+function padEstLbl(e){ return e==='por_vencer'?'por vencer':(e==='sin_registro'?'sin registro':(e||'—')); }
+function padVigTx(f){
+  if(!f) return '';
+  const dias=matDias(f);
+  let tx=' · '+esc(String(f).slice(0,10));
+  if(dias===null) return tx;
+  if(dias<0) return tx+' <span style="color:#c0392b;font-size:11px">vencido hace '+(-dias)+' d</span>';
+  if(dias<=30) return tx+' <span style="color:#e67e22;font-size:11px">en '+dias+' d</span>';
+  return tx+' <span style="color:var(--muted);font-size:11px">en '+dias+' d</span>';
+}
+
+async function padPlan(body, fnivel){
+  fnivel=fnivel||'';
+  body.innerHTML='<div class="loader">Cargando…</div>';
+  const {data,error}=await sb.from('padron_empresas')
+    .select('id,ranking,empresa,rfc,nivel,padron_estatus,padron_vigencia,repse_estatus,criticos,altos,kit_pendientes,accion_inmediata')
+    .order('ranking');
+  if(error) throw error;
+  const lista=data||[];
+  const nivA=lista.filter(x=>x.nivel==='A').length;
+  const crit=lista.reduce((s,x)=>s+(Number(x.criticos)||0),0);
+  const altos=lista.reduce((s,x)=>s+(Number(x.altos)||0),0);
+  const vencPV=lista.filter(x=>x.padron_estatus==='vencido'||x.padron_estatus==='por_vencer').length;
+  const vis=fnivel?lista.filter(x=>x.nivel===fnivel):lista;
+  const rows=vis.map(x=>
+    '<tr><td>'+(x.ranking!=null?x.ranking:'')+'</td>'+
+    '<td><b>'+esc(x.empresa||'')+'</b>'+(x.rfc?'<div style="font-size:11px;color:var(--muted)">'+esc(x.rfc)+'</div>':'')+'</td>'+
+    '<td><span class="tag '+padNivelTag(x.nivel)+'">'+esc(x.nivel||'—')+'</span></td>'+
+    '<td><span class="tag '+padEstTag(x.padron_estatus)+'">'+esc(padEstLbl(x.padron_estatus))+'</span>'+padVigTx(x.padron_vigencia)+'</td>'+
+    '<td>'+esc(x.repse_estatus||'—')+'</td>'+
+    '<td class="num-r">'+(Number(x.criticos)>0?'<b style="color:#c0392b">'+x.criticos+'</b>':(x.criticos!=null?x.criticos:0))+'</td>'+
+    '<td class="num-r">'+(Number(x.altos)>0?'<b style="color:#e67e22">'+x.altos+'</b>':(x.altos!=null?x.altos:0))+'</td>'+
+    '<td class="num-r">'+(x.kit_pendientes!=null?x.kit_pendientes:0)+'</td>'+
+    '<td style="font-size:12px">'+esc(x.accion_inmediata||'')+'</td></tr>'
+  ).join('');
+  body.innerHTML=
+    '<div class="pgsub">Plan de empadronamientos — sembrado de tu documento oficial (corte 12-jul-2026). Nivel A = empadronable de inmediato · D = requiere reactivación integral.</div>'+
+    '<div class="kpis">'+
+      tile(lista.length,'Empresas en plan','var(--navy)')+
+      tile(nivA,'Nivel A · listas ya','var(--ok)')+
+      tile(crit,'Críticos',crit>0?'#c0392b':'var(--ok)')+
+      tile(altos,'Altos',altos>0?'#e67e22':'var(--ok)')+
+      tile(vencPV,'Padrones vencidos/por vencer',vencPV>0?'#c0392b':'var(--ok)')+
+    '</div>'+
+    '<div class="card"><div class="body"><div class="frm"><label>Nivel<select id="pp_nivel"><option value="">Todos</option>'+
+      ['A','B','C','D'].map(n=>'<option value="'+n+'"'+(fnivel===n?' selected':'')+'>'+n+'</option>').join('')+
+    '</select></label></div></div></div>'+
+    '<div class="card"><table><thead><tr><th>#</th><th>Empresa</th><th>Nivel</th><th>Padrón</th><th>REPSE</th><th class="num-r">Crít.</th><th class="num-r">Altos</th><th class="num-r">Kit</th><th>Acción inmediata</th></tr></thead><tbody>'+
+    (rows||'<tr><td colspan=9 class="empty">Sin empresas en el plan</td></tr>')+'</tbody></table></div>';
+  document.getElementById('pp_nivel').onchange=()=>padPlan(body, document.getElementById('pp_nivel').value);
+}
+
+const PAD_MX_ESTATUS=[['empadronada','Empadronada'],['en_tramite','En trámite'],['por_renovar','Por renovar'],['vencida','Vencida'],['no_aplica','No aplica'],['no_iniciado','No iniciado']];
+const PAD_MX_BG={empadronada:'#e6f2ea',en_tramite:'#fbf1dc',por_renovar:'#fdf3e2',vencida:'#f7e6e0',no_aplica:'#eef1f2',no_iniciado:'#fff'};
+
+async function padMatriz(body){
+  body.innerHTML='<div class="loader">Cargando…</div>';
+  const [r1,r2,r3]=await Promise.all([
+    sb.from('padron_empresas').select('id,empresa,ranking').order('ranking').limit(35),
+    sb.from('padron_entidades').select('clave,nombre').eq('activo',true).order('clave'),
+    sb.from('padron_matriz').select('id,padron_empresa_id,entidad_clave,estatus')
+  ]);
+  if(r1.error) throw r1.error; if(r2.error) throw r2.error; if(r3.error) throw r3.error;
+  const emps=r1.data||[], ents=r2.data||[];
+  const mapa={};
+  (r3.data||[]).forEach(m=>{ mapa[m.padron_empresa_id+'|'+m.entidad_clave]=m; });
+  const head='<tr><th>Empresa</th>'+ents.map(e=>'<th title="'+esc(e.nombre||'')+'">'+esc(e.clave)+'</th>').join('')+'</tr>';
+  const rows=emps.map(emp=>{
+    const nom=String(emp.empresa||'');
+    const corto=nom.length>24?esc(nom.slice(0,24))+'…':esc(nom);
+    const celdas=ents.map(ent=>{
+      const m=mapa[emp.id+'|'+ent.clave];
+      const est=(m&&m.estatus)||'no_iniciado';
+      const opts=PAD_MX_ESTATUS.map(o=>'<option value="'+o[0]+'"'+(est===o[0]?' selected':'')+'>'+o[1]+'</option>').join('');
+      return '<td style="padding:2px"><select class="px-cel" data-emp="'+emp.id+'" data-ent="'+esc(ent.clave)+'"'+(m?' data-mid="'+m.id+'"':'')+
+        ' style="font-size:11px;max-width:110px;border:1px solid var(--line);border-radius:4px;padding:2px;background:'+(PAD_MX_BG[est]||'#fff')+'">'+opts+'</select></td>';
+    }).join('');
+    return '<tr><td title="'+esc(nom)+'"><b>'+corto+'</b></td>'+celdas+'</tr>';
+  }).join('');
+  body.innerHTML=
+    '<div class="pgsub">La cuadrícula de tu Excel: estatus de cada empresa en cada padrón. Cambia el estatus directo en la celda.</div>'+
+    '<div class="card" style="overflow-x:auto"><table><thead>'+head+'</thead><tbody>'+
+    (rows||'<tr><td class="empty">Sin empresas en el plan</td></tr>')+'</tbody></table></div>';
+  body.querySelectorAll('select.px-cel').forEach(s=>s.onchange=async()=>{
+    s.disabled=true;
+    const est=s.value;
+    let e=null;
+    if(s.dataset.mid){
+      e=(await sb.from('padron_matriz').update({estatus:est}).eq('id',s.dataset.mid)).error;
+    }else{
+      const ins=await sb.from('padron_matriz').insert({padron_empresa_id:s.dataset.emp, entidad_clave:s.dataset.ent, estatus:est}).select('id').single();
+      e=ins.error;
+      if(!e && ins.data) s.dataset.mid=ins.data.id;
+    }
+    if(e){ alert('Error: '+e.message); s.disabled=false; return; }
+    s.style.background=PAD_MX_BG[est]||'#fff';
+    s.disabled=false;
+  });
+}
+
+function padTramTag(e){ return e==='resuelto'?'on':(e==='presentado'?'repse':'off'); }
+
+async function padTramites(body){
+  body.innerHTML='<div class="loader">Cargando…</div>';
+  const [r1,r2,r3,r4]=await Promise.all([
+    sb.from('padron_empresas').select('id,empresa,ranking').order('ranking'),
+    sb.from('padron_entidades').select('clave,nombre').eq('activo',true).order('clave'),
+    sb.from('padron_tramites').select('id,padron_empresa_id,entidad_clave,estatus,fecha_inicio').order('fecha_inicio',{ascending:false}),
+    sb.from('padron_kit').select('tramite_id,cumplido')
+  ]);
+  if(r1.error) throw r1.error; if(r2.error) throw r2.error; if(r3.error) throw r3.error; if(r4.error) throw r4.error;
+  const emps=r1.data||[], ents=r2.data||[], trams=r3.data||[];
+  const nomEmp={}; emps.forEach(x=>{ nomEmp[x.id]=x.empresa; });
+  const kit={};
+  (r4.data||[]).forEach(k=>{ const p=kit[k.tramite_id]||(kit[k.tramite_id]={done:0,total:0}); p.total++; if(k.cumplido) p.done++; });
+  const rows=trams.map(t=>{
+    const p=kit[t.id]||{done:0,total:10};
+    return '<tr><td><b>'+esc(nomEmp[t.padron_empresa_id]||'—')+'</b></td>'+
+      '<td>'+esc(t.entidad_clave||'')+'</td>'+
+      '<td>'+esc(t.fecha_inicio||'—')+'</td>'+
+      '<td><span class="tag '+(p.total>0&&p.done===p.total?'on':'off')+'">'+p.done+'/'+(p.total||10)+'</span></td>'+
+      '<td><span class="tag '+padTramTag(t.estatus)+'">'+esc(t.estatus||'')+'</span></td>'+
+      '<td><button class="mini pt-ver" data-id="'+t.id+'">Ver kit</button></td></tr>';
+  }).join('');
+  body.innerHTML=
+    '<div class="pgsub">Abre un trámite por empresa y entidad: el kit de 10 documentos se genera solo y la matriz queda en trámite.</div>'+
+    '<div class="card"><h3>Abrir trámite de empadronamiento</h3><div class="body"><div class="frm">'+
+      '<label>Empresa<select id="pt_emp" style="min-width:220px">'+emps.map(x=>'<option value="'+x.id+'">'+esc(x.empresa||'')+'</option>').join('')+'</select></label>'+
+      '<label>Entidad / padrón<select id="pt_ent">'+ents.map(x=>'<option value="'+esc(x.clave)+'">'+esc(x.clave)+' · '+esc(x.nombre||'')+'</option>').join('')+'</select></label>'+
+    '</div><div style="margin-top:8px"><button class="btn2" id="pt_abrir">Abrir trámite + kit de 10 documentos</button> <span id="pt_msg" style="font-size:12px;margin-left:8px"></span></div></div></div>'+
+    '<div class="card"><table><thead><tr><th>Empresa</th><th>Entidad</th><th>Inicio</th><th>Kit</th><th>Estatus</th><th></th></tr></thead><tbody>'+
+    (rows||'<tr><td colspan=6 class="empty">Sin trámites abiertos</td></tr>')+'</tbody></table></div>';
+  document.getElementById('pt_abrir').onclick=async()=>{
+    const btn=document.getElementById('pt_abrir'), msg=document.getElementById('pt_msg');
+    btn.disabled=true; msg.textContent='Abriendo trámite…'; msg.style.color='var(--muted)';
+    const {error:e}=await sb.rpc('padron_abrir_tramite',{p_empresa:document.getElementById('pt_emp').value, p_entidad:document.getElementById('pt_ent').value});
+    if(e){ msg.textContent='Error: '+e.message; msg.style.color='var(--danger)'; btn.disabled=false; return; }
+    padTramites(body);
+  };
+  body.querySelectorAll('button.pt-ver').forEach(b=>b.onclick=()=>padKitDetalle(body, b.dataset.id));
+}
+
+async function padKitDetalle(body, id){
+  body.innerHTML='<div class="loader">Cargando trámite…</div>';
+  const [r1,r2]=await Promise.all([
+    sb.from('padron_tramites').select('id,padron_empresa_id,entidad_clave,estatus,fecha_inicio,notas').eq('id',id).maybeSingle(),
+    sb.from('padron_kit').select('id,orden,documento,cumplido,fecha,archivo_path,archivo_nombre').eq('tramite_id',id).order('orden')
+  ]);
+  if(r1.error) throw r1.error; if(r2.error) throw r2.error;
+  const tr=r1.data;
+  if(!tr){ body.innerHTML='<div class="empty">No se encontró el trámite.</div>'; return; }
+  const remp=await sb.from('padron_empresas').select('empresa').eq('id',tr.padron_empresa_id).maybeSingle();
+  const empresa=(remp.data&&remp.data.empresa)||'—';
+  const kitL=r2.data||[];
+  const done=kitL.filter(x=>x.cumplido).length;
+  const kitRows=kitL.map(x=>{
+    const archivo = x.archivo_path
+      ? '<a href="#" class="pk-dl" data-path="'+esc(x.archivo_path)+'">📎 '+esc(x.archivo_nombre||'archivo')+'</a>'
+      : '<input type="file" class="pk-file" data-id="'+x.id+'" style="font-size:11px;max-width:190px">';
+    return '<tr><td>'+(x.orden!=null?x.orden:'')+'</td>'+
+      '<td><input type="checkbox" class="pk-chk" data-id="'+x.id+'"'+(x.cumplido?' checked':'')+'></td>'+
+      '<td>'+esc(x.documento||'')+'</td>'+
+      '<td>'+esc(x.fecha||'')+'</td>'+
+      '<td>'+archivo+'</td></tr>';
+  }).join('');
+  body.innerHTML=
+    '<div class="no-print" style="margin-bottom:10px"><button class="btn2 ghost" id="pk_volver">← Volver</button></div>'+
+    '<div class="card"><h3>Trámite '+esc(empresa)+' · '+esc(tr.entidad_clave||'')+'</h3><div class="body">'+
+      '<div style="font-size:13px">Inicio '+esc(tr.fecha_inicio||'—')+' · <span class="tag '+padTramTag(tr.estatus)+'">'+esc(tr.estatus||'')+'</span> · kit '+done+'/'+kitL.length+'</div>'+
+      '<div class="no-print" style="display:flex;gap:8px;margin-top:8px">'+
+        (tr.estatus==='abierto'?'<button class="btn2" id="pk_pres">Presentado</button>':'')+
+        (tr.estatus!=='resuelto'?'<button class="btn2" id="pk_res">Resuelto</button>':'')+
+      '</div></div></div>'+
+    '<div class="card"><h3>Kit documental · '+done+'/'+kitL.length+'</h3><table><thead><tr><th>#</th><th>Cumplido</th><th>Documento</th><th>Fecha</th><th>Archivo</th></tr></thead><tbody>'+
+    (kitRows||'<tr><td colspan=5 class="empty">Sin documentos en el kit</td></tr>')+'</tbody></table></div>';
+  document.getElementById('pk_volver').onclick=()=>padTramites(body);
+  const bindEst=(elId, est)=>{
+    const b=document.getElementById(elId);
+    if(!b) return;
+    b.onclick=async()=>{
+      b.disabled=true;
+      const {error:e}=await sb.from('padron_tramites').update({estatus:est}).eq('id',id);
+      if(e){ alert('Error: '+e.message); b.disabled=false; return; }
+      padKitDetalle(body, id);
+    };
+  };
+  bindEst('pk_pres','presentado'); bindEst('pk_res','resuelto');
+  body.querySelectorAll('input.pk-chk').forEach(ch=>ch.onchange=async()=>{
+    ch.disabled=true;
+    const payload=ch.checked?{cumplido:true, fecha:matHoy()}:{cumplido:false, fecha:null};
+    const {error:e}=await sb.from('padron_kit').update(payload).eq('id',ch.dataset.id);
+    if(e){ alert('Error: '+e.message); ch.checked=!ch.checked; ch.disabled=false; return; }
+    padKitDetalle(body, id);
+  });
+  body.querySelectorAll('input.pk-file').forEach(inp=>inp.onchange=async()=>{
+    const file=inp.files&&inp.files[0]; if(!file) return;
+    inp.disabled=true;
+    let nombre=file.name.split('').filter(ch=>/[a-zA-Z0-9._-]/.test(ch)).join('');
+    if(!nombre) nombre='archivo';
+    const path='materialidad/padron_'+id+'_'+inp.dataset.id+'_'+nombre;
+    try{
+      const up=await sb.storage.from('expedientes').upload(path, file);
+      if(up.error) throw up.error;
+      const {error:e2}=await sb.from('padron_kit').update({archivo_path:path, archivo_nombre:file.name}).eq('id',inp.dataset.id);
+      if(e2) throw e2;
+      padKitDetalle(body, id);
+    }catch(err){
+      alert('No se pudo subir (permisos de almacén): '+((err&&err.message)||err));
+      inp.disabled=false;
+    }
+  });
+  body.querySelectorAll('a.pk-dl').forEach(a=>a.onclick=async(ev)=>{
+    ev.preventDefault();
+    try{
+      const {data,error}=await sb.storage.from('expedientes').createSignedUrl(a.dataset.path, 3600);
+      if(error) throw error;
+      window.open(data.signedUrl);
+    }catch(err){ alert('No se pudo abrir el archivo (permisos de almacén): '+((err&&err.message)||err)); }
+  });
+}
+
+/* ===== Licitaciones y contratos ===== */
+const LIC_ETAPAS=[['interesado','Interesado'],['propuesta','Propuesta'],['fallo','Fallo'],['contrato','Contrato'],['entrega','Entrega'],['cobrado','Cobrado']];
+function licBg(e){ if(e==='cobrado'||e==='entrega'||e==='contrato') return '#e6f2ea'; if(e==='fallo') return '#fbf1dc'; return '#fff'; }
+
+async function viewLicitaciones(c){
+  const {data,error}=await sb.from('licitaciones')
+    .select('id,empresa,entidad,dependencia,folio_compranet,objeto,monto,etapa,fecha_limite')
+    .order('fecha_limite',{ascending:true,nullsFirst:false}).limit(300);
+  if(error) throw error;
+  const lista=data||[];
+  const ganadas=lista.filter(x=>x.etapa==='contrato'||x.etapa==='entrega'||x.etapa==='cobrado');
+  const activas=lista.length-ganadas.length;
+  const enProp=lista.filter(x=>x.etapa==='propuesta').length;
+  const enJuego=lista.filter(x=>x.etapa==='interesado'||x.etapa==='propuesta'||x.etapa==='fallo').reduce((s,x)=>s+(Number(x.monto)||0),0);
+  const rows=lista.map(x=>{
+    const obj=String(x.objeto||'');
+    const objTx=obj.length>50?esc(obj.slice(0,50))+'…':esc(obj);
+    const dias=matDias(x.fecha_limite);
+    let limTx=esc(x.fecha_limite||'—');
+    if(dias!==null) limTx += dias<0
+      ? ' <span style="color:#c0392b;font-size:11px">hace '+(-dias)+' d</span>'
+      : ' <span style="color:var(--muted);font-size:11px">en '+dias+' d</span>';
+    const opts=LIC_ETAPAS.map(o=>'<option value="'+o[0]+'"'+(x.etapa===o[0]?' selected':'')+'>'+o[1]+'</option>').join('');
+    return '<tr><td><b>'+esc(x.empresa||'')+'</b></td>'+
+      '<td>'+esc(x.dependencia||'')+(x.entidad?'<div style="font-size:11px;color:var(--muted)">'+esc(x.entidad)+'</div>':'')+'</td>'+
+      '<td>'+esc(x.folio_compranet||'—')+'</td>'+
+      '<td title="'+esc(obj)+'">'+objTx+'</td>'+
+      '<td class="num-r">'+mny(x.monto)+'</td>'+
+      '<td>'+limTx+'</td>'+
+      '<td><select class="lc-etapa" data-id="'+x.id+'" style="font-size:12px;border:1px solid var(--line);border-radius:4px;padding:2px 4px;background:'+licBg(x.etapa)+'">'+opts+'</select></td></tr>';
+  }).join('');
+  c.innerHTML='<h1 class="pg">Licitaciones y contratos</h1>'+
+    '<div class="pgsub">Pipeline de gobierno: de interesado a cobrado.</div>'+
+    '<div class="kpis">'+
+      tile(activas,'Activas','var(--navy)')+
+      tile(enProp,'En propuesta','var(--gold)')+
+      tile(ganadas.length,'Contratos ganados','var(--ok)')+
+      tile(mny(enJuego),'Monto en juego','var(--teal)')+
+    '</div>'+
+    '<div class="card"><h3>Nueva licitación</h3><div class="body"><div class="frm">'+
+      '<label>Empresa<input id="lc_emp" style="min-width:200px"></label>'+
+      '<label>Dependencia<input id="lc_dep" style="min-width:200px"></label>'+
+      '<label>Entidad<input id="lc_ent" style="min-width:120px"></label>'+
+      '<label>Folio COMPRASMX<input id="lc_folio"></label>'+
+      '<label>Objeto<input id="lc_obj" style="min-width:240px"></label>'+
+      '<label>Monto<input id="lc_monto" type="number" step="0.01"></label>'+
+      '<label>Fecha límite<input id="lc_lim" type="date"></label>'+
+    '</div><div style="margin-top:8px"><button class="btn2" id="lc_save">Guardar</button> <span id="lc_msg" style="font-size:12px;margin-left:8px"></span></div></div></div>'+
+    '<div class="card"><table><thead><tr><th>Empresa</th><th>Dependencia</th><th>Folio</th><th>Objeto</th><th class="num-r">Monto</th><th>Límite</th><th>Etapa</th></tr></thead><tbody>'+
+    (rows||'<tr><td colspan=7 class="empty">Sin licitaciones registradas</td></tr>')+'</tbody></table></div>';
+  const g=id=>document.getElementById(id);
+  g('lc_save').onclick=async()=>{
+    const msg=g('lc_msg');
+    const empresa=g('lc_emp').value.trim();
+    if(!empresa){ msg.textContent='La empresa es obligatoria.'; msg.style.color='var(--danger)'; return; }
+    g('lc_save').disabled=true; msg.textContent='Guardando…'; msg.style.color='var(--muted)';
+    const {error:e}=await sb.from('licitaciones').insert({
+      empresa:empresa, dependencia:g('lc_dep').value.trim()||null, entidad:g('lc_ent').value.trim()||null,
+      folio_compranet:g('lc_folio').value.trim()||null, objeto:g('lc_obj').value.trim()||null,
+      monto:g('lc_monto').value?Number(g('lc_monto').value):null,
+      fecha_limite:g('lc_lim').value||null, etapa:'interesado'
+    });
+    if(e){ msg.textContent='Error: '+e.message; msg.style.color='var(--danger)'; g('lc_save').disabled=false; return; }
+    viewLicitaciones(c);
+  };
+  c.querySelectorAll('select.lc-etapa').forEach(s=>s.onchange=async()=>{
+    s.disabled=true;
+    const {error:e}=await sb.from('licitaciones').update({etapa:s.value}).eq('id',s.dataset.id);
+    if(e){ alert('Error: '+e.message); s.disabled=false; return; }
+    viewLicitaciones(c);
+  });
 }
