@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PR&M · Constructor de Concepto por tipo de operación</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--tinta:#16243B;--tinta2:#2B3A52;--papel:#F1F4F2;--tarjeta:#FFFFFF;--linea:#D7DDD9;--sello:#C0561E;--ok:#2E7D5B;--alerta:#B23B3B;--gris:#6A6F6B;
+    --display:"Fraunces",Georgia,serif;--body:"Inter",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;}
+  *{box-sizing:border-box} html,body{margin:0}
+  body{background:var(--papel);color:var(--tinta);font-family:var(--body);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1080px;margin:0 auto;padding:28px 20px 60px}
+  header.top{border-bottom:2px solid var(--tinta);padding-bottom:18px;margin-bottom:20px}
+  .eyebrow{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--sello);font-weight:600}
+  h1{font-family:var(--display);font-weight:600;font-size:clamp(25px,4.3vw,38px);line-height:1.08;margin:.28em 0 .18em;letter-spacing:-.01em}
+  .lede{color:var(--tinta2);max-width:62ch;font-size:15px}
+  .seg{display:flex;gap:6px;flex-wrap:wrap;background:#E6EAE7;padding:5px;border-radius:12px}
+  .seg.main{margin-bottom:12px}
+  .seg.sub{margin-bottom:10px;background:#EDEFEC}
+  .seg button{flex:1 1 auto;border:none;background:transparent;color:var(--tinta2);font-weight:600;font-size:13.5px;padding:10px 12px;border-radius:9px;cursor:pointer;font-family:inherit}
+  .seg.main button.on{background:var(--tinta);color:#fff;box-shadow:0 1px 3px rgba(22,36,59,.25)}
+  .seg.sub button{font-size:12.5px;padding:8px 10px}
+  .seg.sub button.on{background:var(--sello);color:#fff}
+  .ruleNote{font-size:12.5px;color:var(--tinta2);background:#EAF0F6;border:1px solid #D2DEEA;border-radius:9px;padding:10px 12px;margin-bottom:14px}
+  .ruleNote b{color:var(--tinta)}
+  .grid{display:grid;grid-template-columns:1fr;gap:26px}
+  @media(min-width:900px){.grid{grid-template-columns:1.05fr .95fr;gap:34px;align-items:start}}
+  .blk{margin-bottom:20px}
+  .blk > .label{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--gris);font-weight:600;margin-bottom:10px}
+  .tip{font-size:12.5px;color:var(--sello);font-style:italic;margin:-2px 0 10px}
+  .field{margin-bottom:12px}
+  .field label{display:block;font-size:13px;font-weight:500;margin-bottom:5px;color:var(--tinta2)}
+  .field input,.field textarea,.field select{width:100%;padding:10px 12px;border:1px solid var(--linea);border-radius:9px;background:var(--tarjeta);font-family:inherit;font-size:14px;color:var(--tinta);transition:border-color .15s,box-shadow .15s}
+  .field textarea{resize:vertical;min-height:56px}
+  .field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:var(--tinta);box-shadow:0 0 0 3px rgba(22,36,59,.12)}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .checks{display:flex;flex-direction:column;gap:8px}
+  .chk{display:flex;gap:10px;align-items:flex-start;padding:9px 11px;border:1px solid var(--linea);border-radius:9px;background:var(--tarjeta);cursor:pointer;font-size:13.5px}
+  .chk:hover{border-color:#b9c2bc}
+  .chk input{margin-top:2px;width:16px;height:16px;accent-color:var(--sello);flex:none}
+  .pillar-tag{font-family:var(--display);font-size:14px;font-weight:600}.pillar-tag.mat{color:var(--sello)}.pillar-tag.aso{color:var(--ok)}
+  .hint{font-size:12px;color:var(--gris);margin-top:4px}
+  .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+  button.act{font-family:inherit;font-size:13.5px;font-weight:600;border-radius:9px;padding:10px 14px;cursor:pointer;border:1px solid var(--tinta);background:var(--tinta);color:#fff}
+  button.ghost{background:transparent;color:var(--tinta)} button.act:active{transform:translateY(1px)}
+  .panel-out{position:sticky;top:18px}
+  .card{background:var(--tarjeta);border:1px solid var(--linea);border-radius:14px;padding:20px;box-shadow:0 1px 0 rgba(22,36,59,.04)}
+  .sealrow{display:flex;gap:18px;align-items:center;margin-bottom:6px}
+  .seal{--p:0;flex:none;width:104px;height:104px;border-radius:50%;display:grid;place-items:center;position:relative;background:conic-gradient(var(--sello) calc(var(--p)*1%), #E7E2DA 0);transition:background .5s ease}
+  .seal.done{background:conic-gradient(var(--ok) 100%, var(--ok) 0)}
+  .seal::after{content:"";position:absolute;inset:8px;border-radius:50%;background:var(--tarjeta);border:1px dashed #C9C2B6}
+  .seal.done::after{border-color:#bfe0cf}
+  .seal .inner{position:relative;z-index:1;text-align:center;line-height:1}
+  .seal .pct{font-family:var(--display);font-weight:600;font-size:26px}
+  .seal .st{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gris);margin-top:3px}
+  .seal.done .pct{color:var(--ok);font-size:18px}.seal.done .st{color:var(--ok);font-weight:600}
+  .sealmeta .estado{font-family:var(--display);font-size:19px;font-weight:600}
+  .sealmeta p{margin:4px 0 0;font-size:12.5px;color:var(--gris);max-width:30ch}
+  .conlabel{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--gris);font-weight:600;margin:18px 0 8px}
+  .concepto{font-family:var(--mono);font-size:14px;line-height:1.6;background:#F7F6F2;border:1px solid var(--linea);border-left:3px solid var(--sello);border-radius:8px;padding:14px 15px;color:var(--tinta);white-space:pre-wrap;word-break:break-word}
+  .concepto .ph{color:#B98A5A;font-style:normal}
+  .ficha{font-size:13px;border:1px solid var(--linea);border-radius:8px;overflow:hidden}
+  .ficha .fl{display:flex;justify-content:space-between;gap:12px;padding:9px 12px;border-bottom:1px solid #EFEDE7}.ficha .fl:last-child{border-bottom:none}
+  .ficha .k{color:var(--gris);font-weight:600}.ficha .v{text-align:right;color:var(--tinta);word-break:break-word}.ficha .v.ph{color:#B98A5A;font-style:italic}
+  .subhelp{font-size:12.5px;color:var(--gris);margin:-2px 0 12px}
+  .evlist{display:flex;flex-direction:column;gap:10px}
+  .evrow{display:flex;flex-direction:column;gap:7px;padding:10px 11px;border:1px solid var(--linea);border-radius:9px;background:var(--tarjeta)}
+  .evrow .chk{border:none;padding:0;background:none}
+  .evref{width:100%;padding:8px 10px;border:1px solid var(--linea);border-radius:8px;font-family:inherit;font-size:12.5px;color:var(--tinta)}
+  .evref:focus{outline:none;border-color:var(--tinta);box-shadow:0 0 0 3px rgba(22,36,59,.12)}
+  .insumos{font-family:var(--mono);font-size:11.5px;line-height:1.5;white-space:pre-wrap;background:#F7F6F2;border:1px solid var(--linea);border-radius:8px;padding:12px;max-height:240px;overflow:auto;color:var(--tinta)}
+  .bars{margin-top:16px;display:flex;flex-direction:column;gap:11px}
+  .bar .bl{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px}.bar .bl .nm{font-weight:600}
+  .track{height:7px;border-radius:5px;background:#EAE7E0;overflow:hidden}
+  .fill{height:100%;width:0;border-radius:5px;transition:width .45s ease}.fill.mat{background:var(--sello)}.fill.ind{background:var(--tinta)}.fill.aso{background:var(--ok)}
+  .alerts{margin-top:16px;display:flex;flex-direction:column;gap:7px}
+  .alert{font-size:13px;padding:9px 12px;border-radius:8px}
+  .alert.warn{background:#FbeFEA;color:#8f3a1c;border:1px solid #f1cdbd}.alert.good{background:#e9f3ee;color:#1f5d44;border:1px solid #c3e0d1}.alert b{font-weight:600}
+  .copybar{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+  footer{margin-top:34px;border-top:1px solid var(--linea);padding-top:14px;font-size:11.5px;color:var(--gris);max-width:80ch}
+  @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow">PR&amp;M · Constructor de concepto</div>
+    <h1>Constructor de concepto de facturación</h1>
+    <p class="lede">Primero clasifica la operación; luego arma el concepto que blinda el comprobante: <b>materialidad</b>, <b>indispensabilidad y congruencia</b> y <b>asociación gasto–ingreso</b>.</p>
+  </header>
+
+  <div class="seg main" id="segTipo" role="tablist" aria-label="Tipo de operación">
+    <button data-tipo="servicio" class="on" type="button">Servicios (intangibles)</button>
+    <button data-tipo="mercancia" type="button">Mercancías (tangibles)</button>
+    <button data-tipo="especializado" type="button">Servicio especializado (REPSE)</button>
+  </div>
+  <div class="ruleNote">
+    <b>Regla de clasificación:</b> los <b>servicios (intangibles)</b> y las <b>mercancías (tangibles)</b> no detallan puestos; si la operación pone <b>personal a disposición</b> (puesto / mano de obra) es <b>servicio especializado</b> y requiere <b>REPSE</b> — detallar puestos fuera de ahí podría configurar una simulación.
+  </div>
+
+  <div class="grid">
+    <section class="panel-form" id="form" aria-label="Datos">
+      <div class="blk">
+        <div class="label" id="conLabel">Concepto</div>
+        <div class="tip" id="tip"></div>
+        <div id="conFields"></div>
+      </div>
+      <div class="blk">
+        <div class="label">Datos fiscales del comprobante</div>
+        <div class="row2">
+          <div class="field"><label for="clave">ClaveProdServ (código SAT)</label><input id="clave" type="text" placeholder="84111506"></div>
+          <div class="field"><label for="importe">Importe de la operación</label><input id="importe" type="text" placeholder="$ 24,800.00"></div>
+        </div>
+        <div class="field"><label for="criterio">Coherencia del importe (criterio de valor de mercado / alcance económico)</label><input id="criterio" type="text" placeholder="precio de mercado del bien o servicio"></div>
+      </div>
+      <div class="blk">
+        <div class="label"><span class="pillar-tag aso">Asociación gasto–ingreso</span> · la liga que blinda la defensa</div>
+        <p class="subhelp">El SAT busca <b>desligar</b> el gasto del ingreso para negar que sea estrictamente indispensable. Entre más preciso el nexo, más sólida la defensa.</p>
+        <div class="field"><label for="ingreso">1) ¿Qué operación o ingreso del cliente motivó esta erogación?</label><textarea id="ingreso" placeholder="surtir el contrato con su cliente final / la temporada de ventas que generó el ingreso"></textarea></div>
+        <div class="field"><label for="ingreso_ref">2) Referencia del ingreso relacionado (contrato, proyecto, cliente final, CFDI de ingreso)</label><input id="ingreso_ref" type="text" placeholder="Contrato C-2026-88 con Cliente Final, S.A. / CFDI de ingreso UUID…"></div>
+        <div class="field"><label for="objeto">3) Relación con su objeto social / actividad preponderante</label><input id="objeto" type="text" placeholder="comercialización y distribución de mercancía"></div>
+        <div class="field"><label for="nexo">4) ¿Por qué fue estrictamente indispensable? (si no se hubiera contratado, ¿qué pasaría?)</label><textarea id="nexo" placeholder="sin este servicio/insumo no se habría podido cumplir el pedido que generó el ingreso"></textarea></div>
+        <div class="field"><label for="temporal">5) Asociación temporal: periodo del gasto vs. periodo del ingreso</label><input id="temporal" type="text" placeholder="ambos corresponden a junio 2026"></div>
+      </div>
+      <div class="blk">
+        <div class="label"><span class="pillar-tag mat">Materialidad</span> · evidencia que aporta el cliente</div>
+        <p class="subhelp">Marca lo que tengas y anota la <b>referencia del anexo</b> (documental, fotográfica, etc.). Con eso construimos el entregable.</p>
+        <div class="evlist" id="evidWrap"></div>
+        <div class="field" style="margin-top:12px"><label for="notas">Notas para el entregable (contexto adicional)</label><textarea id="notas" placeholder="cualquier detalle que ayude a documentar la operación"></textarea></div>
+        <div class="hint" id="evidHint"></div>
+      </div>
+      <div class="btns">
+        <button class="ghost act" id="btnEj" type="button">Cargar ejemplo</button>
+        <button class="ghost act" id="btnLimpiar" type="button">Limpiar</button>
+      </div>
+    </section>
+
+    <section class="panel-out" aria-label="Concepto y blindaje">
+      <div class="card">
+        <div class="sealrow">
+          <div class="seal" id="seal" role="img" aria-label="Nivel de blindaje"><div class="inner"><div class="pct" id="sealPct">0%</div><div class="st" id="sealSt">blindaje</div></div></div>
+          <div class="sealmeta"><div class="estado" id="estado">Vulnerable</div><p id="estadoMsg">Completa los campos para fortalecer el comprobante.</p></div>
+        </div>
+        <div class="conlabel">Concepto para el CFDI</div>
+        <div class="concepto" id="concepto" aria-live="polite"></div>
+        <div class="conlabel">Ficha del CFDI</div>
+        <div class="ficha" id="ficha"></div>
+        <div class="bars">
+          <div class="bar"><div class="bl"><span class="nm">Materialidad</span><span id="pMat">0%</span></div><div class="track"><div class="fill mat" id="fMat"></div></div></div>
+          <div class="bar"><div class="bl"><span class="nm">Indispensabilidad y congruencia</span><span id="pInd">0%</span></div><div class="track"><div class="fill ind" id="fInd"></div></div></div>
+          <div class="bar"><div class="bl"><span class="nm">Asociación gasto–ingreso</span><span id="pAso">0%</span></div><div class="track"><div class="fill aso" id="fAso"></div></div></div>
+        </div>
+        <div class="alerts" id="alerts"></div>
+        <div class="conlabel">Insumos para el entregable (para la IA)</div>
+        <div class="insumos" id="insumos"></div>
+        <div class="copybar"><button class="act" id="btnCopy" type="button">Copiar concepto</button><button class="ghost act" id="btnCopyIns" type="button">Copiar insumos</button><span id="copyMsg" class="hint" style="align-self:center" aria-live="polite"></span></div>
+      </div>
+      <footer>El blindaje se adapta a la categoría. Sustento: gasto estrictamente indispensable (art. 27-I LISR); IVA acreditable sobre erogaciones deducibles (art. 5-I LIVA); asociación de costos y gastos con los ingresos (NIF); materialidad (arts. 29, 29-A, 69-B y 5-A CFF); en servicios con personal a disposición, registro REPSE. Herramienta operativa; no constituye asesoría vinculante.</footer>
+    </section>
+  </div>
+</div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  function esc(s){return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+  function val(id){var e=$(id);return e?(e.value||"").trim():"";}
+  function fmt(s){if(!s)return"";var p=s.split("-");return p.length===3?(p[2]+"/"+p[1]+"/"+p[0]):s;}
+  function ph(t,f){return f?esc(t):'<span class="ph">['+esc(t)+']</span>';}
+  var UNI_MERC=["piezas","kg","litros","cajas","toneladas","servicios"];
+  var UNI_PERS=["personas","horas","jornadas","servicios"];
+
+  var CFG={
+    servicio:{
+      tip:"Servicios intangibles (honorarios profesionales). Describe el servicio y su periodo o referencia; NO detalles puestos ni personal.",
+      fields:[
+        {id:"descripcion",label:"Descripción del servicio",ph:"contabilidad"},
+        {id:"referencia",label:"Periodo / referencia",ph:"el mes de junio de 2026"},
+        {id:"entregable",label:"Entregable / producto (opcional)",ph:"estados financieros y declaraciones",opt:true},
+        {id:"contrato",label:"Contrato (No. / objeto)",ph:"SP-2026-031"}
+      ],
+      ev:["Entregable o producto del servicio (estados financieros, declaraciones, informe)","Papeles de trabajo o soporte técnico","Acuse o constancia de recepción","Correos o instrucciones del cliente","Visto bueno / aceptación del cliente"],
+      ej:{descripcion:"contabilidad",referencia:"el mes de junio de 2026",entregable:"estados financieros y declaraciones del periodo",contrato:"SP-2026-031"},
+      clave:"84111506", crit:"tarifa profesional a precio de mercado", contrib:"sustenta el cumplimiento que respalda el ingreso",
+      build:function(){
+        var ent=val("entregable")?(", con entrega de "+ph(val("entregable"),true)):"";
+        return "Servicios profesionales de "+ph(val("descripcion")||"descripción del servicio",!!val("descripcion"))+
+          " correspondientes a "+ph(val("referencia")||"periodo / referencia",!!val("referencia"))+
+          ", conforme al contrato "+ph(val("contrato")||"No. / objeto",!!val("contrato"))+ent+
+          ", vinculados a "+ph(val("ingreso")||"ingreso / actividad que motivó la erogación",!!val("ingreso"))+".";
+      },
+      faltan:function(){var f=[];if(!val("descripcion"))f.push("descripción");if(!val("referencia"))f.push("periodo / referencia");return f;}
+    },
+    mercancia:{
+      tip:"Mercancías tangibles (enajenación de bienes). Identifica el bien, su entrega y la coherencia del importe con el valor de mercado. No se detallan puestos.",
+      fields:[
+        {id:"mercancia",label:"Descripción de la mercancía / bienes",ph:"material de empaque (cajas de cartón corrugado)"},
+        [{id:"cantidad",label:"Cantidad",ph:"500"},{id:"unidad",label:"Unidad",type:"select",options:UNI_MERC}],
+        {id:"lugar",label:"Lugar de entrega",ph:"almacén del cliente, CEDIS Norte"},
+        {id:"fecha",label:"Fecha de entrega",type:"date"},
+        {id:"contrato",label:"Contrato / pedido (No.)",ph:"OC-2026-7741"}
+      ],
+      ev:["Remisión o nota de entrega","Evidencia de entrega–recepción de la mercancía","Traslado (carta porte / guía) si aplica","Entrada a almacén / registro de inventario","Comprobante de pago"],
+      ej:{mercancia:"material de empaque (cajas de cartón corrugado)",cantidad:"500",unidad:"piezas",lugar:"almacén del cliente, CEDIS Norte",fecha:"2026-06-12",contrato:"OC-2026-7741"},
+      clave:"14111704", crit:"precio de lista del proveedor a valor de mercado", contrib:"insumo necesario para surtir los pedidos vendidos",
+      build:function(){
+        var cant=(val("cantidad")||val("unidad"))?" ("+(val("cantidad")||"[cantidad]")+" "+(val("unidad")||"[unidad]")+")":"";
+        return "Enajenación de "+ph(val("mercancia")||"descripción de la mercancía",!!val("mercancia"))+cant+
+          ", entregada en "+ph(val("lugar")||"lugar de entrega",!!val("lugar"))+
+          " el "+ph(fmt(val("fecha"))||"dd/mm/aaaa",!!val("fecha"))+
+          ", conforme al contrato/pedido "+ph(val("contrato")||"No.",!!val("contrato"))+
+          ", vinculada a "+ph(val("ingreso")||"ingreso / actividad que motivó la erogación",!!val("ingreso"))+".";
+      },
+      faltan:function(){var f=[];if(!val("mercancia"))f.push("mercancía");if(!val("fecha"))f.push("fecha de entrega");return f;}
+    },
+    especializado:{
+      tip:"Servicio especializado (REPSE): aquí SÍ detallas la mano de obra — servicio, puesto y periodo del personal a disposición.",
+      fields:[
+        {id:"servicio",label:"Servicio / función",ph:"apoyo en almacén"},
+        {id:"puestos",label:"Puesto(s) del personal",ph:"Ayudante general (recepción y acomodo de mercancía)"},
+        [{id:"inicio",label:"Periodo · inicio",type:"date"},{id:"fin",label:"Periodo · fin",type:"date"}],
+        [{id:"cantidad",label:"Cantidad",ph:"2"},{id:"unidad",label:"Unidad",type:"select",options:UNI_PERS}],
+        {id:"area",label:"Área / centro de trabajo",ph:"CEDIS Norte"},
+        {id:"contrato",label:"Contrato (No. / objeto)",ph:"PS-2026-014"}
+      ],
+      ev:["Descripción de actividades por puesto","Reportes, resultados o productos del periodo","Bitácoras / listas de asistencia / accesos","Correos, instrucciones o requerimientos del cliente","Visto bueno del cliente sobre el entregable"],
+      ej:{servicio:"apoyo en almacén",puestos:"Ayudante general (recepción y acomodo de mercancía)",inicio:"2026-06-01",fin:"2026-06-15",cantidad:"2",unidad:"personas",area:"CEDIS Norte",contrato:"PS-2026-014"},
+      clave:"80111600", crit:"tarifa por puesto a precio de mercado de la zona", contrib:"permitió ejecutar la operación que generó el ingreso",
+      build:function(){
+        var cant=(val("cantidad")||val("unidad"))?" ("+(val("cantidad")||"[cantidad]")+" "+(val("unidad")||"[unidad]")+")":"";
+        var per=(val("inicio")||val("fin"))?(ph(fmt(val("inicio"))||"inicio",!!val("inicio"))+" – "+ph(fmt(val("fin"))||"fin",!!val("fin"))):ph("dd/mm/aaaa – dd/mm/aaaa",false);
+        return "Servicio especializado de "+ph(val("servicio")||"servicio / función",!!val("servicio"))+
+          " mediante personal en el puesto de "+ph(val("puestos")||"puesto(s)",!!val("puestos"))+cant+
+          ", durante el periodo "+per+", en "+ph(val("area")||"área / centro",!!val("area"))+
+          ", conforme al contrato "+ph(val("contrato")||"No. / objeto",!!val("contrato"))+
+          ", vinculado a "+ph(val("ingreso")||"ingreso / actividad que motivó la erogación",!!val("ingreso"))+".";
+      },
+      faltan:function(){var f=[];if(!val("servicio"))f.push("servicio");if(!val("puestos"))f.push("puesto");if(!val("inicio")||!val("fin"))f.push("periodo");return f;}
+    }
+  };
+
+  var tipo="servicio";
+  function mode(){return tipo;}
+
+  function fieldHTML(f){
+    var inner;
+    if(f.type==="select"){inner='<select id="'+f.id+'"><option value="">—</option>'+f.options.map(function(o){return '<option>'+o+'</option>'}).join("")+'</select>';}
+    else if(f.type==="date"){inner='<input id="'+f.id+'" type="date">';}
+    else{inner='<input id="'+f.id+'" type="text" placeholder="'+(f.ph||"")+'">';}
+    return '<div class="field"><label for="'+f.id+'">'+f.label+'</label>'+inner+'</div>';
+  }
+  function renderType(){
+    var cfg=CFG[mode()];
+    var titles={servicio:"Concepto · Servicios (intangibles)",mercancia:"Concepto · Mercancías (tangibles)",especializado:"Concepto · Servicio especializado (REPSE)"};
+    $("conLabel").textContent=titles[mode()];
+    $("tip").textContent=cfg.tip;
+    var html=""; cfg.fields.forEach(function(it){ if(Array.isArray(it)){html+='<div class="row2">'+it.map(fieldHTML).join("")+'</div>';} else html+=fieldHTML(it); });
+    $("conFields").innerHTML=html;
+    $("evidWrap").innerHTML=cfg.ev.map(function(t,i){return '<div class="evrow"><label class="chk"><input type="checkbox" data-ev data-i="'+i+'"><span>'+t+'</span></label><input class="evref" data-evref="'+i+'" type="text" placeholder="referencia / anexo (archivo, fecha, link)"></div>';}).join("");
+    $("evidHint").textContent = mode()==="mercancia" ? "Materialidad del bien: su existencia, traslado y entrega." : (mode()==="especializado" ? "Privacidad: la evidencia la aporta el cliente, no el trabajador." : "La evidencia (entregable y acuses) la aporta el cliente.");
+    render();
+  }
+  function flatIds(noOpt){var ids=[];CFG[mode()].fields.forEach(function(it){var arr=Array.isArray(it)?it:[it];arr.forEach(function(f){if(!(noOpt&&f.opt))ids.push(f.id);});});return ids;}
+  function evids(){return Array.prototype.slice.call(document.querySelectorAll('[data-ev]'));}
+  function refMap(){var m={};Array.prototype.slice.call(document.querySelectorAll('[data-evref]')).forEach(function(r){m[r.getAttribute('data-evref')]=(r.value||"").trim();});return m;}
+  function compute(){
+    var ind=flatIds(true).concat(["clave","importe","criterio"]);
+    var indF=ind.filter(function(i){return val(i)!=="";}).length;
+    var aso=["ingreso","ingreso_ref","objeto","nexo","temporal"], asoF=aso.filter(function(i){return val(i)!=="";}).length;
+    var ev=evids(), evC=ev.filter(function(c){return c.checked;}).length;
+    return {pMat:ev.length?evC/ev.length:0,pInd:ind.length?indF/ind.length:0,pAso:asoF/aso.length,ev:evC,total:0};
+  }
+  function pct(n){return Math.round(n*100);}
+  function estadoFor(t){if(t>=1)return{n:"Blindado",m:"Los tres frentes cubiertos."};if(t>=0.67)return{n:"Reforzado",m:"Sólido. Cierra los pendientes para el blindaje total."};if(t>=0.34)return{n:"Parcial",m:"Avanza, pero quedan huecos aprovechables."};return{n:"Vulnerable",m:"Completa los campos para fortalecer el comprobante."};}
+  function buildInsumos(){
+    var cfg=CFG[mode()], L=[], tmp=document.createElement("div"); tmp.innerHTML=cfg.build();
+    var rubro={servicio:"Servicios (intangibles)",mercancia:"Mercancías (tangibles)",especializado:"Servicio especializado (REPSE)"}[mode()];
+    L.push("OPERACIÓN: "+rubro);
+    L.push("CONCEPTO CFDI: "+tmp.textContent);
+    L.push("");
+    L.push("DATOS FISCALES:");
+    L.push("- ClaveProdServ: "+(val("clave")||"[pendiente]"));
+    L.push("- Importe: "+(val("importe")||"[pendiente]"));
+    L.push("- Coherencia de valor: "+(val("criterio")||"[pendiente]"));
+    L.push("");
+    L.push("ASOCIACIÓN GASTO–INGRESO:");
+    L.push("- Operación/ingreso que lo motivó: "+(val("ingreso")||"[pendiente]"));
+    L.push("- Referencia del ingreso: "+(val("ingreso_ref")||"[pendiente]"));
+    L.push("- Objeto social/actividad: "+(val("objeto")||"[pendiente]"));
+    L.push("- Por qué es indispensable: "+(val("nexo")||"[pendiente]"));
+    L.push("- Asociación temporal: "+(val("temporal")||"[pendiente]"));
+    L.push("");
+    L.push("EVIDENCIA DE MATERIALIDAD:");
+    var rm=refMap(), any=false;
+    evids().forEach(function(c){ if(c.checked){ any=true; var i=c.getAttribute('data-i'); var ref=rm[i]||"(sin referencia)"; L.push("- "+c.parentNode.querySelector('span').textContent+" → "+ref); } });
+    if(!any) L.push("- [el cliente aún no marca evidencias]");
+    if(val("notas")){ L.push(""); L.push("NOTAS: "+val("notas")); }
+    return L.join("\n");
+  }
+  function render(){
+    var cfg=CFG[mode()];
+    $("concepto").innerHTML=cfg.build();
+    $("ficha").innerHTML=
+      '<div class="fl"><span class="k">ClaveProdServ</span><span class="v'+(val("clave")?'':' ph')+'">'+(val("clave")?esc(val("clave")):"asignar código SAT congruente")+'</span></div>'+
+      '<div class="fl"><span class="k">Importe</span><span class="v'+(val("importe")?'':' ph')+'">'+(val("importe")?esc(val("importe")):"capturar importe")+'</span></div>'+
+      '<div class="fl"><span class="k">Coherencia de valor</span><span class="v'+(val("criterio")?'':' ph')+'">'+(val("criterio")?esc(val("criterio")):"sustentar vs. valor de mercado")+'</span></div>';
+    var c=compute(); c.total=(c.pMat+c.pInd+c.pAso)/3;
+    var pm=pct(c.pMat),pi=pct(c.pInd),pa=pct(c.pAso),tot=pct(c.total);
+    $("fMat").style.width=pm+"%";$("pMat").textContent=pm+"%";
+    $("fInd").style.width=pi+"%";$("pInd").textContent=pi+"%";
+    $("fAso").style.width=pa+"%";$("pAso").textContent=pa+"%";
+    var seal=$("seal"),done=tot>=100;seal.style.setProperty("--p",tot);seal.classList.toggle("done",done);
+    $("sealPct").textContent=done?"BLINDADO":tot+"%";$("sealSt").textContent=done?"tres frentes":"blindaje";
+    var e=estadoFor(c.total);$("estado").textContent=e.n;$("estadoMsg").textContent=e.m;
+    var A=$("alerts");A.innerHTML="";function add(t,h){var d=document.createElement("div");d.className="alert "+t;d.innerHTML=h;A.appendChild(d);}
+    var fal=cfg.faltan(); if(fal.length)add("warn","<b>Concepto incompleto.</b>&nbsp;Falta: "+fal.join(", ")+".");
+    if(!val("ingreso"))add("warn","<b>Sin asociación gasto–ingreso.</b>&nbsp;Riesgo de indispensabilidad (27-I LISR / 5-I LIVA).");
+    if(!val("clave"))add("warn","<b>Falta ClaveProdServ.</b>&nbsp;Asigna el código SAT congruente.");
+    if(!val("importe"))add("warn","<b>Falta importe.</b>&nbsp;Captura el monto de la operación.");
+    else if(!val("criterio"))add("warn","<b>Coherencia del importe sin sustento.</b>&nbsp;Indica el criterio de valor de mercado.");
+    if(c.ev<3)add("warn","<b>Materialidad débil.</b>&nbsp;Reúne al menos 3 evidencias.");
+    var rm=refMap(), missingRef=evids().some(function(c){return c.checked && !rm[c.getAttribute('data-i')];});
+    if(missingRef)add("warn","<b>Evidencia sin referencia.</b>&nbsp;Anota el anexo de cada evidencia marcada (documental, fotográfica, etc.).");
+    $("insumos").textContent=buildInsumos();
+    if(c.total>=1){A.innerHTML="";add("good","<b>Listo para timbrar.</b>&nbsp;Concepto preciso y soportado en los tres frentes.");}
+  }
+
+  var segTipo=document.querySelectorAll('#segTipo button');
+  segTipo.forEach(function(b){b.addEventListener("click",function(){segTipo.forEach(function(x){x.classList.remove("on")});b.classList.add("on");tipo=b.getAttribute("data-tipo");renderType();});});
+  $("form").addEventListener("input",render); $("form").addEventListener("change",render);
+
+  $("btnEj").addEventListener("click",function(){
+    var cfg=CFG[mode()]; Object.keys(cfg.ej).forEach(function(k){if($(k))$(k).value=cfg.ej[k];});
+    $("clave").value=cfg.clave; $("importe").value="$ 24,800.00"; $("criterio").value=cfg.crit;
+    $("ingreso").value="surtir el contrato con su cliente final que generó el ingreso del periodo";
+    $("ingreso_ref").value="Contrato C-2026-88 con Cliente Final, S.A.";
+    $("objeto").value="comercialización y distribución de mercancía";
+    $("nexo").value=cfg.contrib;
+    $("temporal").value="el gasto y el ingreso corresponden a junio 2026";
+    var sampleRefs=["Reporte firmado (jun-2026)","Lista de asistencia / acuses","Correos de instrucciones del cliente","Acuse de recepción del entregable"];
+    evids().forEach(function(c,i){c.checked=i<4;});
+    Array.prototype.slice.call(document.querySelectorAll('[data-evref]')).forEach(function(r,i){ if(i<4) r.value=sampleRefs[i]; });
+    $("notas").value="operación dentro del curso normal de la actividad del cliente.";
+    render();
+  });
+  $("btnLimpiar").addEventListener("click",function(){
+    Array.prototype.slice.call($("form").querySelectorAll("input,textarea,select")).forEach(function(e){if(e.type==="checkbox")e.checked=false;else e.value="";});
+    $("copyMsg").textContent=""; render();
+  });
+  function doCopy(txt){
+    function ok(){$("copyMsg").textContent=/\[/.test(txt)?"Copiado (con pendientes)":"Copiado";}
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(txt).then(ok,fb);else fb();
+    function fb(){var t=document.createElement("textarea");t.value=txt;document.body.appendChild(t);t.select();try{document.execCommand("copy");}catch(e){}document.body.removeChild(t);ok();}
+  }
+  $("btnCopy").addEventListener("click",function(){var tmp=document.createElement("div");tmp.innerHTML=CFG[mode()].build();doCopy(tmp.textContent);});
+  $("btnCopyIns").addEventListener("click",function(){doCopy(buildInsumos());});
+
+  renderType();
+})();
+</script>
+</body>
+</html>

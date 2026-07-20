@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="robots" content="noindex, nofollow" />
+<title>PR&amp;M · Solicitud de Cotización</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#14303D; --navy2:#22485A; --gold:#A8843C; --goldsoft:#F2ECDD; --paper:#F4F2EC; --card:#FFFFFF;
+    --line:#D7DDD9; --ok:#2E7D5B; --oksoft:#E7F0EA; --ink:#1A1A1A; --gris:#5C615E; --lgris:#8A938F; --soft:#EEF1EF;
+    --display:"Fraunces",Georgia,"Times New Roman",serif; --body:"Inter",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  }
+  *{box-sizing:border-box} html,body{margin:0}
+  body{background:var(--paper);color:var(--ink);font-family:var(--body);line-height:1.55;-webkit-font-smoothing:antialiased;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}
+  input,textarea,select{-webkit-user-select:text!important;-moz-user-select:text!important;-ms-user-select:text!important;user-select:text!important}
+  .wrap{max-width:820px;margin:0 auto;padding:0 18px 70px}
+  .hero{background:var(--navy);color:#fff;border-radius:0 0 20px 20px;padding:30px 26px 26px;position:relative;overflow:hidden}
+  .hero .bar{width:48px;height:4px;background:var(--gold);border-radius:3px;margin-bottom:14px}
+  .hero .brand{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);font-weight:700}
+  .hero h1{font-family:var(--display);font-weight:600;font-size:clamp(24px,5vw,34px);line-height:1.1;margin:6px 0 8px}
+  .hero p{color:#C9D3D2;font-size:15px;max-width:60ch;margin:0}
+  .prog{position:sticky;top:0;z-index:5;background:var(--paper);padding:12px 0 8px}
+  .prog .track{height:8px;background:#E4E7E2;border-radius:6px;overflow:hidden}
+  .prog .fill{height:100%;width:0;background:var(--gold);border-radius:6px;transition:width .4s ease}
+  .prog .lbl{font-size:11.5px;color:var(--gris);margin-top:5px;font-weight:600}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px 20px 18px;margin-bottom:16px;box-shadow:0 1px 0 rgba(20,48,61,.03)}
+  .step{display:flex;align-items:center;gap:11px;margin-bottom:4px}
+  .step .n{flex:none;width:30px;height:30px;border-radius:50%;background:var(--navy);color:#fff;font-family:var(--display);font-weight:600;font-size:15px;display:flex;align-items:center;justify-content:center}
+  .step h2{font-family:var(--display);font-weight:600;font-size:19px;margin:0;color:var(--navy);flex:1}
+  .mod{flex:none;font-size:11px;font-weight:700;color:var(--lgris);background:var(--soft);border-radius:9px;padding:4px 10px;transition:.2s}
+  .mod.done{color:#1f5d44;background:var(--oksoft)}
+  /* Blindaje discreto: solo al pasar el cursor */
+  .bl{flex:none;position:relative;font-size:13px;opacity:.45;cursor:default;line-height:1}
+  .bl:hover{opacity:1}
+  .bl .bltip{display:none;position:absolute;right:-6px;top:22px;z-index:30;width:290px;background:var(--navy);color:#EDEFEA;border-radius:12px;padding:12px 14px;font-size:11.5px;line-height:1.5;box-shadow:0 8px 24px rgba(20,48,61,.28);text-align:left;font-weight:400}
+  .bl .bltip b{color:#EAD9BD;display:block;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px}
+  .bl .bltip i{color:#C9D3D2;font-style:normal;display:block;margin-top:2px}
+  .bl:hover .bltip{display:block}
+  @media(max-width:560px){.bl .bltip{width:230px}}
+  .sub{font-size:13.5px;color:var(--gris);margin:2px 0 14px 41px}
+  @media(max-width:520px){.sub{margin-left:0}}
+  .field{margin-bottom:13px}
+  .field label{display:block;font-size:13px;font-weight:600;color:var(--navy2);margin-bottom:6px}
+  .field input,.field textarea,.field select{width:100%;padding:11px 13px;border:1px solid var(--line);border-radius:10px;background:#fff;font-family:inherit;font-size:14.5px;color:var(--ink)}
+  .field textarea{min-height:70px;resize:vertical}
+  .field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(168,132,60,.16)}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+  @media(max-width:560px){.row2{grid-template-columns:1fr}}
+  .chips{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:4px}
+  .chip{border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:11px 14px;font-family:inherit;font-size:13.5px;font-weight:600;color:var(--navy2);cursor:pointer;text-align:left;transition:.12s}
+  .chip:hover{border-color:#b9c2bc}
+  .chip.on{border-color:var(--gold);background:var(--goldsoft);color:var(--navy);box-shadow:0 0 0 3px rgba(168,132,60,.12)}
+  .chip .em{display:block;font-size:11px;font-weight:500;color:var(--gris);margin-top:2px}
+  .chip.on .em{color:var(--navy2)}
+  .tcards{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
+  @media(max-width:560px){.tcards{grid-template-columns:1fr}}
+  .tcard{border:1.5px solid var(--line);background:#fff;border-radius:14px;padding:15px 13px;cursor:pointer;text-align:center;transition:.12s}
+  .tcard:hover{border-color:#b9c2bc}
+  .tcard.on{border-color:var(--gold);background:var(--goldsoft)}
+  .tcard .ico{font-size:24px;line-height:1}
+  .tcard .tt{font-family:var(--display);font-weight:600;font-size:15px;color:var(--navy);margin-top:7px}
+  .tcard .dd{font-size:11.5px;color:var(--gris);margin-top:4px;line-height:1.35}
+  .reveal{border-left:3px solid var(--gold);background:#FBF7EF;border-radius:0 10px 10px 0;padding:11px 13px;margin-top:10px}
+  .reveal.hidden{display:none}
+  .hidden{display:none}
+  .warnbox{background:#FBF7EF;border:1px solid #E4D4B0;border-left:3px solid var(--gold);border-radius:0 10px 10px 0;padding:11px 13px;margin-top:10px;font-size:13px;color:var(--navy2)}
+  .warnbox .lnk{display:inline-block;margin-top:7px;background:var(--navy);color:#fff;border:none;border-radius:9px;padding:8px 13px;font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer}
+  .notaRec{font-size:12.5px;color:var(--gris);margin-top:10px}
+  .notaRec a{color:var(--gold);font-weight:600;cursor:pointer;text-decoration:underline}
+  .pq{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px}
+  .pq summary{cursor:pointer;font-size:12.5px;font-weight:600;color:var(--gold);list-style:none;display:flex;align-items:center;gap:6px}
+  .pq summary::-webkit-details-marker{display:none}
+  .pq summary:before{content:"§";font-size:13px;font-family:var(--display)}
+  .pq .body{font-size:12.5px;color:var(--gris);margin-top:8px;line-height:1.6}
+  .pq .jitem{padding:5px 0;border-bottom:1px solid #F1EFE9}
+  .pq .jitem:last-child{border-bottom:none}
+  .pq .jitem b{color:var(--navy2)}
+  .pq a{color:var(--gold);font-weight:600;text-decoration:underline}
+  .evblock{border:1px solid var(--line);border-radius:13px;padding:14px 15px;margin-top:12px;background:#FBFAF7}
+  .evblock .gt{font-size:13.5px;font-weight:700;color:var(--navy)}
+  .evblock .gt .tag{display:inline-block;background:var(--goldsoft);color:var(--gold);font-size:10px;font-weight:700;border-radius:7px;padding:2px 8px;margin-left:7px;letter-spacing:.05em;vertical-align:middle}
+  .evblock .ex{font-size:12.5px;color:var(--gris);margin-top:5px;line-height:1.5}
+  .evrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:11px}
+  .upbtn{display:inline-block;background:var(--navy);color:#fff;border-radius:10px;padding:9px 15px;font-size:13px;font-weight:700;cursor:pointer}
+  .evblock input[type=file],.upwrap input[type=file]{position:absolute;left:-9999px}
+  .commit{display:flex;align-items:center;gap:9px;border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:9px 12px;font-size:12.5px;font-weight:600;color:var(--navy2);cursor:pointer;transition:.12s}
+  .commit .bx{width:17px;height:17px;border:1.5px solid #b9c2bc;border-radius:5px;flex:none;position:relative}
+  .commit.on{border-color:var(--gold);background:var(--goldsoft)}
+  .commit.on .bx{background:var(--gold);border-color:var(--gold)}
+  .commit.on .bx:after{content:"✓";color:#fff;font-size:12px;position:absolute;left:2px;top:-2px}
+  .adjlist{margin-top:9px}
+  .adjlist .af{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--navy2);padding:5px 10px;border:1px solid var(--line);border-radius:9px;margin-bottom:5px;background:#fff}
+  .csfok{display:none;margin-top:9px;background:var(--oksoft);border:1px solid #BFD9CC;color:#1f5d44;border-radius:10px;padding:8px 12px;font-size:12.5px;text-align:left}
+  .comp{display:flex;align-items:center;gap:14px;border:1px solid var(--line);border-radius:13px;background:#fff;padding:13px 15px;margin-top:12px}
+  .comp .txt{flex:1}
+  .comp .tt{font-family:var(--display);font-weight:600;font-size:15px;color:var(--navy)}
+  .comp .ss{font-size:12.5px;color:var(--gris);margin-top:2px}
+  .plazo{font-size:11.5px;color:var(--lgris);font-style:italic;margin-top:6px}
+  .src .body{font-size:13px;color:var(--gris);line-height:1.7}
+  .src a{color:var(--gold);font-weight:600;text-decoration:underline}
+  .src .si{padding:7px 0;border-bottom:1px solid #EFEDE7}
+  .src .si b{color:var(--navy)}
+  .cta{background:var(--gold);color:#fff;border:none;border-radius:13px;padding:15px 22px;font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;width:100%}
+  .cta:hover{background:#8f6f30}
+  .btnrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+  .btn2{flex:1;background:#fff;border:1.5px solid var(--navy);color:var(--navy);border-radius:11px;padding:12px;font-family:inherit;font-weight:700;font-size:14px;cursor:pointer;min-width:140px}
+  .btn2:hover{background:var(--soft)}
+  .discreto{font-size:12px;color:var(--lgris);margin-top:10px;text-align:center}
+  #salida{margin-top:16px}
+  .doc{border:1px solid var(--line);border-radius:14px;background:#fff;padding:22px 22px 18px}
+  .doc .dh{border-bottom:2px solid var(--navy);padding-bottom:10px;margin-bottom:6px}
+  .doc .dh .k{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:700}
+  .doc .dh h3{font-family:var(--display);font-weight:600;font-size:20px;color:var(--navy);margin:3px 0 0}
+  .doc .dh .m{font-size:12px;color:var(--gris);margin-top:3px}
+  .doc .ds{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);font-weight:700;margin-top:16px;padding-bottom:4px;border-bottom:1px solid var(--line)}
+  .doc .drow{display:flex;gap:12px;padding:8px 0;border-bottom:1px solid #EFEDE7;font-size:13.5px}
+  .doc .drow .dk{flex:none;width:200px;color:var(--gris);font-weight:600}
+  @media(max-width:560px){.doc .drow{flex-direction:column;gap:2px}.doc .drow .dk{width:auto}}
+  .doc .narr{font-family:var(--display);font-style:italic;font-size:14.5px;color:var(--navy2);background:var(--soft);border-radius:10px;padding:12px 14px;margin-top:14px;line-height:1.5}
+  .doc .const{margin-top:14px;background:var(--oksoft);border-left:3px solid var(--ok);border-radius:0 10px 10px 0;padding:11px 13px;font-size:12.5px;color:#1f5d44}
+  .foot{margin-top:22px;font-size:11px;color:var(--lgris);line-height:1.5;text-align:center}
+  .foot b{color:var(--gris)}
+  .miss{background:#FBEFEA;border:1px solid #f1cdbd;color:#8f3a1c;border-radius:10px;padding:11px 13px;font-size:13px;margin-top:12px;line-height:1.6}
+  @media print{
+    body{background:#fff} .hero,.prog,.pq,.foot,.cta,.btnrow,#genBtn .sub,#genBtn .step,.step .n,.mod,.srccard,.discreto,.fisc,.bl{display:none!important}
+    .wrap{max-width:none;padding:0}
+    .card{border:none;box-shadow:none;padding:0;margin:0}
+    #formZone{display:none}
+    .doc{border:none}
+  }
+</style>
+</head>
+<body>
+<div class="hero">
+  <div class="wrap" style="padding-bottom:0">
+    <div class="bar"></div>
+    <div class="brand">PR&amp;M Business Group · Solicitud de cotización</div>
+    <h1>Cuéntanos de tu operación</h1>
+    <p>Responde con tus palabras y adjunta lo que ya tengas. Con eso preparamos tu cotización y dejamos tu operación documentada correctamente desde el primer día.</p>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="prog">
+    <div class="track"><div class="fill" id="progFill"></div></div>
+    <div class="lbl" id="progLbl">Empecemos · 0% completado</div>
+  </div>
+
+  <div id="formZone">
+
+  <!-- 1 · DATOS DEL CONTRIBUYENTE -->
+  <div class="card">
+    <div class="step"><div class="n">1</div><h2>Datos del contribuyente</h2><span class="bl">🛡<span class="bltip"><b>Blindaje de este apartado</b><i>· Identidad fiscal exacta: tu comprobante se emite idéntico a tu registro ante el SAT.</i><i>· Aquí comienza la constancia de que tú originaste la operación.</i><i>· Toda tu captura queda fechada antes de que exista factura.</i></span></span><span class="mod" id="mod1">Pendiente</span></div>
+    <div class="sub">Para emitir tu cotización y tus comprobantes exactamente a tu nombre.</div>
+
+    <div class="field">
+      <label>¿Ya eres cliente de PR&amp;M?</label>
+      <div class="chips" id="gateChips">
+        <button type="button" class="chip" data-gate="nuevo">Es la primera vez<span class="em">Capturo mis datos</span></button>
+        <button type="button" class="chip" data-gate="recurrente">Ya soy cliente<span class="em">Solo mi RFC o clave</span></button>
+      </div>
+    </div>
+
+    <div id="gateNuevo" class="reveal hidden" style="border-left-color:var(--navy);background:#fff;border:1px solid var(--line);border-radius:12px">
+      <div class="field"><label>Nombre o razón social</label><input id="rs" placeholder="Mi Empresa, S.A. de C.V. / tu nombre"></div>
+      <div class="row2">
+        <div class="field"><label>RFC</label><input id="rfc" placeholder="XAXX010101000"></div>
+        <div class="field"><label>Código postal fiscal</label><input id="cp" placeholder="El de tu constancia (5 dígitos)"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Régimen fiscal</label>
+          <select id="regimen">
+            <option value="">Elige o revisa tu constancia</option>
+            <option>601 · Personas Morales (empresa)</option>
+            <option>612 · Actividad empresarial y profesional (persona física)</option>
+            <option>626 · Régimen Simplificado de Confianza (RESICO)</option>
+            <option>621 · Incorporación Fiscal</option>
+            <option>606 · Arrendamiento</option>
+            <option>603 · Personas Morales sin fines de lucro</option>
+            <option>No estoy seguro / lo confirma mi contador</option>
+          </select>
+        </div>
+        <div class="field"><label>¿A qué se dedica tu empresa?</label>
+          <select id="giro">
+            <option value="">Elige tu actividad principal</option>
+            <option>Comercio (venta de productos al público)</option>
+            <option>Comercio al por mayor / distribución</option>
+            <option>Servicios profesionales (legal, contable, consultoría)</option>
+            <option>Construcción</option>
+            <option>Fabricación / manufactura (p. ej. muebles)</option>
+            <option>Agricultura, ganadería o pesca</option>
+            <option>Transporte y logística</option>
+            <option>Restaurantes y alimentos</option>
+            <option>Salud</option>
+            <option>Educación</option>
+            <option>Arrendamiento / inmobiliario</option>
+            <option>Minería o extracción</option>
+            <option>Tecnología / software</option>
+            <option>Manejo de residuos / recolección</option>
+            <option>Refacciones y autopartes</option>
+            <option>Otra</option>
+          </select>
+        </div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Correo</label><input id="correo" placeholder="correo@tuempresa.com"></div>
+        <div class="field"><label>Teléfono</label><input id="tel" placeholder="951 000 0000"></div>
+      </div>
+      <div class="field"><label>Uso del CFDI</label>
+        <select id="usoCfdi">
+          <option value="">Elige el uso del comprobante</option>
+          <option>G01 · Adquisición de mercancías</option>
+          <option>G03 · Gastos en general</option>
+          <option>I01 · Construcciones</option>
+          <option>I04 · Equipo de cómputo y accesorios</option>
+          <option>I08 · Otra maquinaria y equipo</option>
+          <option>P01 · Por definir</option>
+          <option>S01 · Sin efectos fiscales</option>
+        </select>
+      </div>
+      <div class="field"><label>Domicilio fiscal (calle y número)</label><input id="domCalle" placeholder="Calle, No. ext / int — como en tu constancia"></div>
+      <div class="row2">
+        <div class="field"><label>Colonia</label><input id="domColonia" placeholder="Colonia"></div>
+        <div class="field"><label>Municipio / Alcaldía</label><input id="domMunicipio" placeholder="Municipio o alcaldía"></div>
+      </div>
+      <div class="field"><label>Estado</label><input id="domEstado" placeholder="Entidad federativa"></div>
+      <div class="evblock" style="margin-top:4px">
+        <div class="gt">📎 Constancia de Situación Fiscal</div>
+        <div class="ex">Con ella tus comprobantes salen bien a la primera. La descargas en <a href="https://www.sat.gob.mx" target="_blank" rel="noopener" style="color:var(--gold);font-weight:600">sat.gob.mx</a>.</div>
+        <div class="evrow"><label class="upbtn" for="csfInput">Adjuntar constancia</label><input type="file" id="csfInput" accept="application/pdf,image/*"></div>
+        <div class="csfok" id="csfOk"></div>
+      </div>
+    </div>
+
+    <div id="gateRec" class="reveal hidden" style="border-left-color:var(--navy);background:#fff;border:1px solid var(--line);border-radius:12px">
+      <div class="field" style="margin-bottom:6px"><label>Tu RFC o clave de cliente</label><input id="rfcRec" placeholder="XAXX010101000 / MI-CLAVE"></div>
+      <div class="notaRec">Tus datos ya están en tu expediente. <a id="recCambioLink">¿Cambió algo? — domicilio fiscal, representante legal, régimen…</a></div>
+      <div class="reveal hidden" id="recCambio">
+        <div class="field" style="margin-bottom:8px"><label>Cuéntanos qué cambió</label><input id="cambio" placeholder="p. ej. cambié de domicilio fiscal en mayo"></div>
+        <div class="evrow upwrap" style="margin-top:0"><label class="upbtn" for="csfRecInput">Adjuntar documento actualizado</label><input type="file" id="csfRecInput" accept="application/pdf,image/*"></div>
+        <div class="csfok" id="csfRecOk"></div>
+      </div>
+    </div>
+
+    <details class="pq"><summary>Respaldo jurídico de este apartado</summary><div class="body">
+      <div class="jitem"><b>Identidad fiscal exacta.</b> El comprobante debe contener el RFC, nombre y código postal del domicilio fiscal de quien lo recibe, coincidentes con el registro ante el SAT — arts. 29 y 29-A del <a href="https://www.diputados.gob.mx/LeyesBiblio/pdf/CFF.pdf" target="_blank" rel="noopener">CFF</a>. Un comprobante con datos inexactos puede no surtir efectos fiscales.</div>
+    </div></details>
+  </div>
+
+  <!-- 2 · LA OPERACIÓN -->
+  <div class="card">
+    <div class="step"><div class="n">2</div><h2>La operación</h2><span class="bl">🛡<span class="bltip"><b>Blindaje de este apartado</b><i>· Descripción específica: elimina el concepto vago, primera causa de rechazo.</i><i>· Importe, cantidad y periodo definidos por ti, antes de contratar.</i><i>· Forma de pago que protege tu deducción y tu IVA.</i><i>· Referencias de mercado que respaldan el precio.</i><i>· El bien o lugar hacen la operación verificable físicamente.</i></span></span><span class="mod" id="mod2">Pendiente</span></div>
+    <div class="sub">Qué es, cuánto, cuándo, dónde y cómo se paga.</div>
+    <div class="tcards" id="tipoCards">
+      <button type="button" class="tcard" data-tipo="servicio"><div class="ico">🛠️</div><div class="tt">Un servicio</div><div class="dd">Mantenimiento, asesoría, consultoría, instalación, un proyecto…</div></button>
+      <button type="button" class="tcard" data-tipo="mercancia"><div class="ico">📦</div><div class="tt">Un producto</div><div class="dd">Mercancía, materiales, refacciones, equipo, insumos…</div></button>
+      <button type="button" class="tcard" data-tipo="especializado"><div class="ico">👷</div><div class="tt">Personal especializado</div><div class="dd">Personal que ejecuta una labor específica en tu operación</div></button>
+    </div>
+
+    <div class="field" style="margin-top:14px"><label>Descríbelo con tus palabras: ¿qué es exactamente?</label><textarea id="descripcion" placeholder="elige arriba el tipo y te damos ejemplos"></textarea></div>
+
+    <div id="servRepseQ" class="hidden">
+      <div class="field">
+        <label>¿El servicio implica personal trabajando de forma continua dentro de tus instalaciones?</label>
+        <div class="chips" id="servRepseChips">
+          <button type="button" class="chip" data-v="no">No<span class="em">Es un trabajo o proyecto puntual</span></button>
+          <button type="button" class="chip" data-v="si">Sí<span class="em">Personal a disposición, p. ej. limpieza continua</span></button>
+        </div>
+      </div>
+      <div class="warnbox hidden" id="servRepseWarn">Cuando el personal queda a tu disposición de forma continua, la ley lo trata como servicio especializado, no como servicio simple. Te llevamos por la ruta correcta:<br><button type="button" class="lnk" id="servToRepse">Cambiar a personal especializado →</button></div>
+    </div>
+
+    <div class="field hidden" id="bienWrap"><label>¿Sobre qué equipo, bien o instalación se realiza?</label><input id="bien" placeholder="p. ej. router CNC marca y modelo, no. de serie si lo tienes / la fachada de mi local"></div>
+
+    <div class="row2">
+      <div class="field hidden" id="cantWrap"><label id="cantLbl">Cantidad</label><input id="volumen" placeholder=""></div>
+      <div class="field"><label>Importe total (aproximado)</label><input id="importe" placeholder="$"></div>
+    </div>
+
+    <div class="field">
+      <label>¿Comparaste con otras cotizaciones?</label>
+      <div class="chips" id="cotejoChips">
+        <button type="button" class="chip" data-v="Cuenta con otras cotizaciones de referencia">Sí, tengo otras<span class="em">Compártelas — fortalecen tu expediente</span></button>
+        <button type="button" class="chip" data-v="Esta es la única cotización solicitada">Esta es la única</button>
+      </div>
+    </div>
+    <div class="reveal hidden" id="cotejoRev"><div class="field" style="margin-bottom:0"><label>Anota montos o proveedores (o adjúntalas al enviar esta solicitud)</label><input id="cotejoTxt" placeholder="p. ej. Proveedor A $381,500 / Proveedor B $329,000"></div></div>
+
+    <div class="field" style="margin-top:4px">
+      <label>Periodo de ejecución</label>
+      <div class="chips" id="vigChips">
+        <button type="button" class="chip" data-v="unica">Una sola fecha<span class="em">Se hace o entrega una vez</span></button>
+        <button type="button" class="chip" data-v="periodo">Un periodo<span class="em">Con inicio y fin</span></button>
+        <button type="button" class="chip" data-v="continuo">Continuo<span class="em">Mes a mes, sin fecha de término</span></button>
+      </div>
+    </div>
+    <div class="reveal hidden" id="vigUnica"><div class="field" style="margin-bottom:0"><label>¿Qué fecha?</label><input id="vigFecha" placeholder="p. ej. 15 de julio de 2026"></div></div>
+    <div class="reveal hidden" id="vigPeriodo"><div class="row2" style="margin-bottom:0">
+      <div class="field" style="margin-bottom:0"><label>Del…</label><input id="vigIni" placeholder="p. ej. julio de 2026"></div>
+      <div class="field" style="margin-bottom:0"><label>Al…</label><input id="vigFin" placeholder="p. ej. diciembre de 2026"></div>
+    </div></div>
+    <div class="reveal hidden" id="vigCont"><div class="field" style="margin-bottom:0"><label>¿A partir de cuándo?</label><input id="vigDesde" placeholder="p. ej. agosto de 2026"></div></div>
+
+    <div id="lugarTxt" class="field hidden" style="margin-top:13px"><label id="lugarLbl">¿En dónde se entrega?</label><input id="lugar" placeholder="dirección o lugar"></div>
+
+    <div class="row2" style="margin-top:13px">
+      <div class="field">
+        <label>¿Cómo se paga?</label>
+        <div class="chips" id="pagoChips">
+          <button type="button" class="chip" data-v="Transferencia electrónica">Transferencia</button>
+          <button type="button" class="chip" data-v="Cheque nominativo">Cheque</button>
+          <button type="button" class="chip" data-v="Tarjeta de crédito o débito">Tarjeta</button>
+          <button type="button" class="chip" data-v="Efectivo">Efectivo</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>¿De una sola vez o en partes?</label>
+        <div class="chips" id="exhibChips">
+          <button type="button" class="chip" data-v="En una sola exhibición">De una sola vez</button>
+          <button type="button" class="chip" data-v="En parcialidades">En parcialidades</button>
+        </div>
+      </div>
+    </div>
+    <div class="warnbox hidden" id="efeWarn">En efectivo, la ley solo permite deducir pagos de hasta $2,000. Para proteger tu deducción completa te sugerimos transferencia o cheque nominativo — además, tu pago queda reflejado en tu estado de cuenta.</div>
+    <div class="reveal hidden" id="nominaWrap" style="border-left-color:var(--navy);margin-top:12px">
+      <div class="row2" style="margin-bottom:0">
+        <div class="field"><label>Número de trabajadores</label><input id="numTrab" type="number" min="1" placeholder="p. ej. 12"></div>
+        <div class="field"><label>Periodicidad de nómina</label>
+          <select id="periodicidad"><option value="">Elige</option><option>Semanal</option><option>Quincenal</option><option>Mensual</option></select>
+        </div>
+      </div>
+      <div class="evblock" style="margin-top:11px">
+        <div class="gt">📋 Padrón de trabajadores <span class="tag">PARA EL LAYOUT</span></div>
+        <div class="ex">Adjunta el listado con nombre, RFC, CURP, No. de seguridad social, CLABE, banco y salario. Con esto se arma el layout de dispersión.</div>
+        <div class="evrow"><label class="upbtn" for="padronInput">Adjuntar padrón</label><input type="file" id="padronInput" accept=".csv,.xlsx,.xls,application/pdf"></div>
+        <div class="csfok" id="padronOk"></div>
+      </div>
+    </div>
+
+    <details class="pq"><summary>Respaldo jurídico de este apartado</summary><div class="body">
+      <div class="jitem"><b>Descripción específica.</b> El comprobante debe describir el bien o servicio con precisión; los conceptos genéricos son causa reiterada de rechazo de deducciones y del IVA — art. 29-A, fr. V del <a href="https://www.diputados.gob.mx/LeyesBiblio/pdf/CFF.pdf" target="_blank" rel="noopener">CFF</a>; criterios del <a href="https://www.tfja.gob.mx" target="_blank" rel="noopener">TFJA</a>.</div>
+      <div class="jitem"><b>Forma de pago.</b> Los pagos superiores a $2,000 solo son deducibles mediante transferencia, cheque nominativo, tarjeta o monedero autorizado — art. 27, fr. III de la <a href="https://www.diputados.gob.mx/LeyesBiblio/pdf/LISR.pdf" target="_blank" rel="noopener">LISR</a>; el IVA se acredita hasta que está efectivamente pagado — art. 1-B de la <a href="https://www.diputados.gob.mx/LeyesBiblio/pdf/LIVA.pdf" target="_blank" rel="noopener">LIVA</a>.</div>
+      <div class="jitem"><b>Importe y periodo.</b> Hacen la operación medible, proporcional y verificable frente a la actividad del contribuyente — art. 5-A del CFF.</div>
+    </div></details>
+  </div>
+
+  <!-- 3 · ASOCIACIÓN DEL GASTO CON EL INGRESO -->
+  <div class="card">
+    <div class="step"><div class="n">3</div><h2>Asociación del gasto con tu ingreso</h2><span class="bl">🛡<span class="bltip"><b>Blindaje de este apartado</b><i>· Conecta tu gasto con un ingreso identificado: la esencia de lo deducible.</i><i>· Deja cuantificada tu razón de negocios: el beneficio que buscas supera al fiscal.</i></span></span><span class="mod" id="mod5">Pendiente</span></div>
+    <div class="sub">Conectamos lo que gastas con lo que ganas. Así tu deducción y tu IVA quedan firmes.</div>
+
+    <div class="field">
+      <label>¿Cómo te ayuda esto en tu negocio?</label>
+      <div class="chips" id="indChips">
+        <button type="button" class="chip" data-v="Para poder vender lo que vendo">Para poder vender lo que vendo</button>
+        <button type="button" class="chip" data-v="Para cumplir un pedido de un cliente">Para cumplir un pedido de un cliente</button>
+        <button type="button" class="chip" data-v="Para producir o fabricar lo que ofrezco">Para producir o fabricar lo que ofrezco</button>
+        <button type="button" class="chip" data-v="Para operar mi negocio en el día a día">Para operar mi negocio día a día</button>
+        <button type="button" class="chip" data-v="Para cumplir una obligación (legal, fiscal o laboral)">Para cumplir una obligación</button>
+        <button type="button" class="chip" data-v="Otro motivo">Otro</button>
+      </div>
+    </div>
+    <div class="reveal hidden" id="indReveal"><div class="field" style="margin-bottom:0"><label>Cuéntanos brevemente cómo te ayuda</label><textarea id="indExp" placeholder="con esto puedo… / sin esto no podría…"></textarea></div></div>
+
+    <div class="field" style="margin-top:14px">
+      <label>¿Qué esperas obtener a cambio?</label>
+      <div class="chips" id="benChips">
+        <button type="button" class="chip" data-v="Aumentar o mantener mis ventas">Aumentar o mantener mis ventas</button>
+        <button type="button" class="chip" data-v="Cumplir un contrato o pedido ya ganado">Cumplir un contrato o pedido ya ganado</button>
+        <button type="button" class="chip" data-v="Reducir costos o evitar un gasto mayor">Reducir costos o evitar un gasto mayor</button>
+        <button type="button" class="chip" data-v="Evitar una sanción o cumplir una obligación">Evitar una sanción / cumplir una obligación</button>
+        <button type="button" class="chip" data-v="Otro beneficio">Otro</button>
+      </div>
+    </div>
+    <div class="reveal hidden" id="benReveal"><div class="field" style="margin-bottom:0"><label>Si puedes, dinos de cuánto es ese beneficio (aproximado)</label><input id="benMonto" placeholder="p. ej. un pedido de $500,000 / ahorro de $30,000 al mes"></div></div>
+
+    <div class="field" style="margin-top:14px">
+      <label>¿De dónde sale el recurso para pagarlo?</label>
+      <div class="chips" id="oriChips">
+        <button type="button" class="chip" data-v="De las ventas de mi negocio">De las ventas de mi negocio</button>
+        <button type="button" class="chip" data-v="De la venta de un bien o activo">De la venta de un bien mío</button>
+        <button type="button" class="chip" data-v="De un préstamo">De un préstamo</button>
+        <button type="button" class="chip" data-v="De un financiamiento">De un financiamiento</button>
+        <button type="button" class="chip" data-v="De otra fuente">Otra fuente</button>
+      </div>
+    </div>
+    <div class="reveal hidden" id="oriReveal"><div class="field" style="margin-bottom:0"><label>Cuéntanos un poco más</label><textarea id="oriExp" placeholder="p. ej. con la venta de temporada / el préstamo de tal banco…"></textarea></div></div>
+
+    <div class="comp" role="img" aria-label="Compromiso de asociación gasto-ingreso">
+      <svg width="60" height="60" viewBox="0 0 60 60"><circle cx="30" cy="30" r="25" fill="none" stroke="#EAE7E0" stroke-width="6"/><circle id="asoRing" cx="30" cy="30" r="25" fill="none" stroke="var(--ok)" stroke-width="6" stroke-linecap="round" stroke-dasharray="157.1" stroke-dashoffset="157.1" transform="rotate(-90 30 30)"/><text id="asoPct" x="30" y="34" text-anchor="middle" font-size="13" font-weight="700" fill="#14303D">0%</text></svg>
+      <div class="txt"><div class="tt">Tu vínculo gasto-ingreso</div><div class="ss" id="asoMsg">Entre más claro el vínculo con tu ingreso, más firme tu deducción y tu IVA.</div></div>
+    </div>
+
+    <details class="pq"><summary>Respaldo jurídico de este apartado</summary><div class="body">
+      <div class="jitem"><b>Estricta indispensabilidad.</b> Solo es deducible lo estrictamente indispensable para la actividad — art. 27, fr. I de la <a href="https://www.diputados.gob.mx/LeyesBiblio/pdf/LISR.pdf" target="_blank" rel="noopener">LISR</a>; el IVA acreditable sigue la misma suerte — art. 5, fr. I de la <a href="https://www.diputados.gob.mx/LeyesBiblio/pdf/LIVA.pdf" target="_blank" rel="noopener">LIVA</a>.</div>
+      <div class="jitem"><b>Razón de negocios.</b> La autoridad puede recaracterizar operaciones sin un beneficio económico razonablemente esperado mayor al fiscal — art. 5-A del <a href="https://www.diputados.gob.mx/LeyesBiblio/pdf/CFF.pdf" target="_blank" rel="noopener">CFF</a>.</div>
+      <div class="jitem"><b>Registro contable.</b> La contabilidad debe reflejar la sustancia económica y asociar costos y gastos con los ingresos que generan — NIF A-2 (<a href="https://www.cinif.org.mx" target="_blank" rel="noopener">CINIF</a>); contabilidad electrónica, Anexo 24 de la RMF (<a href="https://www.dof.gob.mx" target="_blank" rel="noopener">DOF</a>).</div>
+    </div></details>
+  </div>
+
+  <!-- 4 · MATERIALIDAD -->
+  <div class="card">
+    <div class="step"><div class="n">4</div><h2>Materialidad</h2><span class="bl">🛡<span class="bltip"><b>Blindaje de este apartado</b><i>· Antecedentes y diagnósticos integrados desde el origen.</i><i>· Ejecución que quedará documentada con bitácoras y constancias.</i><i>· Resultados con método de validación pactado desde hoy.</i><i>· Evidencia fotográfica con fecha compromiso.</i><i>· Personas con nombre y cargo: tu operación tiene rostros.</i></span></span><span class="mod" id="mod4">Pendiente</span></div>
+    <div class="sub">La prueba de que la operación existe de verdad. Es lo que más pesa en una revisión — y lo dejamos armado desde el inicio.</div>
+
+    <div class="warnbox fisc" style="margin:0 0 13px"><b>Contexto 2026.</b> El Plan Maestro de Fiscalización del <a href="https://www.sat.gob.mx" target="_blank" rel="noopener" style="color:var(--gold);font-weight:600">SAT</a> para este año prioriza la verificación de la materialidad de las operaciones y el combate a comprobantes por operaciones inexistentes, con visitas para constatar que las operaciones ocurrieron y publicación periódica de listados 69-B en el <a href="https://www.dof.gob.mx" target="_blank" rel="noopener" style="color:var(--gold);font-weight:600">DOF</a>. Documentar hoy es la mejor prevención.</div>
+
+    <div class="row2">
+      <div class="field"><label id="recibeLbl">¿Quién de tu equipo recibe o supervisa?</label><input id="m_recibe" placeholder="nombre y puesto"></div>
+      <div class="field"><label>¿Cómo se recibe o se valida?</label><input id="m_como" placeholder="firma al recibir / revisión / conteo"></div>
+    </div>
+    <div class="field"><label>Contacto de quien recibe o supervisa (opcional)</label><input id="m_contacto" placeholder="correo o teléfono — para coordinar la evidencia"></div>
+
+    <div class="evblock hidden" id="fotoBlock">
+      <div class="gt">📷 Evidencia fotográfica <span class="tag" id="fotoTag">INDISPENSABLE</span></div>
+      <div class="ex" id="fotoEx"></div>
+      <div class="evrow">
+        <label class="upbtn" for="evFotoInput">Adjuntar fotos</label><input type="file" id="evFotoInput" accept="image/*" multiple>
+        <div class="commit" id="fotoCommit"><span class="bx"></span><span>Aún no ocurre — la integraré y se las compartiré</span></div>
+      </div>
+      <div class="reveal hidden" id="fotoFechaRev"><div class="field" style="margin-bottom:0"><label>Fecha compromiso para compartirlas</label><input type="date" id="fotoFecha"><div class="plazo">Para integrar tu expediente en orden, contamos con hasta 30 días hábiles a partir de la emisión de tu CFDI.</div></div></div>
+      <div class="adjlist" id="fotoList"></div>
+    </div>
+
+    <div class="evblock hidden" id="docBlock">
+      <div class="gt">📄 Evidencia documental <span class="tag">INDISPENSABLE</span></div>
+      <div class="ex" id="docEx"></div>
+      <div class="evrow">
+        <label class="upbtn" for="evDocInput">Adjuntar documentos</label><input type="file" id="evDocInput" multiple>
+        <div class="commit" id="docCommit"><span class="bx"></span><span>Aún no ocurre — la integraré y se las compartiré</span></div>
+      </div>
+      <div class="reveal hidden" id="docFechaRev"><div class="field" style="margin-bottom:0"><label>Fecha compromiso para compartirla</label><input type="date" id="docFecha"><div class="plazo">Para integrar tu expediente en orden, contamos con hasta 30 días hábiles a partir de la emisión de tu CFDI.</div></div></div>
+      <div class="adjlist" id="docList"></div>
+    </div>
+    <div class="evhint" id="evHint" style="font-size:12.5px;color:var(--lgris);font-style:italic;padding:8px 2px">Elige arriba el tipo de operación y aquí aparecerá la evidencia que te protege.</div>
+
+    <div class="comp" role="img" aria-label="Compromiso de materialidad">
+      <svg width="60" height="60" viewBox="0 0 60 60"><circle cx="30" cy="30" r="25" fill="none" stroke="#EAE7E0" stroke-width="6"/><circle id="matRing" cx="30" cy="30" r="25" fill="none" stroke="var(--ok)" stroke-width="6" stroke-linecap="round" stroke-dasharray="157.1" stroke-dashoffset="157.1" transform="rotate(-90 30 30)"/><text id="matPct" x="30" y="34" text-anchor="middle" font-size="13" font-weight="700" fill="#14303D">0%</text></svg>
+      <div class="txt"><div class="tt">Tu compromiso de materialidad</div><div class="ss" id="matMsg">Aporta hoy o fija tu fecha compromiso: esto es lo que te protege.</div></div>
+    </div>
+
+    <details class="pq"><summary>Respaldo jurídico de este apartado</summary><div class="body">
+      <div class="jitem"><b>La factura no basta.</b> Los tribunales sostienen de manera reiterada que el comprobante fiscal, por sí solo, no acredita que la operación se realizó: debe adminicularse con otras pruebas valoradas en su conjunto — criterios de la Revista del <a href="https://www.tfja.gob.mx" target="_blank" rel="noopener">TFJA</a>.</div>
+      <div class="jitem"><b>Presunción de inexistencia.</b> Sin elementos de la operación, la autoridad puede presumirla inexistente y la carga de probar recae en el contribuyente — art. 69-B del <a href="https://www.diputados.gob.mx/LeyesBiblio/pdf/CFF.pdf" target="_blank" rel="noopener">CFF</a>; constitucionalidad confirmada por la SCJN — jurisprudencias 2a./J. 132/2015 a 135/2015, <a href="https://sjf2.scjn.gob.mx" target="_blank" rel="noopener">Semanario Judicial de la Federación</a>. Listado oficial 69-B del <a href="http://omawww.sat.gob.mx/cifras_sat/Paginas/datos/vinculo.html?page=ListCompleta69B.html" target="_blank" rel="noopener">SAT</a>.</div>
+      <div class="jitem"><b>Conservación.</b> El soporte de cada operación forma parte de la contabilidad y debe conservarse — arts. 28 y 30 del CFF.</div>
+    </div></details>
+  </div>
+
+  <!-- 5 · ELEMENTOS JURÍDICOS -->
+  <div class="card">
+    <div class="step"><div class="n">5</div><h2>Elementos jurídicos</h2><span class="bl">🛡<span class="bltip"><b>Blindaje de este apartado</b><i>· Tu contrato nace con quien tiene facultades para firmarlo.</i><i>· Y con el mecanismo para dotarlo de fecha cierta, como exige la Suprema Corte.</i></span></span><span class="mod" id="mod3">Pendiente</span></div>
+    <div class="sub">Lo único que falta para tu contrato: quién firma y su acreditación.</div>
+
+    <div class="field"><label>Nombre de quien firmará por tu empresa</label><input id="firmaNombre" placeholder="nombre completo de quien firma"></div>
+    <div class="reveal hidden" id="repDatos" style="border-left-color:var(--navy);background:#fff;border:1px solid var(--line);border-radius:12px">
+      <div class="row2">
+        <div class="field"><label>Cargo de quien firma</label><input id="repCargo" placeholder="p. ej. Administrador único / Apoderado"></div>
+        <div class="field"><label>No. de escritura o poder</label><input id="repEscritura" placeholder="p. ej. 12,345"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Notario y número</label><input id="repNotario" placeholder="Lic. …, Notaría Púb. No. …"></div>
+        <div class="field"><label>Fecha del poder</label><input id="repFecha" type="date"></div>
+      </div>
+    </div>
+
+    <div id="persZone" class="hidden">
+      <div class="evblock" style="margin-top:4px">
+        <div class="gt">📎 Acredita su personalidad jurídica</div>
+        <div class="ex">Adjunta lo que corresponda: acta constitutiva, poder notarial e identificación oficial (INE). Solo esta primera vez — queda en tu expediente y no te lo volvemos a pedir.</div>
+        <div class="evrow"><label class="upbtn" for="persInput">Adjuntar documentos</label><input type="file" id="persInput" multiple accept="application/pdf,image/*"></div>
+        <div class="adjlist" id="persList"></div>
+      </div>
+    </div>
+    <div id="persRecNota" class="notaRec hidden">Tu acta y la representación ya están acreditadas en tu expediente. Si cambió quien firma, indícalo arriba en tus datos.</div>
+
+    <div id="repseZone" class="hidden">
+      <div class="field" style="margin-top:14px">
+        <label>Sobre la labor del personal que necesitas:</label>
+        <div class="chips" id="repseChips">
+          <button type="button" class="chip" data-v="Es una labor distinta a mi actividad principal">Es distinta a lo que yo vendo o produzco<span class="em">p. ej. limpieza, vigilancia, un proceso técnico</span></button>
+          <button type="button" class="chip" data-v="Se relaciona con mi actividad principal">Tiene que ver con mi actividad principal<span class="em">Lo platicamos contigo</span></button>
+        </div>
+      </div>
+      <div class="warnbox hidden" id="repseWarn">Perfecto que nos lo digas: cuando la labor toca tu actividad principal, la ley pide estructurarla de una forma especial. Lo revisamos contigo antes de cotizar, sin costo.</div>
+      <div class="warnbox" id="repseInfo" style="border-left-color:var(--ok);background:var(--oksoft);color:#1f5d44">Por tratarse de personal especializado, junto con el servicio te entregamos: registro REPSE vigente, contratos y nómina del personal, y comprobantes de IMSS e Infonavit. Tú no tramitas nada.</div>
+    </div>
+
+    <details class="pq"><summary>Respaldo jurídico de este apartado</summary><div class="body">
+      <div class="jitem"><b>Fecha cierta.</b> La Suprema Corte resolvió que los contratos y documentos privados deben tener fecha cierta para surtir efectos frente a la autoridad fiscal — jurisprudencia 2a./J. 161/2019, <a href="https://sjf2.scjn.gob.mx/detalle/tesis/2021218" target="_blank" rel="noopener">registro digital 2021218</a>.</div>
+      <div class="jitem"><b>Personalidad de quien firma.</b> Quien suscribe por una persona moral debe acreditar sus facultades (acta constitutiva o poder); así el contrato queda firme desde su origen.</div>
+      <div class="jitem"><b>Personal especializado.</b> La subcontratación solo es deducible si el servicio es especializado, distinto del objeto y actividad principal del beneficiario, y el prestador cuenta con <a href="https://repse.stps.gob.mx" target="_blank" rel="noopener">registro REPSE</a> — arts. 15-D del CFF, 27, fr. V de la LISR y 5, fr. II de la LIVA.</div>
+    </div></details>
+  </div>
+
+  <!-- 6 · GENERAR -->
+  <div class="card" id="genBtn">
+    <div class="step"><div class="n">6</div><h2>Genera tu solicitud</h2><span class="bl">🛡<span class="bltip"><b>Blindaje de este apartado</b><i>· El documento generado, con fecha, es la primera pieza de tu expediente.</i><i>· Todo lo que sigue queda encadenado a esta línea de tiempo.</i></span></span><span class="mod" id="mod6">—</span></div>
+    <div class="sub">Revisa tu resumen y guárdalo. Esta solicitud, con fecha y con tus adjuntos, es la primera pieza del expediente de tu operación.</div>
+
+    <div class="comp" role="img" aria-label="Solidez de tu expediente" style="margin-bottom:14px">
+      <svg width="60" height="60" viewBox="0 0 60 60"><circle cx="30" cy="30" r="25" fill="none" stroke="#EAE7E0" stroke-width="6"/><circle id="genRing" cx="30" cy="30" r="25" fill="none" stroke="var(--gold)" stroke-width="6" stroke-linecap="round" stroke-dasharray="157.1" stroke-dashoffset="157.1" transform="rotate(-90 30 30)"/><text id="genPct" x="30" y="34" text-anchor="middle" font-size="13" font-weight="700" fill="#14303D">0%</text></svg>
+      <div class="txt"><div class="tt">Solidez de tu expediente</div><div class="ss" id="genMsg">Se alimenta de todo lo que aportas y comprometes en los apartados anteriores.</div></div>
+    </div>
+
+    <button type="button" class="cta" id="btnGen">✦ Generar mi solicitud de cotización</button>
+    <label class="commit" id="consentChk" style="margin-top:12px"><span class="bx"></span><span>Acepto el aviso de privacidad y que esta solicitud constituya el medio de contacto con PR&amp;M.</span></label>
+    <button type="button" class="cta" id="btnEnviar" style="margin-top:12px;background:var(--navy)">📨 Enviar a PR&amp;M · generar folio y acuse</button>
+    <div id="acuseZone"></div>
+    <div class="discreto">El contrato, la factura y los complementos de pago los prepara PR&amp;M como parte del servicio.</div>
+  </div>
+
+  <!-- FUENTES OFICIALES -->
+  <div class="card src srccard">
+    <details class="pq" style="border-top:none;margin-top:0;padding-top:0">
+      <summary>Fuentes oficiales — consulta y descarga los textos completos</summary>
+      <div class="body">
+        <div class="si"><b>Código Fiscal de la Federación</b> (arts. 5-A, 15-D, 28, 29, 29-A, 30, 69-B) — <a href="https://www.diputados.gob.mx/LeyesBiblio/pdf/CFF.pdf" target="_blank" rel="noopener">texto vigente en PDF · Cámara de Diputados</a></div>
+        <div class="si"><b>Ley del Impuesto sobre la Renta</b> (art. 27) — <a href="https://www.diputados.gob.mx/LeyesBiblio/pdf/LISR.pdf" target="_blank" rel="noopener">texto vigente en PDF · Cámara de Diputados</a></div>
+        <div class="si"><b>Ley del Impuesto al Valor Agregado</b> (arts. 1-A, 1-B y 5) — <a href="https://www.diputados.gob.mx/LeyesBiblio/pdf/LIVA.pdf" target="_blank" rel="noopener">texto vigente en PDF · Cámara de Diputados</a></div>
+        <div class="si"><b>Jurisprudencia de la SCJN</b> — fecha cierta 2a./J. 161/2019 (<a href="https://sjf2.scjn.gob.mx/detalle/tesis/2021218" target="_blank" rel="noopener">registro 2021218</a>) y 69-B, 2a./J. 132/2015 a 135/2015, en el <a href="https://sjf2.scjn.gob.mx" target="_blank" rel="noopener">Semanario Judicial de la Federación</a></div>
+        <div class="si"><b>Criterios del TFJA</b> sobre materialidad y valoración conjunta de pruebas — <a href="https://www.tfja.gob.mx" target="_blank" rel="noopener">Tribunal Federal de Justicia Administrativa</a></div>
+        <div class="si"><b>Listado oficial del art. 69-B</b> — <a href="http://omawww.sat.gob.mx/cifras_sat/Paginas/datos/vinculo.html?page=ListCompleta69B.html" target="_blank" rel="noopener">SAT · datos abiertos</a></div>
+        <div class="si"><b>REPSE</b> — <a href="https://repse.stps.gob.mx" target="_blank" rel="noopener">Secretaría del Trabajo y Previsión Social</a></div>
+        <div class="si"><b>Normas de Información Financiera</b> (NIF A-2) — <a href="https://www.cinif.org.mx" target="_blank" rel="noopener">CINIF</a></div>
+        <div class="si"><b>Diario Oficial de la Federación</b> (RMF y Anexo 24) — <a href="https://www.dof.gob.mx" target="_blank" rel="noopener">dof.gob.mx</a></div>
+        <div style="margin-top:8px;font-size:11px;color:var(--lgris);font-style:italic">Verifica siempre el texto vigente en la fuente oficial. Esta página no sustituye asesoría individualizada.</div>
+      </div>
+    </details>
+  </div>
+
+  </div><!-- /formZone -->
+
+  <div id="salida"></div>
+
+  <div class="foot">
+    <b>PR&amp;M Business Group</b> · Tus datos se procesan en tu propio navegador; esta página no los envía a ningún servidor.<br>
+    Documento de trabajo. Los fundamentos legales se citan como referencia general y no constituyen asesoría fiscal individualizada.
+  </div>
+</div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  function val(id){var e=$(id);return e?(e.value||"").trim():"";}
+  var state={gate:null,tipo:null,vig:null,pago:null,exhib:null,replab:null,servRepse:null,lugarOpt:null,cotejo:null,ind:"",ben:"",ori:"",csf:"",csfRec:"",pers:[],fotos:[],docs:[],fotoCommit:false,docCommit:false};
+
+  /* ---- Configuración por tipo: tres operaciones distintas ---- */
+  var TIPO={
+    servicio:{
+      desc:"p. ej. mantenimiento preventivo de mi maquinaria / asesoría para certificar mi proceso / instalación de mi red eléctrica",
+      cant:false, cantLbl:"", cantPh:"",
+      lugarMode:"none",
+      recibeLbl:"¿Quién de tu equipo recibe o valida el trabajo?",
+      fotoReq:false,
+      foto:"Si el trabajo deja huella visible (equipo reparado, instalación, obra), fotos del antes y el después.",
+      doc:"El entregable del servicio: informe, dictamen, acta de entrega-recepción firmada, correos o mensajes, y el diagnóstico o antecedente previo si ya existe — adjúntalo desde ahora."
+    },
+    mercancia:{
+      desc:"p. ej. 200 balatas para camioneta / 50 bultos de cemento / mobiliario para mis oficinas",
+      cant:true, cantLbl:"Cantidad", cantPh:"p. ej. 200 piezas / 2 toneladas / 5 cajas",
+      lugarMode:"txt", lugarLbl:"¿En dónde se entrega?", lugarPh:"dirección: mi bodega, mi obra, mi negocio…",
+      recibeLbl:"¿Quién de tu equipo recibe la mercancía?",
+      fotoReq:true,
+      foto:"Fotos de la mercancía al recibirla, de la descarga y ya colocada en tu almacén, obra o negocio.",
+      doc:"Acuses o sellos de recibido de tu equipo, registros de entrada a tu almacén, correos o mensajes sobre la entrega."
+    },
+    especializado:{
+      desc:"p. ej. soldadores certificados para mi línea de producción / cuadrilla de limpieza industrial / técnicos para mi red",
+      cant:true, cantLbl:"¿Cuántas personas y por cuánto tiempo?", cantPh:"p. ej. 5 personas durante 3 meses",
+      lugarMode:"txt", lugarLbl:"¿En dónde ejecutará la labor el personal?", lugarPh:"dirección de tu planta, nave, sucursal…",
+      recibeLbl:"¿Quién de tu equipo supervisa la labor?",
+      fotoReq:true,
+      foto:"Fotos del personal realizando la labor en tus instalaciones y de los avances o resultados.",
+      doc:"Listas de asistencia, bitácoras de actividades, reportes del supervisor, registros de acceso a tus instalaciones."
+    }
+  };
+
+  /* ---- Gate ---- */
+  chipGroup("gateChips","gate",function(v){
+    state.gate=v;
+    show("gateNuevo", v==="nuevo"); show("gateRec", v==="recurrente");
+    show2($("persZone"), v!=="recurrente");
+    show2($("persRecNota"), v==="recurrente");
+    progress();
+  });
+  (function(){ var l=$("recCambioLink"); if(l) l.addEventListener("click",function(){ show("recCambio",true); }); })();
+
+  /* ---- Tipo: tres rutas distintas ---- */
+  var tc=$("tipoCards").getElementsByTagName("button");
+  function applyTipo(v){
+    state.tipo=v;
+    var t=TIPO[v];
+    $("descripcion").setAttribute("placeholder",t.desc);
+    /* cantidad */
+    show2($("cantWrap"), t.cant);
+    if(t.cant){ $("cantLbl").textContent=t.cantLbl; $("volumen").setAttribute("placeholder",t.cantPh); }
+    /* lugar: solo cuando aporta (entrega de mercancía / ejecución de personal) */
+    show2($("lugarTxt"), t.lugarMode==="txt");
+    /* bien intervenido: solo servicios */
+    show2($("bienWrap"), v==="servicio");
+    if(t.lugarMode==="txt"){ $("lugarLbl").textContent=t.lugarLbl; $("lugar").setAttribute("placeholder",t.lugarPh); }
+    /* pregunta REPSE dentro de servicio */
+    show2($("servRepseQ"), v==="servicio");
+    if(v!=="servicio"){ state.servRepse=null; show2($("servRepseWarn"),false); }
+    /* materialidad */
+    $("recibeLbl").textContent=t.recibeLbl;
+    $("fotoEx").textContent=t.foto;
+    $("docEx").textContent=t.doc;
+    $("fotoTag").textContent = t.fotoReq ? "INDISPENSABLE" : "SI APLICA";
+    show2($("fotoBlock"),true); show2($("docBlock"),true); show2($("evHint"),false);
+    /* jurídicos */
+    show2($("repseZone"), v==="especializado");
+    progress();
+  }
+  bindCards(tc,applyTipo);
+
+  /* ---- Servicio con personal a disposición → ruta REPSE ---- */
+  chipGroup("servRepseChips",null,function(v){
+    state.servRepse=v;
+    show2($("servRepseWarn"), v==="si");
+    progress();
+  });
+  (function(){
+    var b=$("servToRepse"); if(!b) return;
+    b.addEventListener("click",function(){
+      for(var k=0;k<tc.length;k++){ tc[k].className = tc[k].getAttribute("data-tipo")==="especializado" ? "tcard on" : "tcard"; }
+      state.servRepse=null; show2($("servRepseWarn"),false);
+      applyTipo("especializado");
+    });
+  })();
+
+  /* ---- Vigencia (neutra: puede haber ocurrido o estar por ocurrir) ---- */
+  chipGroup("vigChips",null,function(v){
+    state.vig=v;
+    show("vigUnica", v==="unica"); show("vigPeriodo", v==="periodo"); show("vigCont", v==="continuo");
+    progress();
+  });
+  function vigenciaTxt(){
+    if(state.vig==="unica"){ var f=val("vigFecha"); return f ? "en una sola ocasión, el "+f : "en una sola ocasión"; }
+    if(state.vig==="periodo"){ var a=val("vigIni"),b=val("vigFin"); if(a&&b) return "durante el periodo de "+a+" a "+b; if(a) return "a partir de "+a; return "durante un periodo definido"; }
+    if(state.vig==="continuo"){ var d=val("vigDesde"); return d ? "de forma continua a partir de "+d+", con renovación mes a mes" : "de forma continua, con renovación mes a mes"; }
+    return "";
+  }
+
+  /* ---- Lugar (no aplica a servicios) ---- */
+  function lugarVal(){
+    if(state.tipo==="servicio") return "";
+    return val("lugar");
+  }
+
+  /* ---- Cotizaciones de referencia (valor de mercado, opcional) ---- */
+  chipGroup("cotejoChips",null,function(v){ state.cotejo=v; show("cotejoRev", v==="Cuenta con otras cotizaciones de referencia"); progress(); });
+
+  /* ---- Pago (vive en la operación; se arrastra al contrato) ---- */
+  chipGroup("pagoChips",null,function(v){ state.pago=v; show2($("efeWarn"), v==="Efectivo"); progress(); });
+  chipGroup("exhibChips",null,function(v){ state.exhib=v; progress(); });
+
+  /* ---- REPSE (especializado) ---- */
+  chipGroup("repseChips",null,function(v){ state.replab=v; show2($("repseWarn"), v==="Se relaciona con mi actividad principal"); progress(); });
+
+  /* ---- Asociación ---- */
+  chipGroup("indChips",null,function(v){ state.ind=v; show2($("indReveal"),true); progress(); });
+  chipGroup("benChips",null,function(v){ state.ben=v; show2($("benReveal"),true); progress(); });
+  chipGroup("oriChips",null,function(v){ state.ori=v; show2($("oriReveal"),true); progress(); });
+
+  /* ---- Archivos (solo nombres; nada sale del navegador) ---- */
+  function bindOne(inputId,okId,cb){
+    var inp=$(inputId); if(!inp) return;
+    inp.addEventListener("change",function(){
+      var fs=inp.files||[];
+      if(fs.length){ var ok=$(okId); if(ok){ ok.style.display="block"; ok.textContent="✓ Adjunto: "+fs[0].name; } cb(fs[0].name); progress(); }
+    });
+  }
+  bindOne("csfInput","csfOk",function(n){ state.csf=n; });
+  bindOne("csfRecInput","csfRecOk",function(n){ state.csfRec=n; });
+  function bindMulti(inputId,listId,arr){
+    var inp=$(inputId); if(!inp) return;
+    inp.addEventListener("change",function(){
+      var fs=inp.files||[];
+      for(var i=0;i<fs.length;i++){
+        var nm=fs[i].name, dup=false;
+        for(var k=0;k<arr.length;k++){ if(arr[k]===nm) dup=true; }
+        if(!dup) arr.push(nm);
+      }
+      var html="";
+      for(var j=0;j<arr.length;j++){ html+='<div class="af">📎 <span>'+esc(arr[j])+'</span></div>'; }
+      $(listId).innerHTML=html;
+      progress();
+    });
+  }
+  bindMulti("persInput","persList",state.pers);
+  bindMulti("evFotoInput","fotoList",state.fotos);
+  bindMulti("evDocInput","docList",state.docs);
+  function bindCommit(id,key,revId){
+    var el=$(id); if(!el) return;
+    el.addEventListener("click",function(){
+      state[key]=!state[key];
+      el.className = state[key] ? "commit on" : "commit";
+      show(revId, state[key]);
+      progress();
+    });
+  }
+  bindCommit("fotoCommit","fotoCommit","fotoFechaRev");
+  bindCommit("docCommit","docCommit","docFechaRev");
+
+  /* ---- Calendario de compromiso: 30 días hábiles desde la emisión del CFDI ---- */
+  function iso(d){ var m=d.getMonth()+1,dd=d.getDate(); return d.getFullYear()+"-"+(m<10?"0"+m:m)+"-"+(dd<10?"0"+dd:dd); }
+  function addHabiles(d,n){ var r=new Date(d.getTime()),c=0; while(c<n){ r.setDate(r.getDate()+1); var w=r.getDay(); if(w!==0&&w!==6)c++; } return r; }
+  var hoyD=new Date(); var limD=addHabiles(hoyD,30);
+  function setLim(id){ var e=$(id); if(e){ e.setAttribute("min",iso(hoyD)); e.setAttribute("max",iso(limD)); } }
+  setLim("fotoFecha"); setLim("docFecha");
+  function fechaDentro(id){
+    var v=val(id); if(!v) return false;
+    var d=new Date(v+"T12:00:00"); if(isNaN(d.getTime())) return true;
+    return d.getTime()<=limD.getTime()+86400000 && d.getTime()>=hoyD.getTime()-86400000;
+  }
+  function fmtFecha(id){
+    var v=val(id); if(!v) return "";
+    var d=new Date(v+"T12:00:00"); if(isNaN(d.getTime())) return v;
+    return d.toLocaleDateString("es-MX",{year:"numeric",month:"long",day:"numeric"});
+  }
+  function fotoOK(){ if(state.tipo && !TIPO[state.tipo].fotoReq) return true; return state.fotos.length>0 || state.fotoCommit; }
+  function docOK(){ return state.docs.length>0 || state.docCommit; }
+
+  /* ---- Helpers ---- */
+  function chipGroup(wrapId,stateKey,cb){
+    var w=$(wrapId); if(!w)return; var bs=w.getElementsByClassName("chip");
+    for(var i=0;i<bs.length;i++){ bs[i].addEventListener("click",function(){
+      for(var k=0;k<bs.length;k++) bs[k].className="chip";
+      this.className="chip on";
+      cb(this.getAttribute("data-v")||this.getAttribute("data-gate"));
+    }); }
+  }
+  function bindCards(list,cb){
+    for(var i=0;i<list.length;i++){ list[i].addEventListener("click",function(){
+      for(var k=0;k<list.length;k++) list[k].className="tcard";
+      this.className="tcard on"; cb(this.getAttribute("data-tipo"));
+    }); }
+  }
+  function show(id,on){ var e=$(id); if(e) e.className = e.className.replace(/ ?hidden/g,"") + (on?"":" hidden"); }
+  function show2(e,on){ if(e) e.className = e.className.replace(/ ?hidden/g,"") + (on?"":" hidden"); }
+  function esc(s){return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+
+  /* ---- Evaluación por módulo + general ---- */
+  function modStats(){
+    var m1d=0,m1t=1; if(state.gate)m1d++;
+    if(state.gate==="nuevo"){ m1t=4; if(val("rs"))m1d++; if(val("rfc"))m1d++; if(state.csf)m1d++; }
+    else if(state.gate==="recurrente"){ m1t=2; if(val("rfcRec"))m1d++; }
+    var m2d=0,m2t=(state.tipo==="servicio")?5:6; if(state.tipo)m2d++; if(val("descripcion"))m2d++; if(val("importe"))m2d++; if(state.vig)m2d++; if(state.tipo!=="servicio" && lugarVal())m2d++; if(state.pago)m2d++;
+    var m3d=0,m3t=1; if(val("firmaNombre"))m3d++;
+    if(state.gate!=="recurrente"){ m3t=2; if(state.pers.length)m3d++; }
+    if(state.tipo==="especializado"){ m3t++; if(state.replab)m3d++; }
+    var m4d=0,m4t=(state.tipo && !TIPO[state.tipo].fotoReq)?2:3;
+    if(val("m_recibe"))m4d++; if(docOK())m4d++;
+    if(state.tipo && TIPO[state.tipo].fotoReq && fotoOK())m4d++;
+    var m5d=0,m5t=2; if(state.ind)m5d++; if(state.ori)m5d++;
+    return [[m1d,m1t],[m2d,m2t],[m3d,m3t],[m4d,m4t],[m5d,m5t]];
+  }
+  function paintMod(id,d,t){
+    var e=$(id); if(!e) return;
+    if(d>=t){ e.className="mod done"; e.textContent="Completo ✓"; }
+    else { e.className="mod"; e.textContent=d+" de "+t; }
+  }
+  function ringSet(idR,idP,p){
+    var r=$(idR),t=$(idP);
+    if(r) r.setAttribute("stroke-dashoffset",(157.1*(1-p/100)).toFixed(1));
+    if(t) t.textContent=p+"%";
+  }
+  function rings(){
+    var fr = state.tipo ? TIPO[state.tipo].fotoReq : true;
+    var fA = state.fotos.length ? 1 : ((state.fotoCommit && val("fotoFecha")) ? 0.5 : 0);
+    var dA = state.docs.length ? 1 : ((state.docCommit && val("docFecha")) ? 0.5 : 0);
+    /* compromiso de materialidad */
+    var mPts=(val("m_recibe")?1:0)+(val("m_como")?1:0)+dA+(fr?fA:0);
+    var mMax=2+1+(fr?1:0);
+    var mp=Math.round(mPts/mMax*100); if(mp>100)mp=100;
+    ringSet("matRing","matPct",mp);
+    var mm=$("matMsg"); if(mm) mm.textContent = mp>=100 ? "Materialidad aportada y comprometida al 100%." : ((state.fotos.length||state.docs.length) ? "Buen avance — cada aporte suma a tu protección." : "Aporta hoy o fija tu fecha compromiso: esto es lo que te protege.");
+    /* vínculo gasto-ingreso */
+    var aPts=(state.ind?1:0)+(val("indExp")?1:0)+(state.ben?1:0)+(val("benMonto")?1:0)+(state.ori?1:0)+(val("oriExp")?1:0);
+    var ap=Math.round(aPts/6*100);
+    ringSet("asoRing","asoPct",ap);
+    var am=$("asoMsg"); if(am) am.textContent = ap>=100 ? "El vínculo de tu gasto con tu ingreso quedó completo." : "Entre más claro el vínculo con tu ingreso, más firme tu deducción y tu IVA.";
+    /* solidez general del expediente */
+    var idOk = state.gate==="recurrente" ? 1 : (state.csf?1:0);
+    var peOk = state.gate==="recurrente" ? 1 : (state.pers.length?1:0);
+    var gMax=2+1+(fr?1:0);
+    var gPts=idOk+peOk+dA+(fr?fA:0);
+    var gp=Math.round(gPts/gMax*100); if(gp>100)gp=100;
+    ringSet("genRing","genPct",gp);
+    var gm=$("genMsg"); if(gm) gm.textContent = gp>=100 ? "Expediente documental completo o comprometido con fecha." : "Se alimenta de todo lo que aportas y comprometes en los apartados anteriores.";
+  }
+  function progress(){
+    var s=modStats(),d=0,t=0;
+    for(var i=0;i<s.length;i++){ d+=s[i][0]; t+=s[i][1]; }
+    paintMod("mod1",s[0][0],s[0][1]); paintMod("mod2",s[1][0],s[1][1]); paintMod("mod3",s[2][0],s[2][1]);
+    paintMod("mod4",s[3][0],s[3][1]); paintMod("mod5",s[4][0],s[4][1]);
+    var p=t?Math.round(d/t*100):0;
+    $("progFill").style.width=p+"%";
+    $("progLbl").textContent = p===0 ? "Empecemos · 0% completado" : (p>=100 ? "¡Listo! · 100% completado" : (p+"% completado"));
+    var m6=$("mod6"); if(m6){ m6.textContent = p>=100 ? "Lista para generar" : "—"; m6.className = p>=100 ? "mod done" : "mod"; }
+    rings();
+  }
+  document.addEventListener("input",progress);
+
+  /* ---- Narrativa ---- */
+  function narrativa(){
+    var d=val("descripcion"); if(!d) return "";
+    var p=[d];
+    var vg=vigenciaTxt(); if(vg)p.push(vg);
+    var l=lugarVal(); if(l)p.push(l.charAt(0)==="E"?l.toLowerCase().replace("en ","en "):("en "+l));
+    var r=val("m_recibe"); if(r)p.push("con recepción y supervisión de "+r);
+    var c=val("m_como"); if(c)p.push("validado mediante "+c);
+    return p.join(", ")+".";
+  }
+
+  /* ---- Generar ---- */
+  function tipoLbl(){return state.tipo==="mercancia"?"Producto o mercancía":state.tipo==="especializado"?"Personal especializado":state.tipo==="servicio"?"Servicio":"—";}
+  $("btnGen").addEventListener("click",function(){
+    var faltan=[];
+    if(!state.gate) faltan.push("indícanos si eres cliente nuevo o recurrente");
+    if(state.gate==="nuevo" && !state.csf) faltan.push("adjunta tu Constancia de Situación Fiscal");
+    if(!state.tipo) faltan.push("elige qué necesitas cotizar");
+    if(!val("descripcion")) faltan.push("describe la operación");
+    if(state.tipo==="servicio" && !state.servRepse) faltan.push("dinos si el servicio implica personal continuo en tus instalaciones");
+    if(state.tipo==="servicio" && state.servRepse==="si") faltan.push("ese servicio va por la ruta de personal especializado — usa el botón para cambiar");
+    if(!val("importe")) faltan.push("indícanos el importe total aproximado");
+    if(!state.vig) faltan.push("indícanos el periodo de ejecución");
+    if(state.tipo!=="servicio" && !lugarVal()) faltan.push("dinos en dónde");
+    if(!state.pago) faltan.push("elige cómo se paga");
+    if(!state.ind) faltan.push("elige cómo te ayuda en tu negocio");
+    if(!state.ori) faltan.push("indícanos de dónde sale el recurso");
+    if(!val("m_recibe")) faltan.push("dinos quién de tu equipo recibe o supervisa");
+    if(state.tipo && TIPO[state.tipo].fotoReq && !fotoOK()) faltan.push("adjunta fotos o marca que las integrarás");
+    if(!docOK()) faltan.push("adjunta la evidencia documental o marca que la integrarás");
+    if(state.fotoCommit && !state.fotos.length && !fechaDentro("fotoFecha")) faltan.push("elige la fecha compromiso de tus fotos (dentro de los 30 días hábiles)");
+    if(state.docCommit && !state.docs.length && !fechaDentro("docFecha")) faltan.push("elige la fecha compromiso de tu evidencia documental (dentro de los 30 días hábiles)");
+    if(!val("firmaNombre")) faltan.push("escribe el nombre de quien firmará");
+    if(state.gate==="nuevo" && !state.pers.length) faltan.push("adjunta la personalidad jurídica de quien firma");
+    if(state.tipo==="especializado" && !state.replab) faltan.push("indícanos si la labor es distinta a tu actividad principal");
+    if(faltan.length){ $("salida").innerHTML='<div class="miss"><b>Tu solicitud está casi lista.</b> Solo nos falta: '+faltan.join("; ")+".</div>"; $("salida").scrollIntoView(true); return; }
+
+    var rs = state.gate==="recurrente" ? (val("rfcRec")||"Cliente recurrente") : (val("rs")||"—");
+    var rfc = state.gate==="recurrente" ? val("rfcRec") : val("rfc");
+    var rows="";
+    function sec(t){ rows+='<div class="ds">'+t+'</div>'; }
+    function row(k,v){ if(v) rows+='<div class="drow"><span class="dk">'+k+'</span><span>'+esc(v)+'</span></div>'; }
+
+    sec("I · Datos del contribuyente");
+    row("Empresa / solicitante", rs);
+    row("RFC", rfc);
+    if(state.gate==="nuevo"){
+      row("Código postal fiscal", val("cp")); row("Régimen fiscal", val("regimen")); row("Actividad", val("giro"));
+      row("Contacto", [val("correo"),val("tel")].filter(Boolean).join(" · "));
+      row("Constancia de Situación Fiscal", state.csf?("Adjunta: "+state.csf):"");
+    } else {
+      row("Expediente", "Cliente con expediente en PR&M" + (val("cambio")?(" · actualización notificada: "+val("cambio")):"") + (state.csfRec?(" · documento adjunto: "+state.csfRec):""));
+    }
+
+    sec("II · La operación");
+    row("Tipo", tipoLbl());
+    row("Descripción", val("descripcion"));
+    if(state.tipo==="servicio") row("Bien o equipo sobre el que se realiza", val("bien"));
+    if(state.tipo!=="servicio") row(state.tipo==="especializado"?"Personal y tiempo":"Cantidad", val("volumen"));
+    row("Importe total (aproximado)", val("importe"));
+    if(state.cotejo) row("Referencias de mercado", state.cotejo + (val("cotejoTxt")?(" — "+val("cotejoTxt")):""));
+    row("Periodo de ejecución", vigenciaTxt());
+    if(state.tipo!=="servicio") row(state.tipo==="especializado"?"Lugar de ejecución":"Lugar de entrega", lugarVal());
+    row("Forma de pago", state.pago);
+    row("Modalidad", state.exhib);
+
+    sec("III · Asociación del gasto con el ingreso");
+    row("Vinculación con la actividad", state.ind + (val("indExp")?(" — "+val("indExp")):""));
+    row("Beneficio esperado", state.ben + (val("benMonto")?(" — "+val("benMonto")):""));
+    row("Origen del recurso", state.ori + (val("oriExp")?(" — "+val("oriExp")):""));
+
+    sec("IV · Materialidad");
+    row("Recibe / supervisa", val("m_recibe"));
+    row("Contacto para coordinar evidencia", val("m_contacto"));
+    row("Forma de recepción o validación", val("m_como"));
+    if(state.tipo && TIPO[state.tipo].fotoReq){
+      row("Evidencia fotográfica", state.fotos.length ? ("Adjunta ("+state.fotos.length+"): "+state.fotos.join("; ")) : ("Compromiso registrado — se compartirá a más tardar el "+fmtFecha("fotoFecha")));
+    } else if(state.fotos.length){
+      row("Evidencia fotográfica", "Adjunta ("+state.fotos.length+"): "+state.fotos.join("; "));
+    } else if(state.fotoCommit){
+      row("Evidencia fotográfica", "Compromiso registrado — se compartirá a más tardar el "+fmtFecha("fotoFecha"));
+    }
+    row("Evidencia documental", state.docs.length ? ("Adjunta ("+state.docs.length+"): "+state.docs.join("; ")) : ("Compromiso registrado — se compartirá a más tardar el "+fmtFecha("docFecha")));
+
+    sec("V · Elementos jurídicos");
+    row("Firma por el solicitante", val("firmaNombre"));
+    if(state.gate==="nuevo") row("Personalidad jurídica", state.pers.length?("Adjunta ("+state.pers.length+"): "+state.pers.join("; ")):"");
+    else row("Personalidad jurídica", "Acreditada en expediente PR&M");
+    if(state.tipo==="especializado") row("Labor del personal", state.replab);
+
+    var n=narrativa();
+    var narrHtml = n ? '<div class="narr">“'+esc(n)+'”</div>' : '';
+    var fecha=new Date().toLocaleDateString("es-MX",{year:"numeric",month:"long",day:"numeric"});
+    $("salida").innerHTML =
+      '<div class="doc" id="docPrint">'+
+        '<div class="dh"><div class="k">PR&amp;M Business Group</div><h3>Solicitud de cotización</h3><div class="m">Generada el '+fecha+'</div></div>'+
+        rows+
+        narrHtml+
+        '<div class="const">Esta solicitud, junto con la documentación que la acompaña, deja constancia de que el solicitante <b>originó la operación</b>, de su alcance y de los elementos que se integrarán a su expediente. Forma parte del soporte documental de la operación y deberá conservarse junto con la contabilidad (arts. 28 y 30 del Código Fiscal de la Federación).</div>'+
+      '</div>'+
+      '<div class="btnrow"><button type="button" class="btn2" onclick="window.print()">🖶 Guardar / Imprimir en PDF</button><button type="button" class="btn2" id="btnCopy">Copiar resumen</button></div>';
+    $("salida").scrollIntoView(true);
+    var bc=$("btnCopy"); if(bc) bc.addEventListener("click",function(){
+      allowCopy=true;
+      var t=$("docPrint").innerText; var ta=document.createElement("textarea"); ta.value=t; document.body.appendChild(ta); ta.select();
+      try{document.execCommand("copy"); bc.textContent="¡Copiado!";}catch(e){} document.body.removeChild(ta);
+      allowCopy=false;
+    });
+  });
+
+  /* ---- Protección básica del contenido ---- */
+  var allowCopy=false;
+  document.addEventListener("contextmenu",function(e){ e.preventDefault(); });
+  document.addEventListener("copy",function(e){
+    var t=e.target||e.srcElement, tag=t&&t.tagName?t.tagName.toLowerCase():"";
+    if(!allowCopy && tag!=="input" && tag!=="textarea") e.preventDefault();
+  });
+  document.addEventListener("cut",function(e){
+    var t=e.target||e.srcElement, tag=t&&t.tagName?t.tagName.toLowerCase():"";
+    if(tag!=="input" && tag!=="textarea") e.preventDefault();
+  });
+  document.addEventListener("keydown",function(e){
+    var k=e.keyCode;
+    if((e.ctrlKey||e.metaKey)&&(k===83||k===85)) e.preventDefault();
+  });
+
+  progress();
+})();
+</script>
+<script>
+/* ======================================================================
+   PR&M · Capa de envío (Fase 0) — folio, sello y acuse
+   Configura el endpoint del backend aquí. Si queda vacío, el formulario
+   sigue funcionando en modo offline con folio provisional y sello local.
+   ====================================================================== */
+window.PRM_CONFIG = window.PRM_CONFIG || {
+  endpoint: "",                 // p. ej. "https://tu-app.vercel.app/api/recepcion"
+  empresaDefault: "PR&M"
+};
+(function(){
+  var cfg = window.PRM_CONFIG;
+  function $(id){return document.getElementById(id);}
+  function onVal(w){var e=$(w);if(!e)return"";var c=e.querySelector(".chip.on,.tcard.on");return c?(c.getAttribute("data-v")||c.getAttribute("data-gate")||c.getAttribute("data-tipo")||""):"";}
+  function v(id){var e=$(id);return e?(e.value||"").trim():"";}
+  function names(id){var e=$(id);if(!e||!e.files)return[];return Array.prototype.map.call(e.files,function(f){return f.name;});}
+  function esc(s){return (s||"").toString().replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+
+  // Mostrar/ocultar bloques nuevos según selección
+  Array.prototype.forEach.call(document.querySelectorAll('#tipoCards .tcard'),function(c){
+    c.addEventListener('click',function(){
+      var esp=c.getAttribute('data-tipo')==='especializado';var nw=$('nominaWrap');
+      if(nw) nw.className='reveal'+(esp?'':' hidden');
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('#gateChips .chip'),function(c){
+    c.addEventListener('click',function(){
+      var nuevo=c.getAttribute('data-gate')==='nuevo';var rd=$('repDatos');
+      if(rd) rd.className='reveal'+(nuevo?'':' hidden');
+    });
+  });
+  var pin=$('padronInput'); if(pin) pin.addEventListener('change',function(){var ok=$('padronOk');if(ok&&pin.files.length){ok.style.display='block';ok.textContent='✓ Padrón: '+pin.files[0].name;}});
+
+  var consent=false, cc=$('consentChk');
+  if(cc) cc.addEventListener('click',function(){consent=!consent;cc.className=consent?'commit on':'commit';});
+
+  // La empresa emisora NO se decide ni se muestra aquí. El backend sugiere
+  // empresas candidatas (base maestra, por actividad económica / objeto social
+  // / concepto) y VINCULACIÓN elige con cuál timbrar. El cliente nunca la ve.
+  function buildPayload(){
+    var tipo=onVal('tipoCards');
+    var _q=new URLSearchParams(location.search);
+    return {
+      timestamp_cliente:new Date().toISOString(),
+      sitio_contacto:{rfc:_q.get('sitio')||'',codigo:_q.get('e')||'',nombre:_q.get('n')||''},
+      contribuyente:{tipo_cliente:onVal('gateChips'),razon_social:v('rs'),rfc:v('rfc')||v('rfcRec'),cp:v('cp'),
+        regimen:v('regimen'),uso_cfdi:v('usoCfdi'),giro:v('giro'),correo:v('correo'),tel:v('tel'),
+        domicilio:{calle:v('domCalle'),colonia:v('domColonia'),municipio:v('domMunicipio'),estado:v('domEstado')},
+        csf:names('csfInput')[0]||""},
+      operacion:{tipo:tipo,descripcion:v('descripcion'),bien:v('bien'),cantidad:v('volumen'),importe:v('importe'),
+        forma_pago:onVal('pagoChips'),metodo_pago:onVal('exhibChips'),periodo:onVal('vigChips'),
+        fecha_unica:v('vigFecha'),fecha_ini:v('vigIni'),fecha_fin:v('vigFin'),desde:v('vigDesde'),
+        lugar:v('lugar'),cotejo:onVal('cotejoChips'),cotejo_txt:v('cotejoTxt'),
+        num_trabajadores:v('numTrab'),periodicidad:v('periodicidad'),padron:names('padronInput')[0]||""},
+      razon_negocios:{indispensabilidad:onVal('indChips'),ind_exp:v('indExp'),beneficio:onVal('benChips'),ben_monto:v('benMonto'),origen:onVal('oriChips'),ori_exp:v('oriExp')},
+      materialidad:{recibe:v('m_recibe'),como:v('m_como'),contacto:v('m_contacto'),fotos:names('evFotoInput'),docs:names('evDocInput'),foto_fecha:v('fotoFecha'),doc_fecha:v('docFecha')},
+      juridico:{firma:v('firmaNombre'),cargo:v('repCargo'),escritura:v('repEscritura'),notario:v('repNotario'),fecha_poder:v('repFecha'),personalidad:names('persInput'),repse_labor:onVal('repseChips')},
+      consentimiento:consent
+    };
+  }
+  async function sha256(str){
+    if(window.crypto&&crypto.subtle){var b=new TextEncoder().encode(str);var h=await crypto.subtle.digest('SHA-256',b);
+      return Array.prototype.map.call(new Uint8Array(h),function(x){return('0'+x.toString(16)).slice(-2);}).join('');}
+    return 'sha256-no-disponible';
+  }
+  function folioProvisional(){return 'PRM-'+new Date().getFullYear()+'-'+Date.now().toString(36).toUpperCase();}
+
+  async function enviar(){
+    var az=$('acuseZone');
+    if(!consent){az.innerHTML='<div class="miss">Marca la casilla de consentimiento para enviar tu solicitud.</div>';return;}
+    if(!onVal('tipoCards')||!v('descripcion')||!(v('rfc')||v('rfcRec'))){az.innerHTML='<div class="miss">Antes de enviar, completa al menos RFC, tipo de operación y descripción.</div>';return;}
+    var payload=buildPayload(), json=JSON.stringify(payload);
+    var btn=$('btnEnviar'), prev=btn.textContent; btn.disabled=true; btn.textContent='Enviando…';
+    var result=null;
+    if(cfg.endpoint){
+      try{var r=await fetch(cfg.endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:json});if(r.ok)result=await r.json();}catch(e){}
+    }
+    if(!result){result={folio:folioProvisional(),timestamp:new Date().toISOString(),hash:await sha256(json),provisional:true};}
+    renderAcuse(result,payload);
+    btn.disabled=false; btn.textContent=prev;
+  }
+  function renderAcuse(res,p){
+    var fh=new Date(res.timestamp||Date.now()).toLocaleString('es-MX',{dateStyle:'long',timeStyle:'short'});
+    var note=res.provisional?'<div class="const" style="background:#FBF7EF;border-left-color:var(--gold);color:var(--navy2)">Folio provisional (modo offline). Al configurar <b>PRM_CONFIG.endpoint</b> se asignará el folio definitivo y el acuse quedará registrado en el expediente.</div>':'';
+    $('acuseZone').innerHTML=
+      '<div class="doc" id="acusePrint" style="margin-top:16px">'+
+        '<div class="dh"><div class="k">PR&amp;M Business Group · Acuse de recepción</div><h3>Folio '+esc(res.folio)+'</h3><div class="m">Recibida el '+fh+'</div></div>'+
+        '<div class="drow"><span class="dk">Solicitante / RFC</span><span>'+esc((p.contribuyente.razon_social||'')+' · '+(p.contribuyente.rfc||''))+'</span></div>'+
+        '<div class="drow"><span class="dk">Operación</span><span>'+esc((p.operacion.tipo||'')+' — '+(p.operacion.descripcion||''))+'</span></div>'+
+        '<div class="drow"><span class="dk">Método de pago</span><span>'+esc((p.operacion.forma_pago||'')+' · '+(p.operacion.metodo_pago||''))+'</span></div>'+
+        '<div class="drow"><span class="dk">Sello (SHA-256)</span><span style="font-family:monospace;font-size:11px;word-break:break-all">'+esc(res.hash||'')+'</span></div>'+
+        '<div class="const">Este acuse deja constancia del medio de contacto y del momento de recepción de la solicitud, con su sello digital. Integra el expediente de la operación.</div>'+note+
+      '</div>'+
+      '<div class="btnrow"><button type="button" class="btn2" onclick="window.print()">🖶 Guardar acuse en PDF</button></div>';
+    $('acuseZone').scrollIntoView(true);
+  }
+  var be=$('btnEnviar'); if(be) be.addEventListener('click',enviar);
+})();
+</script>
+</body>
+</html>

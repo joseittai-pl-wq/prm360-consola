@@ -152,7 +152,7 @@ const MERGE_AREAS = [
   ['Dirección', [ ['Tablero General','tabgen','n'],['Rentabilidad','rentabilidad','n'],['Frentes · semáforos','frentes','n'] ]],
   ['Comercial', [ ['Tablero Comercial','tabcom','n'],['Cotizador de nómina','cotizador','p'],['Pipeline de prospectos','pipelinecom','p'],['Solicitud (PDF / editable)','solicitudpdf','p'],['Solicitud de Cotización (web)','solicitudweb','p'],['Checklist de documentos','checklistdocs','p'],['Presentaciones comerciales','bibliopresenta','p'],['Tablero de clientes','clientes','p'],['Boletín','boletin','p'] ]],
   ['Vinculación', [ ['Tablero Vinculación','tabvinc','n'],['Clientes','clientescombo','p'],['Trabajadores · IMSS','trabajadorescombo','p'],['Adhesión digital (firma)','adhesiondig','p'],['Movimientos afiliatorios','movafil','p'],['Onboarding / KYC','onboarding','n'],['Validación + KYC (CSF/32-D/69)','kyc','p'],['Checklist de documentos','checklistdocs','p'],['Control de entregables','entregables','p'] ]],
-  ['Operaciones', [ ['Tablero Operaciones','tabop','n'],['Trámites','tramitescombo','p'],['Facturación','facturacion','p'],['Control de timbrado FAC-01','factimbrado','p'],['Tablero NOMEN','tablonomen','p'],['Layout de dispersión','layoutdisp','p'],['Expediente de Materialidad','materialidad','p'],['Conciliación disp. ↔ CFDI','__soon_concilia','p'],['Descargas SAT / CFDI','descargas','n'],['Calendario de vencimientos','calendario','n'] ]],
+  ['Operaciones', [ ['Tablero Operaciones','tabop','n'],['Trámites','tramitescombo','p'],['Facturación','facturacion','p'],['Control de timbrado FAC-01','factimbrado','p'],['Constructor de concepto FAC-02','constructorfac','p'],['Tablero NOMEN','tablonomen','p'],['Layout de dispersión','layoutdisp','p'],['Expediente de Materialidad','materialidad','p'],['Checklists de materialidad','matchecklists','p'],['Conciliación disp. ↔ CFDI','__soon_concilia','p'],['Descargas SAT / CFDI','descargas','n'],['Calendario de vencimientos','calendario','n'] ]],
   ['Jurídico', [ ['Tablero Jurídico','tabjur','n'],['Corporativo','corporativocombo','p'],['Bitácora de firmas','bitacorafirmas','p'],['Vigencias / Renovaciones','renovaciones','p'],['Gobierno y Padrones','padrones','n'],['Padrones de proveedores 2026','padronprov','p'],['Licitaciones y contratos','licitaciones','n'],['Plantillas de contratos','biblioplantillas','p'],['Juicios / defensa fiscal','juicios','p'],['Documentales (púb. y priv.)','documentales','n'],['Compliance jurídico','compliance','n'] ]],
   ['Fiscal', [ ['Tablero Fiscal','tabfisc','n'],['Cumplimiento','cumplimientocombo','p'],['Calendario fiscal','calfiscal','p'],['Calendario REPSE (ICSOE/SISUB)','calrepse','p'],['Previsión social','previsioncombo','p'],['NOM-035','nom035','p'],['Cuestionario NOM-035','nom035cuest','n'],['e.firmas (control)','efirmasv','n'] ]],
   ['Contabilidad', [ ['Tablero Contable','tabcont','n'],['Contabilidad / Pólizas','contabilidad','n'],['Captura de servicios','captura','p'],['Descarga XML / CFDI','descargas','n'],['Bancos','bancoscombo','p'],['Motor de conciliación','conciliador','p'] ]],
@@ -189,12 +189,26 @@ async function renderInterno(rol){
   renderNav(rol, depClave);
 }
 
+const DIR15_AREAS = {
+  DIRECCION:null,
+  COMERCIAL:['Comercial'],
+  VINCULACION:['Vinculación'],
+  OPERACIONES:['Operaciones'],
+  JURIDICO:['Jurídico'],
+  CONTABILIDAD:['Contabilidad','Fiscal'],
+  ADMINISTRACION:['Administración','Tesorería'],
+  CONTRALORIA:['Administración'],
+  ENTREGABLES:['Vinculación']
+};
 function renderNav(rol, depClave){
   const nav=$('#nav'); nav.innerHTML='';
   if(rol==='consulta'){ nav.appendChild(el('<div class="dm-note">Modo solo lectura</div>')); }
+  const permitidas = (depClave && DIR15_AREAS[depClave]!==undefined) ? DIR15_AREAS[depClave] : null;
+  if(permitidas){ nav.appendChild(el('<div class="dm-note">Acceso por departamento · PRM-DIR-15</div>')); }
   let firstLink=null;
   MERGE_AREAS.forEach((area,ai)=>{
     const nombre=area[0], mods=area[1];
+    if(permitidas && permitidas.indexOf(nombre)<0) return;
     const badge = ai===0 ? '★' : String(ai);
     const block=el('<div class="dm-block'+(ai===0?' open':'')+'"></div>');
     const head=el('<button class="dm-head" type="button"><span class="dm-step">'+badge+'</span><span class="dm-name">'+esc(nombre)+'</span><span class="dm-chev">›</span></button>');
@@ -221,6 +235,8 @@ async function view(v, rol, label){
   const c=$('#content'); c.innerHTML='<div class="loader">Cargando…</div>';
   try{
     if(v==='cotizador')    return await viewCotizador(c);
+    if(v==='constructorfac') return await viewConstructorFac(c);
+    if(v==='matchecklists')  return await viewMatChecklists(c);
     if(v==='padronprov')   return await viewPadronProv(c);
     if(v==='movafil')      return await viewMovAfil(c);
     if(v==='factimbrado')  return await viewFacTimbrado(c);
@@ -4997,5 +5013,56 @@ async function viewSolicitudWeb(c){
       m.style.color='var(--ok)'; m.textContent='✓ Liga copiada: '+url;
     });
   };
+}
+
+
+/* ===== v18 · Constructor de concepto FAC-02 (formato oficial) ===== */
+async function viewConstructorFac(c){
+  c.innerHTML='<h1 class="pg">Constructor de concepto · FAC-02</h1>'+
+    '<div class="pgsub">Su formato oficial de Operaciones: construye el concepto del CFDI con coherencia de importe, asociación gasto-ingreso, indispensabilidad y sello de materialidad. Al terminar, registre la solicitud en el Control de timbrado FAC-01.</div>'+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px" class="no-print">'+
+      '<button class="btn2" id="cf_open">🔗 Abrir en pestaña nueva</button>'+
+    '</div>'+
+    '<iframe src="constructor.html" style="width:100%;height:78vh;border:1px solid var(--line);border-radius:10px;background:#fff"></iframe>';
+  document.getElementById('cf_open').onclick=function(){ window.open('constructor.html','_blank'); };
+}
+
+/* ===== v18 · Checklists de materialidad (catálogo oficial "pedir de más") ===== */
+async function viewMatChecklists(c){
+  const {data,error}=await sb.from('materialidad_checklist_cat').select('*').eq('activo',true).order('tipo').order('orden');
+  if(error) throw error;
+  const lista=data||[];
+  const tipos=[];
+  lista.forEach(function(x){ if(tipos.indexOf(x.tipo)<0) tipos.push(x.tipo); });
+  const ordT=['Paquete inicial','REPSE / Especializados','Honorarios / Profesionales','Maquila / Dispersión','Información adicional'];
+  tipos.sort(function(a,b){ return (ordT.indexOf(a)+99*(ordT.indexOf(a)<0))-(ordT.indexOf(b)+99*(ordT.indexOf(b)<0)); });
+  c.innerHTML='<h1 class="pg">Checklists de materialidad</h1>'+
+    '<div class="pgsub">Criterio del despacho: pedir de más, no de menos. El paquete inicial (Aviso de Privacidad + NDA) es SIEMPRE lo primero que se entrega al cliente. Marque, imprima y anexe al expediente.</div>'+
+    '<div class="card"><div class="body"><div class="frm">'+
+      '<label>Tipo de servicio<select id="mc_tipo">'+tipos.map(function(t){ return '<option>'+esc(t)+'</option>'; }).join('')+'</select></label>'+
+      '<label>Cliente / expediente (para el impreso)<input id="mc_cli" style="min-width:220px"></label>'+
+    '</div></div></div>'+
+    '<div id="mc_out"></div>'+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0" class="no-print">'+
+      '<button class="btn2" id="mc_print">🖨 Imprimir checklist</button>'+
+      '<span style="align-self:center;font-size:12px;color:var(--muted)">Para agregar o quitar evidencias del catálogo, pídalo a Dirección.</span>'+
+    '</div>';
+  const g=id=>document.getElementById(id);
+  function draw(){
+    const t=g('mc_tipo').value;
+    const items=lista.filter(function(x){ return x.tipo===t; });
+    const cli=g('mc_cli').value.trim();
+    document.getElementById('mc_out').innerHTML='<div class="card"><h3>'+esc(t)+' · '+items.length+' evidencias'+(cli?' · '+esc(cli):'')+'</h3><div class="body">'+
+      items.map(function(x){
+        return '<label class="chk" style="display:flex;align-items:flex-start;gap:8px;margin:7px 0;font-size:13.5px"><input type="checkbox" style="width:16px;height:16px;margin-top:2px">'+
+          '<span><b>'+x.orden+'</b> · '+esc(x.documento)+'</span></label>';
+      }).join('')+
+      '<div style="font-size:11px;color:var(--muted);margin-top:10px;border-top:1px solid var(--line);padding-top:8px">Fecha: ____________ · Elaboró: ____________________ · Revisó: ____________________ · Autorizó: ____________________</div>'+
+      '</div></div>';
+  }
+  draw();
+  g('mc_tipo').onchange=draw;
+  g('mc_cli').onblur=draw;
+  g('mc_print').onclick=function(){ window.print(); };
 }
 
