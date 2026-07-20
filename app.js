@@ -152,7 +152,7 @@ const MERGE_AREAS = [
   ['Dirección', [ ['Tablero General','tabgen','n'],['Rentabilidad','rentabilidad','n'],['Frentes · semáforos','frentes','n'] ]],
   ['Comercial', [ ['Tablero Comercial','tabcom','n'],['Cotizador de nómina','cotizador','p'],['Solicitud (PDF / editable)','__soon_solicitudpdf','p'],['Checklist de documentos','__soon_checklistcom','p'],['Presentaciones','__soon_presentaciones','p'],['Tablero de clientes','clientes','p'],['Boletín','boletin','p'] ]],
   ['Vinculación', [ ['Tablero Vinculación','tabvinc','n'],['Clientes','clientescombo','p'],['Trabajadores · IMSS','trabajadorescombo','p'],['Onboarding / KYC','onboarding','n'],['Validación + KYC (CSF/32-D/69)','__soon_kyc','p'],['Checklist de documentos','__soon_checklistvinc','p'],['Control de entregables','__soon_entregables','p'] ]],
-  ['Operaciones', [ ['Tablero Operaciones','tabop','n'],['Trámites','tramitescombo','p'],['Facturación','__soon_facturacion','p'],['Nómina NOMEN','__soon_nomen','p'],['Layout de dispersión','__soon_layout','p'],['Expediente de Materialidad','__soon_materialidad','p'],['Conciliación disp. ↔ CFDI','__soon_concilia','p'],['Descargas SAT / CFDI','descargas','n'],['Calendario de vencimientos','calendario','n'] ]],
+  ['Operaciones', [ ['Tablero Operaciones','tabop','n'],['Trámites','tramitescombo','p'],['Facturación','facturacion','p'],['Nómina NOMEN','__soon_nomen','p'],['Layout de dispersión','__soon_layout','p'],['Expediente de Materialidad','materialidad','p'],['Conciliación disp. ↔ CFDI','__soon_concilia','p'],['Descargas SAT / CFDI','descargas','n'],['Calendario de vencimientos','calendario','n'] ]],
   ['Jurídico', [ ['Tablero Jurídico','tabjur','n'],['Corporativo','corporativocombo','p'],['Bitácora de firmas','__soon_bitacorafirmas','p'],['Vigencias / Renovaciones','renovaciones','p'],['Plantillas de contratos','__soon_plantillas','p'],['Juicios / defensa fiscal','juicios','p'],['Compliance jurídico','compliance','n'] ]],
   ['Fiscal', [ ['Tablero Fiscal','tabfisc','n'],['Cumplimiento','cumplimientocombo','p'],['Calendario fiscal','__soon_calfiscal','p'],['Calendario REPSE (ICSOE/SISUB)','__soon_calrepse','p'],['Previsión social','previsioncombo','p'],['NOM-035','nom035','p'] ]],
   ['Contabilidad', [ ['Tablero Contable','tabcont','n'],['Contabilidad / Pólizas','contabilidad','n'],['Captura de servicios','captura','p'],['Descarga XML / CFDI','descargas','n'],['Bancos','bancoscombo','p'],['Motor de conciliación','__soon_motorconcilia','p'] ]],
@@ -262,6 +262,8 @@ async function view(v, rol, label){
     if(v==='nom035')       return await viewNom035(c);
     if(v==='catalogogastos') return await viewCatalogoGastos(c);
     if(v==='busqueda') return await viewBusqueda(c, window.__gterm||'');
+    if(v==='facturacion')  return await viewFacturacion(c);
+    if(v==='materialidad') return await viewMaterialidad(c);
     if(v && v.indexOf('__soon_')===0) return viewSoon(c, label);
     if(v==='resumen')      return await viewResumen(c);
     if(v==='kpis')         return await viewKpis360(c);
@@ -2034,15 +2036,17 @@ async function viewDescargas(c){
 
 async function viewCalendario(c){
   const hoy=new Date(); hoy.setHours(0,0,0,0);
-  const [r1,r2,r3]=await Promise.all([
+  const [r1,r2,r3,r4]=await Promise.all([
     sb.from('renovaciones').select('empresa,tipo_autorizacion,vigencia,estatus').not('vigencia','is',null),
     sb.from('alertas_repse').select('razon_social,folio_repse,vigencia_repse,estado_alerta').not('vigencia_repse','is',null),
-    sb.from('compliance_empresa').select('empresa_rfc,fecha_limite,notas').eq('aplica',true).eq('cumplido',false).not('fecha_limite','is',null)
+    sb.from('compliance_empresa').select('empresa_rfc,fecha_limite,notas').eq('aplica',true).eq('cumplido',false).not('fecha_limite','is',null),
+    sb.from('materialidad_expedientes').select('folio,cliente,fecha_limite,estatus').eq('estatus','abierto').not('fecha_limite','is',null)
   ]);
   const items=[];
   (r1.data||[]).forEach(x=>items.push({fecha:x.vigencia,fuente:'Renovación',empresa:x.empresa||'',detalle:x.tipo_autorizacion||'',estatus:x.estatus||''}));
   (r2.data||[]).forEach(x=>items.push({fecha:x.vigencia_repse,fuente:'REPSE',empresa:x.razon_social||'',detalle:x.folio_repse||'',estatus:x.estado_alerta||''}));
   (r3.data||[]).forEach(x=>items.push({fecha:x.fecha_limite,fuente:'Compliance',empresa:x.empresa_rfc||'',detalle:x.notas||'',estatus:''}));
+  (r4.data||[]).forEach(x=>items.push({fecha:x.fecha_limite,fuente:'Materialidad',empresa:x.cliente||'',detalle:'Cierre expediente '+(x.folio||''),estatus:x.estatus||''}));
   items.sort((a,b)=>String(a.fecha).localeCompare(String(b.fecha)));
   const list=items.slice(0,120);
   const diasDe=f=>{const d=new Date(f); d.setHours(0,0,0,0); return Math.round((d-hoy)/86400000);};
@@ -2129,14 +2133,16 @@ async function viewTabVinc(c){
 }
 async function viewTabOp(c){
   c.innerHTML='<h1 class="pg">Tablero Operaciones</h1><div class="pgsub">Trámites, movimientos y descargas SAT</div>';
-  const [tar,mov,des,bit]=await Promise.all([
-    cnt('tareas'), cnt('operaciones_movimientos'), cnt('descarga_solicitudes'), cnt('bitacora')
+  const [tar,mov,des,bit,matAb]=await Promise.all([
+    cnt('tareas'), cnt('operaciones_movimientos'), cnt('descarga_solicitudes'), cnt('bitacora'),
+    cnt('materialidad_expedientes',[['estatus','abierto']])
   ]);
   c.innerHTML += '<div class="kpis">'+
     tile(tar,'Tareas',sem(tar,'alert'))+
     tile(mov,'Movimientos','var(--teal)')+
     tile(des,'Descargas SAT','var(--wait)')+
     tile(bit,'Bitácora','var(--navy)')+
+    tile(matAb,'Expedientes materialidad abiertos', matAb>0?'var(--wait)':'var(--ok)')+
     '</div>';
 }
 async function viewTabJur(c){
@@ -2288,4 +2294,361 @@ async function viewCatalogoGastos(c){
   c.innerHTML='<h1 class="pg">Catálogo de gastos</h1><div class="pgsub">'+(data?data.length:0)+' conceptos (máx 200)</div>'+
     '<div class="card"><table><thead><tr><th>Clave</th><th>Nombre</th><th>Tipo</th><th>Activo</th></tr></thead><tbody>'+
     (rows||'<tr><td colspan=4 class="empty">Sin catálogo</td></tr>')+'</tbody></table></div>';
+}
+
+async function viewFacturacion(c){
+  const {data,error}=await sb.from('facturacion_conceptos').select('id,folio,cliente,servicio,concepto,metodo_pago,subtotal,iva,total,estatus,creado_en').order('creado_en',{ascending:false}).limit(200);
+  if(error) throw error;
+  const tagEst=e=> e==='timbrado'?'on':(e==='validado'?'repse':'off');
+  const rows=(data||[]).map(x=>{
+    const conc=x.concepto||''; const concT=conc.length>60?conc.slice(0,60)+'…':conc;
+    return `<tr><td><b>${esc(x.folio||'')}</b></td><td>${esc(x.cliente||'')}</td><td>${esc(x.servicio||'')}</td><td>${esc(concT)}</td><td><span class="tag ${x.metodo_pago==='PUE'?'on':''}">${esc(x.metodo_pago||'')}</span></td><td class="num-r">${mny(x.subtotal)}</td><td class="num-r">${mny(x.iva)}</td><td class="num-r"><b>${mny(x.total)}</b></td><td><span class="tag ${tagEst(x.estatus)}">${esc(x.estatus||'')}</span></td><td>${x.estatus==='borrador'?`<button class="mini fc-val" data-id="${x.id}">Validar</button>`:''}</td></tr>`;
+  }).join('');
+  c.innerHTML='<h1 class="pg">Facturación</h1><div class="pgsub">Constructor de concepto — valida antes de timbrar (flujo V4/V7). El timbrado se hace en tu sistema de facturación.</div>'+
+    '<div class="card"><h3>Nuevo concepto</h3><div class="body"><div class="frm">'+
+      '<label>Cliente<input id="fc_cliente" style="min-width:220px"></label>'+
+      '<label>RFC<input id="fc_rfc" maxlength="13"></label>'+
+      '<label>Servicio<select id="fc_serv"><option>Fiscal</option><option>Contable</option><option>Nómina y timbrado</option><option>REPSE / especializados</option><option>Materialidad</option><option>Jurídico</option><option>Otro</option></select></label>'+
+      '<label>Concepto de facturación<input id="fc_concepto" style="min-width:320px"></label>'+
+      '<label>Método de pago<select id="fc_metodo"><option value="PPD" selected>PPD</option><option value="PUE">PUE</option></select></label>'+
+      '<label>Subtotal<input id="fc_sub" type="number" step="0.01" min="0" style="width:120px"></label>'+
+    '</div><div style="margin-top:8px"><button class="btn2" id="fc_save">Guardar concepto</button> <span id="fc_msg" style="font-size:12px;margin-left:8px"></span></div></div></div>'+
+    '<div class="card"><h3>Conceptos ('+(data?data.length:0)+')</h3><table><thead><tr><th>Folio</th><th>Cliente</th><th>Servicio</th><th>Concepto</th><th>Método</th><th class="num-r">Subtotal</th><th class="num-r">IVA</th><th class="num-r">Total</th><th>Estatus</th><th></th></tr></thead><tbody>'+
+    (rows||'<tr><td colspan=10 class="empty">Sin conceptos de facturación</td></tr>')+'</tbody></table></div>';
+  const g=id=>document.getElementById(id);
+  g('fc_save').onclick=async()=>{
+    const msg=g('fc_msg');
+    const cliente=g('fc_cliente').value.trim(), rfc=g('fc_rfc').value.trim(), concepto=g('fc_concepto').value.trim();
+    const sub=Number(g('fc_sub').value);
+    if(!cliente||!concepto){ msg.textContent='Cliente y concepto son obligatorios.'; msg.style.color='var(--danger)'; return; }
+    if(!(sub>0)){ msg.textContent='Captura un subtotal mayor a cero.'; msg.style.color='var(--danger)'; return; }
+    g('fc_save').disabled=true; msg.textContent='Guardando…'; msg.style.color='var(--muted)';
+    const tot=await cnt('facturacion_conceptos');
+    const folio='FAC-'+String(tot+1).padStart(4,'0');
+    const iva=Math.round(sub*0.16*100)/100;
+    const total=Math.round((sub+iva)*100)/100;
+    const {error:e}=await sb.from('facturacion_conceptos').insert({folio, cliente, cliente_rfc:rfc||null, servicio:g('fc_serv').value, concepto, metodo_pago:g('fc_metodo').value, subtotal:sub, iva, total, estatus:'borrador'});
+    if(e){ msg.textContent='Error: '+e.message; msg.style.color='var(--danger)'; g('fc_save').disabled=false; return; }
+    viewFacturacion(c);
+  };
+  c.querySelectorAll('button.fc-val').forEach(b=>b.onclick=async()=>{
+    b.disabled=true;
+    const {error:e}=await sb.from('facturacion_conceptos').update({estatus:'validado'}).eq('id',b.dataset.id);
+    if(e){ alert('Error al validar: '+e.message); b.disabled=false; return; }
+    viewFacturacion(c);
+  });
+}
+
+/* ===== Expediente de Materialidad · módulo ampliado ===== */
+const MAT_TIPOS={repse:'REPSE / especializados',honorarios:'Honorarios',maquila_dispersion:'Maquila / dispersión'};
+function matHoy(){ return new Date().toISOString().slice(0,10); }
+function matDias(f){ if(!f) return null; const hoy=new Date(); hoy.setHours(0,0,0,0); const d=new Date(String(f).slice(0,10)+'T00:00:00'); if(isNaN(d)) return null; return Math.round((d-hoy)/86400000); }
+function matDot(color){ return '<span style="color:'+color+';font-size:15px;line-height:1">●</span>'; }
+function matSemColor(exp, evDone, evTotal, cadDone){
+  if(evTotal>0 && evDone===evTotal && cadDone===8) return '#2f9e6b';
+  const dias=matDias(exp.fecha_limite);
+  if(dias!==null && (dias<0 || (dias<=7 && evDone<evTotal))) return '#c0392b';
+  return '#c8952a';
+}
+function matRiskCol(v, good, bad){ if(good.indexOf(v)>=0) return '#2f9e6b'; if(bad.indexOf(v)>=0) return '#c0392b'; return '#8a8f98'; }
+function matRiesgoMini(x){
+  return '<b style="color:'+matRiskCol(x.riesgo_32d,['positiva'],['negativa'])+'" title="Opinión 32-D: '+esc(x.riesgo_32d||'pendiente')+'">D</b> '+
+    '<b style="color:'+matRiskCol(x.riesgo_69b,['limpio'],['listado'])+'" title="69-B: '+esc(x.riesgo_69b||'pendiente')+'">B</b> '+
+    '<b style="color:'+matRiskCol(x.riesgo_repse,['vigente','no_aplica'],['vencido'])+'" title="REPSE: '+esc(x.riesgo_repse||'pendiente')+'">R</b>';
+}
+function matTagExp(e){ return e==='completo'?'on':(e==='cerrado'?'off':'repse'); }
+function matSelOpts(opts, cur){ const v=cur||'pendiente'; return opts.map(o=>'<option value="'+o[0]+'"'+(v===o[0]?' selected':'')+'>'+o[1]+'</option>').join(''); }
+
+async function viewMaterialidad(c){
+  comboTabs(c,'Expediente de Materialidad',[{label:'Expedientes',fn:matListado},{label:'Kit mensual 27-V',fn:matKit}]);
+}
+async function viewMaterialidadDet(c, id){ return matDetalle(c, id); }
+
+async function matListado(body){
+  body.innerHTML='<div class="loader">Cargando…</div>';
+  const [r1,r2,r3]=await Promise.all([
+    sb.from('materialidad_expedientes').select('id,folio,cliente,cliente_rfc,tipo_servicio,fecha_apertura,fecha_limite,estatus,riesgo_32d,riesgo_69b,riesgo_repse').order('creado_en',{ascending:false}).limit(200),
+    sb.from('materialidad_evidencias').select('expediente_id,cumplida'),
+    sb.from('materialidad_cadena').select('expediente_id,cumplido')
+  ]);
+  if(r1.error) throw r1.error;
+  const exps=r1.data||[];
+  const prog={}, cad={};
+  (r2.data||[]).forEach(ev=>{ const p=prog[ev.expediente_id]||(prog[ev.expediente_id]={done:0,total:0}); p.total++; if(ev.cumplida) p.done++; });
+  (r3.data||[]).forEach(cl=>{ const p=cad[cl.expediente_id]||(cad[cl.expediente_id]={done:0}); if(cl.cumplido) p.done++; });
+  const rows=exps.map(x=>{
+    const p=prog[x.id]||{done:0,total:0};
+    const cd=(cad[x.id]||{done:0}).done;
+    const dias=matDias(x.fecha_limite);
+    let limTx=esc(x.fecha_limite||'—');
+    if(dias!==null) limTx += dias<0
+      ? ' <span style="color:#c0392b;font-size:11px">vencido hace '+(-dias)+' d</span>'
+      : ' <span style="color:var(--muted);font-size:11px">en '+dias+' d</span>';
+    return '<tr>'+
+      '<td>'+matDot(matSemColor(x,p.done,p.total,cd))+'</td>'+
+      '<td><b>'+esc(x.folio||'')+'</b></td>'+
+      '<td>'+esc(x.cliente||'')+'</td>'+
+      '<td>'+esc(MAT_TIPOS[x.tipo_servicio]||x.tipo_servicio||'')+'</td>'+
+      '<td>'+limTx+'</td>'+
+      '<td><span class="tag '+(p.total>0&&p.done===p.total?'on':'off')+'">'+p.done+'/'+p.total+'</span></td>'+
+      '<td><span class="tag '+(cd===8?'on':'off')+'">'+cd+'/8</span></td>'+
+      '<td>'+matRiesgoMini(x)+'</td>'+
+      '<td><span class="tag '+matTagExp(x.estatus)+'">'+esc(x.estatus||'')+'</span></td>'+
+      '<td><button class="mini mt-ver" data-id="'+x.id+'">Ver</button></td>'+
+      '</tr>';
+  }).join('');
+  body.innerHTML=
+    '<div class="pgsub">'+exps.length+' expedientes (máx 200) · checklist de evidencias + cadena de trazabilidad + matriz de riesgo</div>'+
+    '<div class="card"><h3>Abrir expediente</h3><div class="body"><div class="frm">'+
+      '<label>Cliente<input id="mt_cliente" style="min-width:220px"></label>'+
+      '<label>RFC<input id="mt_rfc" maxlength="13"></label>'+
+      '<label>Tipo de servicio<select id="mt_tipo"><option value="repse">REPSE / especializados (11 evidencias)</option><option value="honorarios">Honorarios (9 evidencias)</option><option value="maquila_dispersion">Maquila / dispersión (7 evidencias)</option></select></label>'+
+      '<label>Folio (opcional)<input id="mt_folio"></label>'+
+    '</div><div style="margin-top:8px"><button class="btn2" id="mt_save">Abrir expediente + checklist</button> <span id="mt_msg" style="font-size:12px;margin-left:8px"></span></div>'+
+    '<div style="font-size:12px;color:var(--muted);margin-top:6px">Al abrir, el checklist de evidencias y la cadena de 8 eslabones se generan solos; cierre a 30 días.</div></div></div>'+
+    '<div class="card"><table><thead><tr><th></th><th>Folio</th><th>Cliente</th><th>Tipo</th><th>Límite</th><th>Evidencias</th><th>Cadena</th><th>Riesgo</th><th>Estatus</th><th></th></tr></thead><tbody>'+
+    (rows||'<tr><td colspan=10 class="empty">Sin expedientes de materialidad</td></tr>')+'</tbody></table></div>';
+  const g=id=>document.getElementById(id);
+  g('mt_save').onclick=async()=>{
+    const msg=g('mt_msg');
+    const cliente=g('mt_cliente').value.trim(), rfc=g('mt_rfc').value.trim(), folio=g('mt_folio').value.trim();
+    if(!cliente){ msg.textContent='El cliente es obligatorio.'; msg.style.color='var(--danger)'; return; }
+    g('mt_save').disabled=true; msg.textContent='Abriendo expediente…'; msg.style.color='var(--muted)';
+    const {error:e}=await sb.rpc('materialidad_crear',{p_cliente:cliente, p_rfc:rfc||null, p_tipo:g('mt_tipo').value, p_folio:folio||null});
+    if(e){ msg.textContent='Error: '+e.message; msg.style.color='var(--danger)'; g('mt_save').disabled=false; return; }
+    matListado(body);
+  };
+  body.querySelectorAll('button.mt-ver').forEach(b=>b.onclick=()=>matDetalle(body, b.dataset.id));
+}
+
+async function matDetalle(body, id){
+  body.innerHTML='<div class="loader">Cargando expediente…</div>';
+  const [r1,r2,r3]=await Promise.all([
+    sb.from('materialidad_expedientes').select('id,folio,cliente,cliente_rfc,tipo_servicio,fecha_apertura,fecha_limite,estatus,notas,riesgo_32d,riesgo_69b,riesgo_repse').eq('id',id).maybeSingle(),
+    sb.from('materialidad_evidencias').select('id,orden,evidencia,responsable,frecuencia,ubicacion,cumplida,fecha_cumplida,archivo_path,archivo_nombre,notas').eq('expediente_id',id).order('orden'),
+    sb.from('materialidad_cadena').select('id,orden,eslabon,etiqueta,cumplido,referencia,fecha,notas').eq('expediente_id',id).order('orden')
+  ]);
+  if(r1.error) throw r1.error; if(r2.error) throw r2.error; if(r3.error) throw r3.error;
+  const exp=r1.data;
+  if(!exp){ body.innerHTML='<div class="empty">No se encontró el expediente.</div>'; return; }
+  const evs=r2.data||[], cadL=r3.data||[];
+  const done=evs.filter(x=>x.cumplida).length;
+  const cadDone=cadL.filter(x=>x.cumplido).length;
+  const allDone=evs.length>0&&done===evs.length;
+  const bandera = exp.riesgo_69b==='listado' || exp.riesgo_32d==='negativa' || exp.riesgo_repse==='vencido';
+  const dias=matDias(exp.fecha_limite);
+  const diasTx = dias===null ? '' : (dias<0 ? ' · <span style="color:#c0392b">vencido hace '+(-dias)+' d</span>' : ' · en '+dias+' d');
+
+  const cadRows=cadL.map(x=>
+    '<tr><td>'+(x.orden!=null?x.orden:'')+'</td>'+
+    '<td><input type="checkbox" class="mc-chk" data-id="'+x.id+'"'+(x.cumplido?' checked':'')+'></td>'+
+    '<td>'+esc(x.etiqueta||x.eslabon||'')+'</td>'+
+    '<td><input class="mc-ref" data-id="'+x.id+'" value="'+esc(x.referencia||'')+'" placeholder="Folio / referencia" style="min-width:160px"></td>'+
+    '<td>'+esc(x.fecha||'')+'</td></tr>'
+  ).join('');
+
+  const evRows=evs.map(x=>{
+    const archivo = x.archivo_path
+      ? '<a href="#" class="me-dl" data-path="'+esc(x.archivo_path)+'">📎 '+esc(x.archivo_nombre||'archivo')+'</a>'
+      : '<input type="file" class="me-file" data-id="'+x.id+'" style="font-size:11px;max-width:190px">';
+    return '<tr><td>'+(x.orden!=null?x.orden:'')+'</td>'+
+      '<td><input type="checkbox" class="me-chk" data-id="'+x.id+'"'+(x.cumplida?' checked':'')+'></td>'+
+      '<td>'+esc(x.evidencia||'')+'</td>'+
+      '<td><input class="me-resp" data-id="'+x.id+'" value="'+esc(x.responsable||'')+'" placeholder="Responsable" style="min-width:120px"></td>'+
+      '<td>'+esc(x.fecha_cumplida||'')+'</td>'+
+      '<td>'+archivo+'</td></tr>';
+  }).join('');
+
+  body.innerHTML=
+    '<div class="no-print" style="margin-bottom:10px"><button class="btn2 ghost" id="mt_volver">← Volver</button></div>'+
+    '<div class="card"><h3>'+matDot(matSemColor(exp,done,evs.length,cadDone))+' Expediente '+esc(exp.folio||'')+'</h3><div class="body">'+
+      '<div style="font-size:13px">'+esc(exp.cliente||'')+(exp.cliente_rfc?(' · '+esc(exp.cliente_rfc)):'')+' · '+esc(MAT_TIPOS[exp.tipo_servicio]||exp.tipo_servicio||'')+
+      ' · apertura '+esc(exp.fecha_apertura||'—')+' · límite '+esc(exp.fecha_limite||'—')+diasTx+
+      ' · <span class="tag '+matTagExp(exp.estatus)+'">'+esc(exp.estatus||'')+'</span>'+
+      ' · evidencias '+done+'/'+evs.length+' · cadena '+cadDone+'/8</div></div></div>'+
+    '<div class="card"><h3>Matriz de riesgo</h3><div class="body">'+
+      (bandera?'<div style="background:#fdecea;border:1px solid #c0392b;color:#c0392b;padding:8px 12px;border-radius:6px;font-weight:700;margin-bottom:10px">⚠ Bandera roja: revisar antes de timbrar/operar.</div>':'')+
+      '<div class="frm">'+
+      '<label>Opinión 32-D<select id="mtr_32d">'+matSelOpts([['positiva','Positiva'],['negativa','Negativa'],['pendiente','Pendiente']],exp.riesgo_32d)+'</select></label>'+
+      '<label>Listado 69-B<select id="mtr_69b">'+matSelOpts([['limpio','Limpio'],['listado','Listado 69-B'],['pendiente','Pendiente']],exp.riesgo_69b)+'</select></label>'+
+      '<label>REPSE<select id="mtr_repse">'+matSelOpts([['vigente','Vigente'],['no_aplica','No aplica'],['vencido','Vencido'],['pendiente','Pendiente']],exp.riesgo_repse)+'</select></label>'+
+      '</div><div style="font-size:12px;color:var(--muted);margin-top:6px">Se guarda al cambiar cada campo.</div></div></div>'+
+    '<div class="card"><h3>Cadena de trazabilidad · '+cadDone+'/8 eslabones</h3><table><thead><tr><th>#</th><th>Cumplido</th><th>Eslabón</th><th>Referencia</th><th>Fecha</th></tr></thead><tbody>'+
+      (cadRows||'<tr><td colspan=5 class="empty">Sin cadena registrada</td></tr>')+'</tbody></table></div>'+
+    '<div class="card"><h3>Checklist de evidencias · '+done+'/'+evs.length+'</h3><table><thead><tr><th>#</th><th>Cumplida</th><th>Evidencia</th><th>Responsable</th><th>Fecha</th><th>Archivo</th></tr></thead><tbody>'+
+      (evRows||'<tr><td colspan=6 class="empty">Sin evidencias en el checklist</td></tr>')+'</tbody></table></div>'+
+    '<div class="no-print" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">'+
+      '<button class="btn2" id="mt_hoja">Hoja de cierre (PDF)</button>'+
+      '<button class="btn2" id="mt_carpeta">Carpeta de defensa (índice)</button>'+
+      (allDone&&exp.estatus!=='completo'?'<button class="btn2" id="mt_completo">Marcar completo</button>':'')+
+    '</div>';
+
+  document.getElementById('mt_volver').onclick=()=>matListado(body);
+  document.getElementById('mt_hoja').onclick=()=>matHojaCierre(body, exp, evs, cadL);
+  document.getElementById('mt_carpeta').onclick=()=>matCarpetaDefensa(body, exp, evs, cadL);
+  const btnC=document.getElementById('mt_completo');
+  if(btnC) btnC.onclick=async()=>{
+    btnC.disabled=true;
+    const {error:e}=await sb.from('materialidad_expedientes').update({estatus:'completo'}).eq('id',id);
+    if(e){ alert('Error: '+e.message); btnC.disabled=false; return; }
+    matDetalle(body, id);
+  };
+
+  const bindSel=(elId, campo)=>{
+    const s=document.getElementById(elId);
+    if(!s) return;
+    s.onchange=async()=>{
+      s.disabled=true;
+      const payload={}; payload[campo]=s.value;
+      const {error:e}=await sb.from('materialidad_expedientes').update(payload).eq('id',id);
+      if(e){ alert('Error: '+e.message); s.disabled=false; return; }
+      matDetalle(body, id);
+    };
+  };
+  bindSel('mtr_32d','riesgo_32d'); bindSel('mtr_69b','riesgo_69b'); bindSel('mtr_repse','riesgo_repse');
+
+  body.querySelectorAll('input.mc-chk').forEach(ch=>ch.onchange=async()=>{
+    ch.disabled=true;
+    const payload=ch.checked?{cumplido:true, fecha:matHoy()}:{cumplido:false, fecha:null};
+    const {error:e}=await sb.from('materialidad_cadena').update(payload).eq('id',ch.dataset.id);
+    if(e){ alert('Error: '+e.message); ch.checked=!ch.checked; ch.disabled=false; return; }
+    matDetalle(body, id);
+  });
+  body.querySelectorAll('input.mc-ref').forEach(inp=>inp.onchange=async()=>{
+    const {error:e}=await sb.from('materialidad_cadena').update({referencia:inp.value.trim()||null}).eq('id',inp.dataset.id);
+    if(e){ alert('Error: '+e.message); return; }
+    inp.style.borderColor='#2f9e6b';
+  });
+  body.querySelectorAll('input.me-chk').forEach(ch=>ch.onchange=async()=>{
+    ch.disabled=true;
+    const payload=ch.checked?{cumplida:true, fecha_cumplida:matHoy()}:{cumplida:false, fecha_cumplida:null};
+    const {error:e}=await sb.from('materialidad_evidencias').update(payload).eq('id',ch.dataset.id);
+    if(e){ alert('Error: '+e.message); ch.checked=!ch.checked; ch.disabled=false; return; }
+    matDetalle(body, id);
+  });
+  body.querySelectorAll('input.me-resp').forEach(inp=>inp.onchange=async()=>{
+    const {error:e}=await sb.from('materialidad_evidencias').update({responsable:inp.value.trim()||null}).eq('id',inp.dataset.id);
+    if(e){ alert('Error: '+e.message); return; }
+    inp.style.borderColor='#2f9e6b';
+  });
+  body.querySelectorAll('input.me-file').forEach(inp=>inp.onchange=async()=>{
+    const file=inp.files&&inp.files[0]; if(!file) return;
+    inp.disabled=true;
+    let nombre=file.name.split('').filter(ch=>/[a-zA-Z0-9._-]/.test(ch)).join('');
+    if(!nombre) nombre='archivo';
+    const path='materialidad/'+id+'/'+inp.dataset.id+'_'+nombre;
+    try{
+      const up=await sb.storage.from('expedientes').upload(path, file);
+      if(up.error) throw up.error;
+      const {error:e2}=await sb.from('materialidad_evidencias').update({archivo_path:path, archivo_nombre:file.name}).eq('id',inp.dataset.id);
+      if(e2) throw e2;
+      matDetalle(body, id);
+    }catch(err){
+      alert('No se pudo subir (permisos de almacén): '+((err&&err.message)||err));
+      inp.disabled=false;
+    }
+  });
+  body.querySelectorAll('a.me-dl').forEach(a=>a.onclick=async(ev)=>{
+    ev.preventDefault();
+    try{
+      const {data,error}=await sb.storage.from('expedientes').createSignedUrl(a.dataset.path, 3600);
+      if(error) throw error;
+      window.open(data.signedUrl);
+    }catch(err){ alert('No se pudo abrir el archivo (permisos de almacén): '+((err&&err.message)||err)); }
+  });
+}
+
+function matPrintHead(exp, subtitulo){
+  return '<div style="text-align:center;margin-bottom:14px">'+
+    '<div style="font-size:18px;font-weight:800;letter-spacing:1px">PR&amp;M Business Group</div>'+
+    '<div style="font-size:14px;margin-top:2px">'+subtitulo+'</div></div>'+
+    '<table style="margin-bottom:14px"><tbody>'+
+    '<tr><td><b>Folio</b></td><td>'+esc(exp.folio||'')+'</td><td><b>Cliente</b></td><td>'+esc(exp.cliente||'')+(exp.cliente_rfc?(' ('+esc(exp.cliente_rfc)+')'):'')+'</td></tr>'+
+    '<tr><td><b>Tipo de servicio</b></td><td>'+esc(MAT_TIPOS[exp.tipo_servicio]||exp.tipo_servicio||'')+'</td><td><b>Apertura / límite</b></td><td>'+esc(exp.fecha_apertura||'—')+' / '+esc(exp.fecha_limite||'—')+'</td></tr>'+
+    '<tr><td><b>Estatus</b></td><td>'+esc(exp.estatus||'')+'</td><td><b>Fecha de emisión</b></td><td>'+matHoy()+'</td></tr>'+
+    '</tbody></table>';
+}
+function matPrintBtns(body, exp){
+  return '<div class="no-print" style="margin-bottom:12px;display:flex;gap:8px">'+
+    '<button class="btn2" id="mp_print">🖨 Imprimir</button>'+
+    '<button class="btn2 ghost" id="mp_volver">← Volver</button></div>';
+}
+function matPrintBind(body, exp){
+  document.getElementById('mp_print').onclick=()=>window.print();
+  document.getElementById('mp_volver').onclick=()=>matDetalle(body, exp.id);
+}
+
+function matHojaCierre(body, exp, evs, cad){
+  const evRows=evs.map(x=>'<tr><td>'+esc(x.evidencia||'')+'</td><td>'+(x.cumplida?'Sí':'No')+'</td><td>'+esc(x.fecha_cumplida||'')+'</td><td>'+esc(x.responsable||'')+'</td></tr>').join('');
+  const cadRows=cad.map(x=>'<tr><td>'+(x.orden!=null?x.orden:'')+'</td><td>'+esc(x.etiqueta||x.eslabon||'')+'</td><td>'+(x.cumplido?'Sí':'No')+'</td><td>'+esc(x.referencia||'')+'</td><td>'+esc(x.fecha||'')+'</td></tr>').join('');
+  const firma=t=>'<div style="width:30%;text-align:center;padding-top:46px"><div style="border-top:1px solid #333;padding-top:6px;font-size:12px">'+t+'</div></div>';
+  body.innerHTML=
+    matPrintBtns(body, exp)+
+    matPrintHead(exp,'Hoja de cierre de expediente de materialidad')+
+    '<h3 style="font-size:14px;margin:14px 0 6px">Checklist de evidencias</h3>'+
+    '<table><thead><tr><th>Evidencia</th><th>Cumplida</th><th>Fecha</th><th>Responsable</th></tr></thead><tbody>'+
+    (evRows||'<tr><td colspan=4 class="empty">Sin evidencias</td></tr>')+'</tbody></table>'+
+    '<h3 style="font-size:14px;margin:14px 0 6px">Cadena de trazabilidad</h3>'+
+    '<table><thead><tr><th>#</th><th>Eslabón</th><th>Cumplido</th><th>Referencia</th><th>Fecha</th></tr></thead><tbody>'+
+    (cadRows||'<tr><td colspan=5 class="empty">Sin cadena</td></tr>')+'</tbody></table>'+
+    '<div style="display:flex;justify-content:space-between;margin-top:44px">'+firma('Elaboró')+firma('Revisó')+firma('Autorizó — Dirección')+'</div>'+
+    '<div style="margin-top:18px;font-size:12px;color:#555">Fecha: '+matHoy()+'</div>';
+  matPrintBind(body, exp);
+}
+
+function matCarpetaDefensa(body, exp, evs, cad){
+  const rl=v=>esc(v||'pendiente');
+  const cadRows=cad.map(x=>'<tr><td>'+(x.orden!=null?x.orden:'')+'</td><td>'+esc(x.etiqueta||x.eslabon||'')+'</td><td>'+esc(x.referencia||'')+'</td><td>'+esc(x.fecha||'')+'</td></tr>').join('');
+  const evRows=evs.map(x=>'<tr><td>'+esc(x.evidencia||'')+'</td><td>'+esc(x.archivo_nombre||'—')+'</td><td>'+esc(x.fecha_cumplida||'')+'</td><td>'+esc(x.responsable||'')+'</td></tr>').join('');
+  body.innerHTML=
+    matPrintBtns(body, exp)+
+    matPrintHead(exp,'Índice de carpeta de defensa')+
+    '<h3 style="font-size:14px;margin:14px 0 6px">Matriz de riesgo</h3>'+
+    '<table><tbody>'+
+    '<tr><td><b>Opinión 32-D</b></td><td>'+rl(exp.riesgo_32d)+'</td></tr>'+
+    '<tr><td><b>Listado 69-B</b></td><td>'+rl(exp.riesgo_69b)+'</td></tr>'+
+    '<tr><td><b>REPSE</b></td><td>'+rl(exp.riesgo_repse)+'</td></tr>'+
+    '</tbody></table>'+
+    '<h3 style="font-size:14px;margin:14px 0 6px">Cadena de trazabilidad</h3>'+
+    '<table><thead><tr><th>#</th><th>Eslabón</th><th>Referencia</th><th>Fecha</th></tr></thead><tbody>'+
+    (cadRows||'<tr><td colspan=4 class="empty">Sin cadena</td></tr>')+'</tbody></table>'+
+    '<h3 style="font-size:14px;margin:14px 0 6px">Evidencias documentales</h3>'+
+    '<table><thead><tr><th>Evidencia</th><th>Archivo</th><th>Fecha cumplida</th><th>Responsable</th></tr></thead><tbody>'+
+    (evRows||'<tr><td colspan=4 class="empty">Sin evidencias</td></tr>')+'</tbody></table>'+
+    '<div style="margin-top:20px;font-size:12px;color:#555;border-top:1px solid #ccc;padding-top:8px">Documentos resguardados en el expediente digital PRM 360.</div>';
+  matPrintBind(body, exp);
+}
+
+async function matKit(body){
+  body.innerHTML='<div class="loader">Cargando…</div>';
+  const {data,error}=await sb.from('kit_mensual').select('id,cliente,cliente_rfc,periodo,entregado,fecha_entrega,medio,notas').order('periodo',{ascending:false}).limit(200);
+  if(error) throw error;
+  const medioLbl={correo:'Correo',portal:'Portal',fisico:'Físico'};
+  const rows=(data||[]).map(x=>
+    '<tr><td><b>'+esc(x.periodo||'')+'</b></td><td>'+esc(x.cliente||'')+'</td><td>'+esc(x.cliente_rfc||'')+'</td><td>'+esc(medioLbl[x.medio]||x.medio||'')+'</td>'+
+    '<td><span class="tag '+(x.entregado?'on':'off')+'">'+(x.entregado?'Sí':'No')+'</span></td><td>'+esc(x.fecha_entrega||'')+'</td></tr>'
+  ).join('');
+  body.innerHTML=
+    '<div class="pgsub">'+((data&&data.length)||0)+' kits (máx 200) · entrega mensual de soporte de materialidad al cliente</div>'+
+    '<div class="card"><h3>Registrar kit mensual (art. 27-V LISR)</h3><div class="body"><div class="frm">'+
+      '<label>Cliente<input id="kt_cliente" style="min-width:220px"></label>'+
+      '<label>RFC<input id="kt_rfc" maxlength="13"></label>'+
+      '<label>Periodo<input id="kt_per" type="month"></label>'+
+      '<label>Medio<select id="kt_medio"><option value="correo">Correo</option><option value="portal">Portal</option><option value="fisico">Físico</option></select></label>'+
+      '<label>Entregado<input id="kt_ent" type="checkbox" style="width:18px;height:18px"></label>'+
+      '<label>Notas<input id="kt_notas" style="min-width:200px"></label>'+
+    '</div><div style="margin-top:8px"><button class="btn2" id="kt_save">Guardar kit</button> <span id="kt_msg" style="font-size:12px;margin-left:8px"></span></div></div></div>'+
+    '<div class="card"><table><thead><tr><th>Periodo</th><th>Cliente</th><th>RFC</th><th>Medio</th><th>Entregado</th><th>Fecha entrega</th></tr></thead><tbody>'+
+    (rows||'<tr><td colspan=6 class="empty">Sin kits registrados</td></tr>')+'</tbody></table></div>';
+  const g=id=>document.getElementById(id);
+  g('kt_save').onclick=async()=>{
+    const msg=g('kt_msg');
+    const cliente=g('kt_cliente').value.trim(), rfc=g('kt_rfc').value.trim(), per=g('kt_per').value, notas=g('kt_notas').value.trim();
+    const entregado=g('kt_ent').checked;
+    if(!cliente||!per){ msg.textContent='Cliente y periodo son obligatorios.'; msg.style.color='var(--danger)'; return; }
+    g('kt_save').disabled=true; msg.textContent='Guardando…'; msg.style.color='var(--muted)';
+    const {error:e}=await sb.from('kit_mensual').insert({cliente:cliente, cliente_rfc:rfc||null, periodo:per, medio:g('kt_medio').value, entregado:entregado, fecha_entrega:entregado?matHoy():null, notas:notas||null});
+    if(e){ msg.textContent='Error: '+e.message; msg.style.color='var(--danger)'; g('kt_save').disabled=false; return; }
+    matKit(body);
+  };
 }
