@@ -149,15 +149,16 @@ function renderPendiente(){
 }
 
 const MERGE_AREAS = [
-  ['Dirección', [ ['Tablero General','tabgen','n'],['Rentabilidad','rentabilidad','n'],['Frentes · semáforos','frentes','n'] ]],
+  ['Dirección', [ ['Tablero General','tabgen','n'],['Rentabilidad','rentabilidad','n'],['Responsables por frente','responsables','n'],['Frentes · semáforos','frentes','n'] ]],
   ['Comercial', [ ['Tablero Comercial','tabcom','n'],['Cotizador de nómina','cotizador','p'],['Pipeline de prospectos','pipelinecom','p'],['Solicitud (PDF / editable)','solicitudpdf','p'],['Solicitud de Cotización (web)','solicitudweb','p'],['Checklist de documentos','checklistdocs','p'],['Presentaciones comerciales','bibliopresenta','p'],['Tablero de clientes','clientes','p'],['Boletín','boletin','p'] ]],
   ['Vinculación', [ ['Tablero Vinculación','tabvinc','n'],['Clientes','clientescombo','p'],['Trabajadores · IMSS','trabajadorescombo','p'],['Adhesión digital (firma)','adhesiondig','p'],['Movimientos afiliatorios','movafil','p'],['Onboarding / KYC','onboarding','n'],['Validación + KYC (CSF/32-D/69)','kyc','p'],['Checklist de documentos','checklistdocs','p'],['Control de entregables','entregables','p'] ]],
   ['Operaciones', [ ['Tablero Operaciones','tabop','n'],['Trámites','tramitescombo','p'],['Facturación','facturacion','p'],['Control de timbrado FAC-01','factimbrado','p'],['Constructor de concepto FAC-02','constructorfac','p'],['Tablero NOMEN','tablonomen','p'],['Layout de dispersión','layoutdisp','p'],['Expediente de Materialidad','materialidad','p'],['Checklists de materialidad','matchecklists','p'],['Conciliación disp. ↔ CFDI','__soon_concilia','p'],['Descargas SAT / CFDI','descargas','n'],['Calendario de vencimientos','calendario','n'] ]],
-  ['Jurídico', [ ['Tablero Jurídico','tabjur','n'],['Corporativo','corporativocombo','p'],['Bitácora de firmas','bitacorafirmas','p'],['Vigencias / Renovaciones','renovaciones','p'],['Gobierno y Padrones','padrones','n'],['Padrones de proveedores 2026','padronprov','p'],['Licitaciones y contratos','licitaciones','n'],['Plantillas de contratos','biblioplantillas','p'],['Juicios / defensa fiscal','juicios','p'],['Documentales (púb. y priv.)','documentales','n'],['Compliance jurídico','compliance','n'] ]],
+  ['Jurídico', [ ['Tablero Jurídico','tabjur','n'],['Corporativo','corporativocombo','p'],['Bitácora de firmas','bitacorafirmas','p'],['Vigencias / Renovaciones','renovaciones','p'],['Gobierno y Padrones','padrones','n'],['Padrones de proveedores 2026','padronprov','p'],['Licitaciones y contratos','licitaciones','n'],['Plantillas de contratos','biblioplantillas','p'],['Juicios / defensa fiscal','juicios','p'],['Documentales (púb. y priv.)','documentales','n'],['Documentales públicas (MDP)','mdp','p'],['Compliance jurídico','compliance','n'] ]],
   ['Fiscal', [ ['Tablero Fiscal','tabfisc','n'],['Cumplimiento','cumplimientocombo','p'],['Calendario fiscal','calfiscal','p'],['Calendario REPSE (ICSOE/SISUB)','calrepse','p'],['Previsión social','previsioncombo','p'],['NOM-035','nom035','p'],['Cuestionario NOM-035','nom035cuest','n'],['e.firmas (control)','efirmasv','n'] ]],
   ['Contabilidad', [ ['Tablero Contable','tabcont','n'],['Contabilidad / Pólizas','contabilidad','n'],['Captura de servicios','captura','p'],['Descarga XML / CFDI','descargas','n'],['Bancos','bancoscombo','p'],['Motor de conciliación','conciliador','p'] ]],
   ['Tesorería', [ ['Tablero Tesorería','tabtes','n'],['Cobranza','cobranza','n'],['Cuentas por pagar','cxp','p'],['Bancos y flujo','flujo','p'],['Cuentas','cuentas','p'],['Pagos','pagos','p'],['Calendario fiscal','calfiscal','p'] ]],
-  ['Administración', [ ['Tablero Administración','tabadm','n'],['Empresas del grupo','empresascombo','p'],['Gastos y costeo','gastoscombo','p'],['Costeo por cliente','costeo','n'],['Importador de reportes','importador','n'],['Accesos y vinculación','accesos','n'],['Contraloría','contraloria','p'],['Organigrama y matrices','biblioorg','p'],['Directorio','directorio','n'],['Sucursales','sucursalesv','n'],['Personal interno','equipo','n'],['Organigrama y funciones','organigramafn','n'],['Reportes','reportes','p'] ]]
+  ['Administración', [ ['Tablero Administración','tabadm','n'],['Empresas del grupo','empresascombo','p'],['Base Maestra (actividades SAT)','basemaestra','p'],['Gastos y costeo','gastoscombo','p'],['Costeo por cliente','costeo','n'],['Importador de reportes','importador','n'],['Accesos y vinculación','accesos','n'],['Contraloría','contraloria','p'],['Organigrama y matrices','biblioorg','p'],['Directorio','directorio','n'],['Sucursales','sucursalesv','n'],['Personal interno','equipo','n'],['Organigrama y funciones','organigramafn','n'],['Reportes','reportes','p'] ]],
+  ['Tableros', [ ['Tablero General','tabgen','n'],['Comercial','tabcom','n'],['Vinculación','tabvinc','n'],['Operaciones','tabop','n'],['NOMEN','tablonomen','n'],['Jurídico','tabjur','n'],['Fiscal','tabfisc','n'],['Contabilidad','tabcont','n'],['Tesorería','tabtes','n'],['Administración','tabadm','n'] ]]
 ];
 
 async function renderInterno(rol){
@@ -235,6 +236,11 @@ async function view(v, rol, label){
   const c=$('#content'); c.innerHTML='<div class="loader">Cargando…</div>';
   try{
     if(v==='cotizador')    return await viewCotizador(c);
+    if(v==='mdp')          return await viewMdp(c);
+    if(v==='responsables') return await viewResponsables(c);
+    if(v==='basemaestra')  return await viewBaseMaestra(c);
+    if(v==='informenomen') return await viewInformeNomen(c);
+    if(v==='memonomen')    return await viewMemoNomen(c);
     if(v==='constructorfac') return await viewConstructorFac(c);
     if(v==='matchecklists')  return await viewMatChecklists(c);
     if(v==='padronprov')   return await viewPadronProv(c);
@@ -4347,6 +4353,11 @@ async function viewTabNomen(c){
   }).join('');
   c.innerHTML='<h1 class="pg">Tablero NOMEN · Control de nómina</h1>'+
     '<div class="pgsub">Datos reales de su export NOMEN (PRM-NOM-001) · corte junio 2026 · se actualiza al pegar el nuevo export con el Importador</div>'+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0" class="no-print">'+
+      '<button class="btn2" id="nm_inf">📄 Informe semanal (NOM-002)</button>'+
+      '<button class="btn2 ghost" id="nm_memo">📄 Memo ejecutivo (NOM-005)</button>'+
+      '<button class="btn2 ghost" id="nm_vis">📊 Tablero visual (NOM-004)</button>'+
+    '</div>'+
     '<div class="kpis">'+
       tile(reg.toLocaleString(),'Registros de nómina','var(--navy)')+
       tile(mny(pagar),'Total a pagar','var(--gold)')+
@@ -4362,6 +4373,12 @@ async function viewTabNomen(c){
     '<div class="card"><h3>Tendencia mensual 2026</h3><div class="body"><div style="overflow-x:auto"><table><thead><tr><th>Mes</th><th class="num-r">Registros</th><th class="num-r">Timbrados</th><th class="num-r">Sin timbrar</th><th class="num-r">%</th><th class="num-r">Total a pagar</th><th class="num-r">Costo social</th><th class="num-r">ISN</th></tr></thead><tbody>'+tenRows+'</tbody></table></div></div></div>'+
     '<div class="card"><h3>Timbrado y costo por cliente ('+cli.length+')</h3><div class="body"><input id="nm_q" class="mini" placeholder="Buscar cliente…" style="min-width:260px;margin-bottom:8px"><div id="nm_cli">'+tbl(cli,'cliente','Cliente',200)+'</div></div></div>'+
     '<div class="card"><h3>Costo por pagadora ('+pag.length+')</h3><div class="body">'+tbl(pag,'pagadora','Pagadora',200)+'</div></div>';
+  const bInf=document.getElementById('nm_inf');
+  if(bInf) bInf.onclick=function(){ viewInformeNomen(c); };
+  const bMemo=document.getElementById('nm_memo');
+  if(bMemo) bMemo.onclick=function(){ viewMemoNomen(c); };
+  const bVis=document.getElementById('nm_vis');
+  if(bVis) bVis.onclick=function(){ window.open('nomen_visual.html','_blank'); };
   const q=document.getElementById('nm_q');
   if(q) q.onkeyup=function(){
     const t=q.value.trim().toLowerCase();
@@ -5029,12 +5046,12 @@ async function viewConstructorFac(c){
 
 /* ===== v18 · Checklists de materialidad (catálogo oficial "pedir de más") ===== */
 async function viewMatChecklists(c){
-  const {data,error}=await sb.from('materialidad_checklist_cat').select('*').eq('activo',true).order('tipo').order('orden');
+  const {data,error}=await sb.from('materialidad_checklist_cat').select('*').eq('activo',true).order('orden');
   if(error) throw error;
   const lista=data||[];
   const tipos=[];
   lista.forEach(function(x){ if(tipos.indexOf(x.tipo)<0) tipos.push(x.tipo); });
-  const ordT=['Paquete inicial','REPSE / Especializados','Honorarios / Profesionales','Maquila / Dispersión','Información adicional'];
+  const ordT=['Paquete inicial','REPSE / Especializados (oficial 11)','Honorarios / Profesionales (oficial 9)','Maquila / Dispersión (oficial 7)','Información adicional'];
   tipos.sort(function(a,b){ return (ordT.indexOf(a)+99*(ordT.indexOf(a)<0))-(ordT.indexOf(b)+99*(ordT.indexOf(b)<0)); });
   c.innerHTML='<h1 class="pg">Checklists de materialidad</h1>'+
     '<div class="pgsub">Criterio del despacho: pedir de más, no de menos. El paquete inicial (Aviso de Privacidad + NDA) es SIEMPRE lo primero que se entrega al cliente. Marque, imprima y anexe al expediente.</div>'+
@@ -5054,8 +5071,9 @@ async function viewMatChecklists(c){
     const cli=g('mc_cli').value.trim();
     document.getElementById('mc_out').innerHTML='<div class="card"><h3>'+esc(t)+' · '+items.length+' evidencias'+(cli?' · '+esc(cli):'')+'</h3><div class="body">'+
       items.map(function(x){
+        const meta=[x.responsable,x.frecuencia,x.ubicacion].filter(function(v){ return v; }).join(' · ');
         return '<label class="chk" style="display:flex;align-items:flex-start;gap:8px;margin:7px 0;font-size:13.5px"><input type="checkbox" style="width:16px;height:16px;margin-top:2px">'+
-          '<span><b>'+x.orden+'</b> · '+esc(x.documento)+'</span></label>';
+          '<span><b>'+x.orden+'</b> · '+esc(x.documento)+(meta?'<br><span style="font-size:11px;color:var(--muted)">'+esc(meta)+'</span>':'')+'</span></label>';
       }).join('')+
       '<div style="font-size:11px;color:var(--muted);margin-top:10px;border-top:1px solid var(--line);padding-top:8px">Fecha: ____________ · Elaboró: ____________________ · Revisó: ____________________ · Autorizó: ____________________</div>'+
       '</div></div>';
@@ -5064,5 +5082,274 @@ async function viewMatChecklists(c){
   g('mc_tipo').onchange=draw;
   g('mc_cli').onblur=draw;
   g('mc_print').onclick=function(){ window.print(); };
+}
+
+
+/* ===== v19 · Informe Semanal NOMEN (PRM-NOM-002) generado en vivo ===== */
+async function nomenDatos(){
+  const tc=await sb.from('nomen_timbrado_cliente').select('*').order('total_pagar',{ascending:false});
+  const cp=await sb.from('nomen_costo_pagadora').select('*');
+  const tm=await sb.from('nomen_tendencia').select('*').order('mes');
+  const cli=tc.data||[], pag=cp.data||[], ten=tm.data||[];
+  const T={reg:0,timb:0,sin:0,pagar:0,social:0,patron:0,isn:0,isr:0,emp:0};
+  cli.forEach(function(x){ T.reg+=x.registros||0; T.timb+=x.timbrados||0; T.sin+=x.sin_timbrar||0; T.pagar+=Number(x.total_pagar)||0; T.social+=Number(x.costo_social)||0; T.patron+=Number(x.cuotas_patronales)||0; T.isn+=Number(x.isn)||0; T.isr+=Number(x.isr_ret)||0; T.emp+=x.empleados||0; });
+  return {cli:cli, pag:pag, ten:ten, T:T};
+}
+function nomenHallazgos(D){
+  const T=D.T;
+  const pctSin=T.reg? (T.sin/T.reg*100):0;
+  const top5=T.pagar? (D.cli.slice(0,5).reduce(function(a,x){ return a+Number(x.total_pagar||0); },0)/T.pagar*100):0;
+  const cliSin=D.cli.filter(function(x){ return (x.sin_timbrar||0)>0; });
+  return [
+    ['ALTA','% sin timbrar = '+pctSin.toFixed(1)+'% (umbral 2%). '+T.sin.toLocaleString()+' registros / '+cliSin.length+' clientes.'],
+    ['ALTA', cliSin.length+' clientes con nóminas SIN TIMBRAR. Mayores: '+cliSin.slice(0,3).map(function(x){ return x.cliente+' ('+x.sin_timbrar+')'; }).join(', ')+'.'],
+    ['MEDIA','Concentración: top 5 clientes = '+top5.toFixed(0)+'% del total a pagar.'],
+    ['MEDIA','720 registros sin CLABE (riesgo de rechazo en dispersión) — corte 2026-06.'],
+    ['MEDIA','Faltantes fiscales: RFC 28, CURP 34 (bloquean timbrado) — corte 2026-06.']
+  ];
+}
+function nomenCabecera(titulo){
+  const hoy=new Date().toLocaleDateString('es-MX',{year:'numeric',month:'long',day:'numeric'});
+  return '<div style="border-bottom:3px solid var(--navy);padding-bottom:10px;margin-bottom:16px">'+
+    '<div style="font-size:20px;font-weight:800;color:var(--navy)">PR&amp;M Business Group</div>'+
+    '<div style="font-size:14px;color:var(--gold);font-weight:700">'+titulo+'</div>'+
+    '<div style="font-size:12px;color:var(--muted)">Generado desde la consola PRM 360 · '+esc(hoy)+' · fuente: export NOMEN (corte junio 2026)</div></div>';
+}
+async function viewInformeNomen(c){
+  c.innerHTML='<div class="loader">Generando informe…</div>';
+  const D=await nomenDatos(); const T=D.T;
+  const hall=nomenHallazgos(D);
+  const cliSin=D.cli.filter(function(x){ return (x.sin_timbrar||0)>0; }).sort(function(a,b){ return (b.sin_timbrar||0)-(a.sin_timbrar||0); });
+  c.innerHTML='<div style="max-width:900px;margin:0 auto;padding:6px">'+
+    '<div style="display:flex;gap:8px;margin-bottom:14px" class="no-print">'+
+      '<button class="btn2" id="in_print">🖨 Imprimir / PDF</button>'+
+      '<button class="btn2 ghost" id="in_back">← Tablero NOMEN</button></div>'+
+    nomenCabecera('INFORME SEMANAL DE CONTROL · NÓMINA (NOMEN) · PRM-NOM-002')+
+    '<h3 style="color:var(--navy)">Resumen de la semana</h3>'+
+    '<p style="font-size:14px">'+T.reg.toLocaleString()+' registros · '+T.emp.toLocaleString()+' trabajadores · '+D.cli.length+' clientes · '+D.pag.length+' pagadoras.</p>'+
+    '<p style="font-size:14px"><b>Total a pagar '+mny(T.pagar)+'</b> · Costo social '+mny(T.social)+' · Cuotas patronales '+mny(T.patron)+' · ISN '+mny(T.isn)+' · ISR retenido '+mny(T.isr)+'.</p>'+
+    '<p style="font-size:14px">Timbrado: <b>'+T.timb.toLocaleString()+'</b> timbrados / <b style="color:var(--danger)">'+T.sin.toLocaleString()+'</b> sin timbrar ('+(T.reg?(T.timb/T.reg*100):0).toFixed(1)+'% timbrado).</p>'+
+    '<h3 style="color:var(--navy)">Alertas y hallazgos</h3>'+
+    hall.map(function(a){
+      const col=a[0]==='ALTA'?'var(--danger)':'#e67e22';
+      return '<div style="border-left:4px solid '+col+';background:var(--cream);padding:8px 12px;margin:6px 0;border-radius:6px;font-size:13px"><b style="color:'+col+'">'+a[0]+'</b> · '+esc(a[1])+'</div>';
+    }).join('')+
+    '<div style="font-size:12px;color:var(--muted);margin:8px 0">Cómo actuar: en el Tablero NOMEN, use el buscador de "Timbrado y costo por cliente" para ir directo al cliente afectado.</div>'+
+    '<h3 style="color:var(--navy)">Clientes con nóminas sin timbrar ('+cliSin.length+')</h3>'+
+    '<table style="font-size:12.5px"><thead><tr><th>Cliente</th><th class="num-r">Sin timbrar</th><th class="num-r">Registros</th><th class="num-r">Total a pagar</th></tr></thead><tbody>'+
+    cliSin.map(function(x){ return '<tr><td>'+esc(x.cliente)+'</td><td class="num-r" style="color:var(--danger);font-weight:700">'+x.sin_timbrar+'</td><td class="num-r">'+x.registros+'</td><td class="num-r">'+mny(x.total_pagar)+'</td></tr>'; }).join('')+
+    '</tbody></table>'+
+    '<h3 style="color:var(--navy);margin-top:16px">Tendencia mensual</h3>'+
+    '<table style="font-size:12.5px"><thead><tr><th>Mes</th><th class="num-r">Registros</th><th class="num-r">% Timbrado</th><th class="num-r">Total a pagar</th><th class="num-r">Costo social</th><th class="num-r">ISN</th></tr></thead><tbody>'+
+    D.ten.map(function(x){ return '<tr><td>'+esc(x.mes)+'</td><td class="num-r">'+x.registros+'</td><td class="num-r">'+(Number(x.pct_timbrado||0)*100).toFixed(0)+'%</td><td class="num-r">'+mny(x.total_pagar)+'</td><td class="num-r">'+mny(x.costo_social)+'</td><td class="num-r">'+mny(x.isn)+'</td></tr>'; }).join('')+
+    '</tbody></table>'+
+    '<div style="margin-top:20px;font-size:11px;color:var(--muted);border-top:1px solid var(--line);padding-top:8px">Formato PRM-NOM-002 · Se actualiza al cargar el nuevo export NOMEN con el Importador. Documento generado por PRM 360.</div>'+
+    '</div>';
+  document.getElementById('in_print').onclick=function(){ window.print(); };
+  document.getElementById('in_back').onclick=function(){ viewTabNomen(c); };
+}
+
+/* ===== v19 · Memo Ejecutivo de Nómina (PRM-NOM-005) generado en vivo ===== */
+async function viewMemoNomen(c){
+  c.innerHTML='<div class="loader">Generando memo…</div>';
+  const D=await nomenDatos(); const T=D.T;
+  const pctSin=T.reg?(T.sin/T.reg*100):0;
+  const top5=T.pagar?(D.cli.slice(0,5).reduce(function(a,x){ return a+Number(x.total_pagar||0); },0)/T.pagar*100):0;
+  function fila(h,s,d,i){
+    const col=s==='ALTA'?'var(--danger)':'#e67e22';
+    return '<tr><td><b>'+esc(h)+'</b></td><td><span class="tag" style="background:'+col+';color:#fff">'+s+'</span></td><td>'+esc(d)+'</td><td>'+esc(i)+'</td></tr>';
+  }
+  c.innerHTML='<div style="max-width:900px;margin:0 auto;padding:6px">'+
+    '<div style="display:flex;gap:8px;margin-bottom:14px" class="no-print">'+
+      '<button class="btn2" id="mm_print">🖨 Imprimir / PDF</button>'+
+      '<button class="btn2 ghost" id="mm_back">← Tablero NOMEN</button></div>'+
+    nomenCabecera('MEMORÁNDUM EJECUTIVO · NÓMINA (NOMEN) · PRM-NOM-005')+
+    '<p style="font-size:13px"><b>Para:</b> Dirección — PR&amp;M · <b>Asunto:</b> Aprovechamiento de NOMEN como núcleo de control, cumplimiento y rentabilidad · <b>Fuente:</b> Reporte Dinámico enero–junio 2026 ('+T.reg.toLocaleString()+' registros · '+T.emp.toLocaleString()+' trabajadores · '+D.cli.length+' clientes · '+D.pag.length+' pagadoras).</p>'+
+    '<h3 style="color:var(--navy)">1 · Qué representa NOMEN para el despacho</h3>'+
+    '<p style="font-size:13.5px">NOMEN no es un sistema de nómina de una sola empresa: es la plataforma con la que PR&amp;M opera nómina como servicio (maquila) para '+D.cli.length+' clientes, cada uno con su propia pagadora. En un mismo entorno concentra el cálculo y timbrado, el cumplimiento IMSS/INFONAVIT/FONACOT, la materia jurídico-laboral, la dispersión bancaria y la facturación. Los datos de NOMEN son el sistema nervioso del despacho: quien controle esos datos controla el riesgo, el cumplimiento y el margen.</p>'+
+    '<h3 style="color:var(--navy)">2 · Magnitud de la operación (semestre)</h3>'+
+    '<p style="font-size:13.5px">Total a pagar: <b>'+mny(T.pagar)+'</b> · Costo social: '+mny(T.social)+' · Cuotas patronales: '+mny(T.patron)+' · ISN: '+mny(T.isn)+' · ISR retenido: '+mny(T.isr)+' · Timbrado: '+T.timb.toLocaleString()+' vs '+T.sin.toLocaleString()+' sin timbrar ('+pctSin.toFixed(0)+'%).</p>'+
+    '<h3 style="color:var(--navy)">3 · Hallazgos y riesgos</h3>'+
+    '<table style="font-size:12.5px"><thead><tr><th>Hallazgo</th><th>Severidad</th><th>Dato</th><th>Implicación</th></tr></thead><tbody>'+
+    fila('Rezago de timbrado','ALTA',T.sin.toLocaleString()+' registros sin timbrar ('+pctSin.toFixed(0)+'%). Pico: mayo (972).','Riesgo SAT y de deducibilidad para el cliente.')+
+    fila('Concentración de clientes','ALTA','Top 5 clientes = '+top5.toFixed(0)+'% del total a pagar.','La salida de un cliente golpea el ingreso.')+
+    fila('CLABE faltante','MEDIA','720 registros (8.9%) sin CLABE.','Rechazos en dispersión y retrabajos.')+
+    fila('Faltantes fiscales','MEDIA','RFC 28 · CURP 34.','Bloquean timbrado y generan multas.')+
+    '</tbody></table>'+
+    '<h3 style="color:var(--navy)">4 · Plan de acción</h3>'+
+    '<p style="font-size:13.5px">1) Campaña de timbrado: bajar el rezago del '+pctSin.toFixed(0)+'% al umbral del 2% priorizando a los clientes con mayor pendiente (ver Informe Semanal). 2) Depuración de CLABE y datos fiscales antes de la siguiente dispersión (módulo Layout de dispersión valida CLABE de 18 dígitos). 3) Control FAC-01: nada se timbra sin validación y aprobación registradas. 4) Conciliación semanal dispersión ↔ CFDI en el Motor de conciliación. 5) Diversificación comercial: alimentar el Pipeline de prospectos para reducir la concentración del top 5.</p>'+
+    '<div style="margin-top:20px;font-size:11px;color:var(--muted);border-top:1px solid var(--line);padding-top:8px">Formato PRM-NOM-005 · Documento generado por PRM 360 con datos vivos de la consola.</div>'+
+    '</div>';
+  document.getElementById('mm_print').onclick=function(){ window.print(); };
+  document.getElementById('mm_back').onclick=function(){ viewTabNomen(c); };
+}
+
+/* ===== v19 · Base Maestra de actividades SAT (CSF junio 2026) ===== */
+async function viewBaseMaestra(c){
+  c.innerHTML='<div class="loader">Cargando base maestra…</div>';
+  let data=null;
+  try{
+    const r=await fetch('base_maestra.json');
+    data=await r.json();
+  }catch(e){ c.innerHTML='<div class="empty">No se encontró base_maestra.json — súbalo al repositorio junto con index.html y app.js.</div>'; return; }
+  function draw(f){
+    const t=(f||'').toLowerCase();
+    const list=t? data.filter(function(x){ return (x.razon+' '+x.rfc+' '+x.rep+' '+x.actividad+' '+x.objeto).toLowerCase().indexOf(t)>=0; }) : data;
+    return '<div class="card"><table style="font-size:12px"><thead><tr><th>RFC</th><th>Razón social</th><th>Representante</th><th>Estatus</th><th>REPSE</th><th style="min-width:280px">Actividad económica (SAT)</th></tr></thead><tbody>'+
+      list.map(function(x){
+        return '<tr><td style="white-space:nowrap">'+esc(x.rfc)+'</td><td><b>'+esc(x.razon)+'</b></td><td>'+esc(x.rep)+'</td>'+
+          '<td><span class="tag '+(x.estatus==='activa'?'on':'off')+'">'+esc(x.estatus)+'</span></td>'+
+          '<td>'+esc(x.repse||'—')+'</td><td style="font-size:11.5px">'+esc(x.actividad)+'</td></tr>';
+      }).join('')+'</tbody></table></div>';
+  }
+  c.innerHTML='<h1 class="pg">Base Maestra · Actividad económica real (SAT)</h1>'+
+    '<div class="pgsub">'+data.length+' empresas con actividad extraída de las Constancias de Situación Fiscal (corte 01/06/2026). Útil para alinear el objeto del servicio con el giro real del cliente (materialidad).</div>'+
+    '<div class="card"><div class="body"><input id="bm_q" class="mini" placeholder="Buscar por RFC, razón social, representante, giro o palabra clave…" style="min-width:340px"></div></div>'+
+    '<div id="bm_out">'+draw('')+'</div>';
+  document.getElementById('bm_q').onkeyup=function(){ document.getElementById('bm_out').innerHTML=draw(this.value.trim()); };
+}
+
+/* ===== v19 · Responsables por frente (Dirección) ===== */
+async function viewResponsables(c){
+  const {data,error}=await sb.from('responsables_frentes').select('*').order('area').order('id');
+  if(error) throw error;
+  const lista=data||[];
+  const sinAsig=lista.filter(function(x){ return !x.responsable || x.responsable==='POR ASIGNAR'; }).length;
+  const rows=lista.map(function(x){
+    return '<tr><td><b>'+esc(x.area)+'</b></td><td>'+esc(x.frente||'')+'</td>'+
+      '<td><input class="rf-resp" data-id="'+x.id+'" value="'+esc(x.responsable||'')+'" style="min-width:170px"></td>'+
+      '<td><input class="rf-nota" data-id="'+x.id+'" value="'+esc(x.notas||'')+'" placeholder="Notas / alcance" style="min-width:200px"></td></tr>';
+  }).join('');
+  c.innerHTML='<h1 class="pg">Responsables por frente</h1>'+
+    '<div class="pgsub">Asigne quién responde por cada frente del despacho. Se guarda al salir del campo. Base: organigrama ADM-008 y matriz PRM-DIR-15.</div>'+
+    '<div class="kpis">'+tile(lista.length,'Frentes','var(--navy)')+tile(sinAsig,'Por asignar',sinAsig?'#e67e22':'var(--ok)')+'</div>'+
+    '<div class="card"><table style="font-size:12.5px"><thead><tr><th>Área</th><th>Frente</th><th>Responsable</th><th>Notas</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+  c.querySelectorAll('input.rf-resp').forEach(function(i){
+    i.onblur=async function(){
+      const {error:e}=await sb.from('responsables_frentes').update({responsable:i.value.trim()||'POR ASIGNAR',actualizado_en:new Date().toISOString()}).eq('id',i.dataset.id);
+      if(e) alert('Error: '+e.message);
+    };
+  });
+  c.querySelectorAll('input.rf-nota').forEach(function(i){
+    i.onblur=async function(){
+      const {error:e}=await sb.from('responsables_frentes').update({notas:i.value.trim()||null}).eq('id',i.dataset.id);
+      if(e) alert('Error: '+e.message);
+    };
+  });
+}
+
+/* ===== v20 · Sistema MDP · Documentales públicas con fe pública ===== */
+async function viewMdp(c){
+  comboTabs(c,'Documentales públicas · Sistema MDP',[
+    {label:'Control por empresa',fn:mdpControl},
+    {label:'Matriz maestra',fn:mdpMatriz},
+    {label:'Protocolo NOM-151 y costos',fn:mdpProtocolo},
+    {label:'Bloque MASC (mediación)',fn:mdpMasc}
+  ]);
+}
+async function mdpJson(){
+  if(window.__mdpData) return window.__mdpData;
+  const r=await fetch('mdp_matriz.json');
+  window.__mdpData=await r.json();
+  return window.__mdpData;
+}
+async function mdpControl(body, femp){
+  femp=femp||'';
+  body.innerHTML='<div class="loader">Cargando control…</div>';
+  const {data,error}=await sb.from('mdp_control').select('*').order('empresa').limit(500);
+  if(error){ body.innerHTML='<div class="empty">Error: '+esc(error.message)+'</div>'; return; }
+  const lista=data||[];
+  const ACTOS=['CSF','32-D','IMSS','INFONAVIT','69/69-B','REPSE','e.firma'];
+  const porEmp={};
+  lista.forEach(function(x){
+    if(!porEmp[x.empresa]) porEmp[x.empresa]={rfc:x.rfc, actos:{}};
+    porEmp[x.empresa].actos[x.acto]=x;
+  });
+  let emps=Object.keys(porEmp).sort();
+  if(femp) emps=emps.filter(function(e){ return (e+' '+porEmp[e].rfc).toLowerCase().indexOf(femp.toLowerCase())>=0; });
+  const vig=lista.filter(function(x){ return x.estatus==='vigente'; }).length;
+  const ven=lista.filter(function(x){ return x.estatus==='vencida'; }).length;
+  function celda(x){
+    if(!x) return '<td>—</td>';
+    const est=x.estatus||'pendiente';
+    const map={vigente:['✓','var(--ok)'], vencida:['✗','var(--danger)'], pendiente:['·','var(--muted)']};
+    const m=map[est]||map.pendiente;
+    return '<td style="text-align:center;cursor:pointer" class="mdp-c" data-id="'+x.id+'" data-est="'+est+'" title="'+esc(x.acto)+' · '+est+(x.folio_nom151?(' · NOM-151 '+esc(x.folio_nom151)):'')+'"><b style="color:'+m[1]+';font-size:15px">'+m[0]+'</b></td>';
+  }
+  const rows=emps.map(function(e){
+    const p=porEmp[e];
+    const av=ACTOS.filter(function(a){ return p.actos[a] && p.actos[a].estatus==='vigente'; }).length;
+    return '<tr><td style="min-width:210px"><b>'+esc(e)+'</b><br><span style="font-size:11px;color:var(--muted)">'+esc(p.rfc||'')+'</span></td>'+
+      ACTOS.map(function(a){ return celda(p.actos[a]); }).join('')+
+      '<td class="num-r" style="font-weight:700;color:'+(av===7?'var(--ok)':(av>=4?'#e67e22':'var(--danger)'))+'">'+av+'/7</td></tr>';
+  }).join('');
+  body.innerHTML='<div class="pgsub">Sus 50 empresas × 7 actos con fe pública (MDP-PRM-002). Clic en cada celda para ciclar: pendiente → vigente → vencida. Al marcar vigente se pide el folio NOM-151 (opcional).</div>'+
+    '<div class="kpis">'+tile(emps.length,'Empresas','var(--navy)')+tile(vig,'Documentales vigentes',vig?'var(--ok)':'#e67e22')+tile(ven,'Vencidas',ven?'var(--danger)':'var(--ok)')+tile(350-vig-ven,'Pendientes','var(--muted)')+'</div>'+
+    '<div class="card"><div class="body"><input id="mdp_q" class="mini" value="'+esc(femp)+'" placeholder="Buscar empresa o RFC…" style="min-width:280px"></div>'+
+    '<div style="overflow-x:auto"><table style="font-size:12px"><thead><tr><th>Empresa</th>'+ACTOS.map(function(a){ return '<th style="text-align:center">'+a+'</th>'; }).join('')+'<th class="num-r">Avance</th></tr></thead><tbody>'+
+    (rows||'<tr><td colspan=9 class="empty">Sin empresas con ese filtro</td></tr>')+'</tbody></table></div></div>';
+  document.getElementById('mdp_q').onkeydown=function(e){ if(e.key==='Enter') mdpControl(body,this.value.trim()); };
+  body.querySelectorAll('td.mdp-c').forEach(function(td){
+    td.onclick=async function(){
+      const est=td.getAttribute('data-est');
+      const next=est==='pendiente'?'vigente':(est==='vigente'?'vencida':'pendiente');
+      const upd={estatus:next, actualizado_en:new Date().toISOString()};
+      if(next==='vigente'){
+        const folio=prompt('Folio de constancia NOM-151 (opcional, Aceptar para omitir):');
+        if(folio) upd.folio_nom151=folio.trim();
+        upd.fecha=new Date().toISOString().slice(0,10);
+      }
+      const {error:e}=await sb.from('mdp_control').update(upd).eq('id',td.getAttribute('data-id'));
+      if(e){ alert('Error: '+e.message); return; }
+      mdpControl(body,femp);
+    };
+  });
+}
+async function mdpMatriz(body){
+  body.innerHTML='<div class="loader">Cargando matriz…</div>';
+  let d;
+  try{ d=await mdpJson(); }catch(e){ body.innerHTML='<div class="empty">No se encontró mdp_matriz.json — súbalo al repositorio.</div>'; return; }
+  const etapas=[];
+  d.matriz.forEach(function(r){ if(etapas.indexOf(r[1])<0) etapas.push(r[1]); });
+  const rows=d.matriz.map(function(r){
+    return '<tr><td style="white-space:nowrap"><b>'+esc(r[0])+'</b></td><td>'+esc(r[1])+'</td><td><b>'+esc(r[2])+'</b></td>'+
+      '<td style="font-size:11.5px">'+esc(r[3])+'</td><td>'+esc(r[4])+'</td><td style="font-size:11.5px">'+esc(r[5])+'</td>'+
+      '<td style="font-size:11.5px">'+esc(r[6])+'</td><td>'+esc(r[7])+'</td><td>'+esc(r[8])+'</td><td>'+esc(r[9])+'</td></tr>';
+  }).join('');
+  body.innerHTML='<div class="pgsub">MDP-PRM-001 · '+d.matriz.length+' documentales públicas por etapa ('+etapas.join(' · ')+'). Medio: EL = 100% en línea · TC = trámite con costo.</div>'+
+    '<div class="card"><div style="overflow-x:auto"><table style="font-size:12px"><thead><tr><th>ID</th><th>Etapa</th><th>Documental</th><th>Fuente de fe pública</th><th>Medio</th><th>Qué acredita</th><th>Momento</th><th>Responsable</th><th>Costo</th><th>NOM-151</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
+}
+async function mdpProtocolo(body){
+  body.innerHTML='<div class="loader">Cargando…</div>';
+  let d;
+  try{ d=await mdpJson(); }catch(e){ body.innerHTML='<div class="empty">No se encontró mdp_matriz.json.</div>'; return; }
+  body.innerHTML='<div class="pgsub">Regla PR&amp;M: toda evidencia generada se certifica con NOM-151 el mismo día. El protocolo aplica a los '+d.matriz.length+' documentales de la matriz.</div>'+
+    '<div class="card"><h3>Protocolo transversal NOM-151</h3><div class="body">'+
+    d.protocolo.map(function(p){
+      return '<div style="display:flex;gap:12px;align-items:flex-start;margin:8px 0;padding:10px 12px;background:var(--cream);border-radius:8px">'+
+        '<div style="flex:none;width:28px;height:28px;border-radius:50%;background:var(--navy);color:#fff;display:grid;place-items:center;font-weight:800">'+esc(p[0])+'</div>'+
+        '<div><b>'+esc(p[1])+'</b><br><span style="font-size:12.5px">'+esc(p[2])+'</span><br><span style="font-size:11px;color:var(--muted)">Responsable: '+esc(p[3]||'')+'</span></div></div>';
+    }).join('')+'</div></div>'+
+    '<div class="card"><h3>Catálogo de costos de referencia</h3><div class="body"><div style="overflow-x:auto"><table style="font-size:12.5px"><thead><tr><th>Concepto</th><th>Rango (MXN)</th><th>Frecuencia</th><th>Escala</th><th>Nota</th></tr></thead><tbody>'+
+    d.costos.slice(1).map(function(r){ return '<tr><td><b>'+esc(r[0])+'</b></td><td>'+esc(r[1])+'</td><td>'+esc(r[2])+'</td><td>'+esc(r[3])+'</td><td style="font-size:11.5px">'+esc(r[4])+'</td></tr>'; }).join('')+
+    '</tbody></table></div></div></div>';
+}
+async function mdpMasc(body){
+  const DOCS=[
+    ['01','Solicitud de mediación','Voluntad formal de resolver una controversia real derivada de la operación.','CJA (acuse de recepción). Inicia la cadena.'],
+    ['02','Invitación / citatorio a la contraparte','Llamado formal a la otra parte y su comparecencia.','CJA. Acredita bilateralidad.'],
+    ['03','Acta de sesión de mediación','Desarrollo de la sesión, hechos expuestos y materia de la controversia.','Mediador certificado del CJA. Fe pública.'],
+    ['04','Convenio de mediación','Acuerdo alcanzado entre las partes sobre la operación.','CJA. Documento central del bloque.'],
+    ['05','Ratificación del convenio','Firma y reconocimiento formal ante el Centro.','CJA. Perfecciona el convenio.'],
+    ['06','Constancia de cosa juzgada','El convenio ratificado adquiere calidad de cosa juzgada (art. 98 LGMASC).','CJA. La prueba de materialidad más sólida del bloque.']
+  ];
+  body.innerHTML='<div class="pgsub">MDP-MASC-001 · Materialidad reforzada por justicia alternativa: la cadena de mediación ante el Centro de Justicia Alternativa (Oaxaca, servicio gratuito) deja 6 documentales con fe pública; el convenio ratificado tiene calidad de cosa juzgada (art. 98 LGMASC).</div>'+
+    '<div class="card"><h3>Las 6 documentales del bloque</h3><div class="body"><div style="overflow-x:auto"><table style="font-size:12.5px"><thead><tr><th>#</th><th>Documental</th><th>Qué acredita</th><th>Fuente / valor</th></tr></thead><tbody>'+
+    DOCS.map(function(d){ return '<tr><td><b>'+d[0]+'</b></td><td><b>'+esc(d[1])+'</b></td><td>'+esc(d[2])+'</td><td style="font-size:11.5px">'+esc(d[3])+'</td></tr>'; }).join('')+
+    '</tbody></table></div></div></div>'+
+    '<div class="card"><h3>Machotes disponibles (Word)</h3><div class="body" style="font-size:13px">'+
+    'MDP-MASC-F01 · Solicitud de mediación — <b>Prestación de servicios</b> &nbsp;·&nbsp; MDP-MASC-F02 · Solicitud de mediación — <b>Compraventa / suministro</b>.<br>'+
+    '<span style="color:var(--muted);font-size:12px">Los machotes se llenan con los datos del caso y se presentan ante el CJA; el acuse se sube al expediente de materialidad del cliente y se certifica NOM-151 el mismo día (protocolo de la pestaña anterior). Guárdelos en la biblioteca de Jurídico → Plantillas.</span>'+
+    '</div></div>';
 }
 
