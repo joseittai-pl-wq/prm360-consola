@@ -152,7 +152,7 @@ const MERGE_AREAS = [
   ['Dirección', [ ['Tablero General','tabgen','n'],['Rentabilidad','rentabilidad','n'],['Frentes · semáforos','frentes','n'] ]],
   ['Comercial', [ ['Tablero Comercial','tabcom','n'],['Cotizador de nómina','cotizador','p'],['Pipeline de prospectos','pipelinecom','p'],['Solicitud (PDF / editable)','solicitudpdf','p'],['Checklist de documentos','checklistdocs','p'],['Presentaciones comerciales','bibliopresenta','p'],['Tablero de clientes','clientes','p'],['Boletín','boletin','p'] ]],
   ['Vinculación', [ ['Tablero Vinculación','tabvinc','n'],['Clientes','clientescombo','p'],['Trabajadores · IMSS','trabajadorescombo','p'],['Adhesión digital (firma)','adhesiondig','p'],['Onboarding / KYC','onboarding','n'],['Validación + KYC (CSF/32-D/69)','kyc','p'],['Checklist de documentos','checklistdocs','p'],['Control de entregables','entregables','p'] ]],
-  ['Operaciones', [ ['Tablero Operaciones','tabop','n'],['Trámites','tramitescombo','p'],['Facturación','facturacion','p'],['Tablero NOMEN','tablonomen','p'],['Layout de dispersión','__soon_layout','p'],['Expediente de Materialidad','materialidad','p'],['Conciliación disp. ↔ CFDI','__soon_concilia','p'],['Descargas SAT / CFDI','descargas','n'],['Calendario de vencimientos','calendario','n'] ]],
+  ['Operaciones', [ ['Tablero Operaciones','tabop','n'],['Trámites','tramitescombo','p'],['Facturación','facturacion','p'],['Tablero NOMEN','tablonomen','p'],['Layout de dispersión','layoutdisp','p'],['Expediente de Materialidad','materialidad','p'],['Conciliación disp. ↔ CFDI','__soon_concilia','p'],['Descargas SAT / CFDI','descargas','n'],['Calendario de vencimientos','calendario','n'] ]],
   ['Jurídico', [ ['Tablero Jurídico','tabjur','n'],['Corporativo','corporativocombo','p'],['Bitácora de firmas','bitacorafirmas','p'],['Vigencias / Renovaciones','renovaciones','p'],['Gobierno y Padrones','padrones','n'],['Licitaciones y contratos','licitaciones','n'],['Plantillas de contratos','biblioplantillas','p'],['Juicios / defensa fiscal','juicios','p'],['Documentales (púb. y priv.)','documentales','n'],['Compliance jurídico','compliance','n'] ]],
   ['Fiscal', [ ['Tablero Fiscal','tabfisc','n'],['Cumplimiento','cumplimientocombo','p'],['Calendario fiscal','calfiscal','p'],['Calendario REPSE (ICSOE/SISUB)','calrepse','p'],['Previsión social','previsioncombo','p'],['NOM-035','nom035','p'],['Cuestionario NOM-035','nom035cuest','n'],['e.firmas (control)','efirmasv','n'] ]],
   ['Contabilidad', [ ['Tablero Contable','tabcont','n'],['Contabilidad / Pólizas','contabilidad','n'],['Captura de servicios','captura','p'],['Descarga XML / CFDI','descargas','n'],['Bancos','bancoscombo','p'],['Motor de conciliación','conciliador','p'] ]],
@@ -221,6 +221,7 @@ async function view(v, rol, label){
   const c=$('#content'); c.innerHTML='<div class="loader">Cargando…</div>';
   try{
     if(v==='cotizador')    return await viewCotizador(c);
+    if(v==='layoutdisp')   return await viewLayoutDisp(c);
     if(v==='pipelinecom')  return await viewPipelineCom(c);
     if(v==='tablonomen')   return await viewTabNomen(c);
     if(v==='conciliador')  return await viewConciliador(c);
@@ -4642,6 +4643,125 @@ async function viewPipelineCom(c){
     const ins=await sb.from('pipeline_comercial').insert({prospecto:emp, contacto:g('pc_con').value.trim()||null, servicio:g('pc_srv').value.trim()||null, etapa:g('pc_eta').value, probabilidad:prob, valor_estimado:val, valor_ponderado:val*prob, proxima_accion:g('pc_acc').value.trim()||null, proximo_contacto:g('pc_fec').value||null, dias_sin_seguimiento:0});
     if(ins.error){ msg.style.color='var(--danger)'; msg.textContent='Error: '+ins.error.message; return; }
     viewPipelineCom(c);
+  };
+}
+
+
+/* ===== v16 · Generador de layout de dispersión bancaria ===== */
+async function viewLayoutDisp(c){
+  const NL = String.fromCharCode(10);
+  const FORMATOS = {
+    muestra: {label:'Formato PR&M (muestra base)', header:['cuenta_clabe','importe','beneficiario','rfc','concepto','referencia'], sep:','}
+  };
+  c.innerHTML='<h1 class="pg">Layout de dispersión bancaria</h1>'+
+    '<div class="pgsub">Genera el archivo de dispersión listo para subir al portal del banco, a partir de la nómina (Excel/CSV del NOMEN o captura). Cada banco tiene su formato: hoy está cargado el formato base de su muestra; al enviarme el ejemplo de cada banco que usan, agrego su formato exacto aquí.</div>'+
+    '<div class="card"><h3>1 · Parámetros</h3><div class="body"><div class="frm">'+
+      '<label>Formato / banco<select id="ld_fmt">'+Object.keys(FORMATOS).map(function(k){ return '<option value="'+k+'">'+esc(FORMATOS[k].label)+'</option>'; }).join('')+'</select></label>'+
+      '<label>Concepto<input id="ld_conc" value="Nomina" style="min-width:220px"></label>'+
+      '<label>Prefijo de referencia<input id="ld_ref" value="260001" style="width:110px"></label>'+
+    '</div></div></div>'+
+    '<div class="card"><h3>2 · Nómina a dispersar</h3><div class="body">'+
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">'+
+      '<button class="btn2 ghost" id="ld_imp">📄 Importar Excel/CSV</button>'+
+      '<button class="btn2 ghost" id="ld_add">➕ Fila manual</button>'+
+      '<input type="file" id="ld_file" accept=".xlsx,.xls,.csv" style="display:none">'+
+      '<span id="ld_impmsg" style="align-self:center;font-size:12px"></span></div>'+
+      '<div style="overflow-x:auto"><table><thead><tr><th>CLABE (18 dígitos)</th><th>Beneficiario</th><th>RFC</th><th class="num-r">Importe</th><th></th></tr></thead><tbody id="ld_body"></tbody></table></div>'+
+      '<div style="font-size:11.5px;color:var(--muted);margin-top:6px">Columnas que reconoce al importar: clabe / cuenta_clabe, beneficiario / nombre, rfc, importe / neto / monto.</div>'+
+    '</div></div>'+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">'+
+      '<button class="btn2" id="ld_gen">⬇ Generar layout</button>'+
+      '<span id="ld_msg" style="align-self:center;font-size:12px"></span>'+
+    '</div>'+
+    '<div id="ld_out"></div>';
+  const g=id=>document.getElementById(id);
+  if(!Array.isArray(window.__ldRows)) window.__ldRows=[{clabe:'',benef:'',rfc:'',imp:''}];
+  function rowHtml(r,i){
+    return '<tr>'+
+      '<td><input class="ld_clabe" value="'+esc(r.clabe)+'" maxlength="18" style="min-width:180px"></td>'+
+      '<td><input class="ld_benef" value="'+esc(r.benef)+'" style="min-width:180px"></td>'+
+      '<td><input class="ld_rfc" value="'+esc(r.rfc)+'" style="width:130px"></td>'+
+      '<td><input class="ld_imp num-r" type="number" step="0.01" value="'+esc(r.imp)+'" style="width:110px"></td>'+
+      '<td><button class="mini ld_del" data-idx="'+i+'" style="background:var(--danger)">🗑</button></td></tr>';
+  }
+  function sync(){
+    const trs=g('ld_body').getElementsByTagName('tr');
+    const arr=[];
+    for(let i=0;i<trs.length;i++){
+      const q=function(cl){ const e=trs[i].getElementsByClassName(cl)[0]; return e?e.value:''; };
+      arr.push({clabe:q('ld_clabe'),benef:q('ld_benef'),rfc:q('ld_rfc'),imp:q('ld_imp')});
+    }
+    window.__ldRows=arr;
+  }
+  function render(){
+    g('ld_body').innerHTML=window.__ldRows.map(rowHtml).join('');
+    const dels=g('ld_body').getElementsByClassName('ld_del');
+    for(let i=0;i<dels.length;i++){
+      dels[i].onclick=function(){ sync(); window.__ldRows.splice(Number(this.getAttribute('data-idx')),1); if(!window.__ldRows.length) window.__ldRows=[{clabe:'',benef:'',rfc:'',imp:''}]; render(); };
+    }
+  }
+  render();
+  g('ld_add').onclick=function(){ sync(); window.__ldRows.push({clabe:'',benef:'',rfc:'',imp:''}); render(); };
+  g('ld_imp').onclick=function(){ g('ld_file').click(); };
+  g('ld_file').onchange=function(ev){
+    const f=ev.target.files && ev.target.files[0];
+    if(!f) return;
+    const reader=new FileReader();
+    reader.onload=function(e){
+      try{
+        const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
+        const json=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''});
+        const rows=json.map(function(o){
+          const low={};
+          Object.keys(o).forEach(function(k){ low[String(k).trim().toLowerCase()]=o[k]; });
+          const pick=function(){ for(let i=0;i<arguments.length;i++){ const v=low[arguments[i]]; if(v!=null && String(v).trim()!=='') return String(v).trim(); } return ''; };
+          return {clabe:pick('clabe','cuenta_clabe','cuenta clabe','cuenta'), benef:pick('beneficiario','nombre','trabajador','nombre completo'), rfc:pick('rfc'), imp:pick('importe','neto','monto','neto a depositar','importe a depositar')};
+        }).filter(function(r){ return r.clabe||r.benef||r.imp; });
+        if(rows.length){ window.__ldRows=rows; render(); g('ld_impmsg').style.color='var(--ok)'; g('ld_impmsg').textContent='Importados '+rows.length+' registros.'; }
+        else { g('ld_impmsg').style.color='var(--danger)'; g('ld_impmsg').textContent='No se encontraron columnas reconocibles.'; }
+      }catch(err){ g('ld_impmsg').style.color='var(--danger)'; g('ld_impmsg').textContent='No se pudo leer el archivo.'; }
+      g('ld_file').value='';
+    };
+    reader.readAsArrayBuffer(f);
+  };
+  function soloDigitos(s){ let out=''; for(let i=0;i<s.length;i++){ const ch=s.charAt(i); if(ch>='0'&&ch<='9') out+=ch; } return out; }
+  g('ld_gen').onclick=function(){
+    sync();
+    const msg=g('ld_msg');
+    const fmt=FORMATOS[g('ld_fmt').value];
+    const conc=g('ld_conc').value.trim()||'Nomina';
+    const pref=g('ld_ref').value.trim()||'260001';
+    const errores=[], lineas=[fmt.header.join(fmt.sep)];
+    let total=0, n=0;
+    window.__ldRows.forEach(function(r,i){
+      const clabe=soloDigitos(String(r.clabe||''));
+      const imp=parseFloat(r.imp)||0;
+      if(!clabe && !r.benef && !imp) return;
+      if(clabe.length!==18) errores.push('Fila '+(i+1)+' ('+(r.benef||'sin nombre')+'): CLABE inválida — debe tener 18 dígitos.');
+      if(imp<=0) errores.push('Fila '+(i+1)+' ('+(r.benef||'sin nombre')+'): importe inválido.');
+      n++;
+      const ref=pref+'-'+String(n).padStart(3,'0');
+      lineas.push([clabe, imp.toFixed(2), String(r.benef||'').trim(), String(r.rfc||'').trim().toUpperCase(), conc, ref].join(fmt.sep));
+      total+=imp;
+    });
+    if(n===0){ msg.style.color='var(--danger)'; msg.textContent='No hay filas con datos.'; return; }
+    const errHtml=errores.length? '<div style="background:rgba(220,53,69,.12);border:1px solid var(--danger);color:var(--danger);border-radius:8px;padding:10px 12px;margin:8px 0"><b>'+errores.length+' errores a corregir antes de subir al banco:</b><br>'+errores.map(esc).join('<br>')+'</div>' : '';
+    g('ld_out').innerHTML=errHtml+
+      '<div class="card"><h3>Resumen del layout</h3><div class="body">'+
+      '<div class="kpis">'+tile(n,'Beneficiarios','var(--navy)')+tile(mny(total),'Total a dispersar','var(--gold)')+tile(errores.length,'Errores',errores.length?'var(--danger)':'var(--ok)')+'</div>'+
+      '<div style="font-size:12px;color:var(--muted)">El archivo se descargó con el formato seleccionado. Regla de control: verifique que el total coincida con el resumen del NOMEN antes de subirlo al portal bancario (regla de cuatro ojos).</div>'+
+      '</div></div>';
+    if(!errores.length){
+      const blob=new Blob([lineas.join(NL)+NL],{type:'text/csv;charset=utf-8;'});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      a.href=url; a.download='layout_dispersion_'+pref+'.csv';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      msg.style.color='var(--ok)'; msg.textContent='✓ Layout generado: '+n+' beneficiarios, '+mny(total)+'.';
+    } else {
+      msg.style.color='var(--danger)'; msg.textContent='Corrija los errores para poder descargar.';
+    }
   };
 }
 
