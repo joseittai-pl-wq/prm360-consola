@@ -150,14 +150,14 @@ function renderPendiente(){
 
 const MERGE_AREAS = [
   ['Dirección', [ ['Tablero General','tabgen','n'],['Rentabilidad','rentabilidad','n'],['Frentes · semáforos','frentes','n'] ]],
-  ['Comercial', [ ['Tablero Comercial','tabcom','n'],['Cotizador de nómina','cotizador','p'],['Solicitud (PDF / editable)','solicitudpdf','p'],['Checklist de documentos','checklistdocs','p'],['Presentaciones','bibliopresenta','p'],['Tablero de clientes','clientes','p'],['Boletín','boletin','p'] ]],
+  ['Comercial', [ ['Tablero Comercial','tabcom','n'],['Cotizador de nómina','cotizador','p'],['Solicitud (PDF / editable)','solicitudpdf','p'],['Checklist de documentos','checklistdocs','p'],['Presentaciones comerciales','bibliopresenta','p'],['Tablero de clientes','clientes','p'],['Boletín','boletin','p'] ]],
   ['Vinculación', [ ['Tablero Vinculación','tabvinc','n'],['Clientes','clientescombo','p'],['Trabajadores · IMSS','trabajadorescombo','p'],['Onboarding / KYC','onboarding','n'],['Validación + KYC (CSF/32-D/69)','kyc','p'],['Checklist de documentos','checklistdocs','p'],['Control de entregables','entregables','p'] ]],
   ['Operaciones', [ ['Tablero Operaciones','tabop','n'],['Trámites','tramitescombo','p'],['Facturación','facturacion','p'],['Nómina NOMEN','__soon_nomen','p'],['Layout de dispersión','__soon_layout','p'],['Expediente de Materialidad','materialidad','p'],['Conciliación disp. ↔ CFDI','__soon_concilia','p'],['Descargas SAT / CFDI','descargas','n'],['Calendario de vencimientos','calendario','n'] ]],
   ['Jurídico', [ ['Tablero Jurídico','tabjur','n'],['Corporativo','corporativocombo','p'],['Bitácora de firmas','bitacorafirmas','p'],['Vigencias / Renovaciones','renovaciones','p'],['Gobierno y Padrones','padrones','n'],['Licitaciones y contratos','licitaciones','n'],['Plantillas de contratos','biblioplantillas','p'],['Juicios / defensa fiscal','juicios','p'],['Compliance jurídico','compliance','n'] ]],
-  ['Fiscal', [ ['Tablero Fiscal','tabfisc','n'],['Cumplimiento','cumplimientocombo','p'],['Calendario fiscal','calfiscal','p'],['Calendario REPSE (ICSOE/SISUB)','calrepse','p'],['Previsión social','previsioncombo','p'],['NOM-035','nom035','p'],['Cuestionario NOM-035','nom035cuest','n'] ]],
+  ['Fiscal', [ ['Tablero Fiscal','tabfisc','n'],['Cumplimiento','cumplimientocombo','p'],['Calendario fiscal','calfiscal','p'],['Calendario REPSE (ICSOE/SISUB)','calrepse','p'],['Previsión social','previsioncombo','p'],['NOM-035','nom035','p'],['Cuestionario NOM-035','nom035cuest','n'],['e.firmas (control)','efirmasv','n'] ]],
   ['Contabilidad', [ ['Tablero Contable','tabcont','n'],['Contabilidad / Pólizas','contabilidad','n'],['Captura de servicios','captura','p'],['Descarga XML / CFDI','descargas','n'],['Bancos','bancoscombo','p'],['Motor de conciliación','__soon_motorconcilia','p'] ]],
   ['Tesorería', [ ['Tablero Tesorería','tabtes','n'],['Cobranza','cobranza','n'],['Cuentas por pagar','cxp','p'],['Bancos y flujo','flujo','p'],['Cuentas','cuentas','p'],['Pagos','pagos','p'],['Calendario fiscal','calfiscal','p'] ]],
-  ['Administración', [ ['Tablero Administración','tabadm','n'],['Empresas del grupo','empresascombo','p'],['Gastos y costeo','gastoscombo','p'],['Costeo por cliente','costeo','n'],['Importador de reportes','importador','n'],['Accesos y vinculación','accesos','n'],['Contraloría','contraloria','p'],['Organigrama y matrices','biblioorg','p'],['Directorio','directorio','n'],['Personal interno','equipo','n'],['Reportes','reportes','p'] ]]
+  ['Administración', [ ['Tablero Administración','tabadm','n'],['Empresas del grupo','empresascombo','p'],['Gastos y costeo','gastoscombo','p'],['Costeo por cliente','costeo','n'],['Importador de reportes','importador','n'],['Accesos y vinculación','accesos','n'],['Contraloría','contraloria','p'],['Organigrama y matrices','biblioorg','p'],['Directorio','directorio','n'],['Sucursales','sucursalesv','n'],['Personal interno','equipo','n'],['Reportes','reportes','p'] ]]
 ];
 
 async function renderInterno(rol){
@@ -282,6 +282,8 @@ async function view(v, rol, label){
     if(v==='costeo')       return await viewCosteo(c);
     if(v==='padrones')     return await viewPadrones(c);
     if(v==='licitaciones') return await viewLicitaciones(c);
+    if(v==='sucursalesv')  return await viewSucursales(c);
+    if(v==='efirmasv')     return await viewEfirmas(c);
     if(v && v.indexOf('__soon_')===0) return viewSoon(c, label);
     if(v==='resumen')      return await viewResumen(c);
     if(v==='kpis')         return await viewKpis360(c);
@@ -1435,8 +1437,27 @@ function viewSoon(c, label){
 async function viewCotizador(c){
   const NL2 = String.fromCharCode(10);
   const g = id => document.getElementById(id);
-  const primaDef = {I:0.54, II:1.13, III:2.59, IV:4.65, V:7.58};
+  const primaDef = {I:0.54355, II:1.13065, III:2.59840, IV:4.65325, V:7.58875};
   const claseList = ['I','II','III','IV','V'];
+  const ISR2026 = [
+    [0.01,0,1.92],
+    [746.05,14.32,6.40],
+    [6332.06,371.83,10.88],
+    [11128.02,893.63,16.00],
+    [12935.83,1182.88,17.92],
+    [15487.72,1639.32,21.36],
+    [31236.50,4005.46,23.52],
+    [49233.01,8237.45,30.00],
+    [93993.91,21665.72,32.00],
+    [125325.21,31691.85,34.00],
+    [375975.62,116912.87,35.00]
+  ];
+  function isrMensual(base){
+    if(!(base>0)) return 0;
+    let br = ISR2026[0];
+    for(let i=0;i<ISR2026.length;i++){ if(base>=ISR2026[i][0]) br = ISR2026[i]; }
+    return br[1] + (base - br[0])*br[2]/100;
+  }
   const jorList = ['Diurna','Mixta','Nocturna'];
   const perList = ['Diaria','Semanal','Decenal','Catorcenal','Quincenal','28 días','Mensual'];
   const estados = ['Aguascalientes','Baja California','Baja California Sur','Campeche','Chiapas','Chihuahua','Ciudad de México','Coahuila','Colima','Durango','Estado de México','Guanajuato','Guerrero','Hidalgo','Jalisco','Michoacán','Morelos','Nayarit','Nuevo León','Oaxaca','Puebla','Querétaro','Quintana Roo','San Luis Potosí','Sinaloa','Sonora','Tabasco','Tamaulipas','Tlaxcala','Veracruz','Yucatán','Zacatecas'];
@@ -1455,6 +1476,8 @@ async function viewCotizador(c){
 
   const params = [
     ['r_uma','UMA diaria',113.14],
+    ['r_sm_general','Salario mínimo general diario 2026',315.04],
+    ['r_sm_frontera','Salario mínimo ZLFN diario 2026',440.87],
     ['r_ceav','% Cesantía y Vejez patronal',3.15],
     ['r_retiro','Retiro/SAR %',2],
     ['r_infonavit','Infonavit %',5],
@@ -1484,6 +1507,8 @@ async function viewCotizador(c){
       '<label>Estado (ISN)<select id="coc_estado" style="min-width:180px">'+estOpts+'</select></label>'+
       '<label>Promotor<input id="coc_prom"></label>'+
       '<label>Actividad principal (ref. REPSE)<input id="coc_actividad" placeholder="Ej. Comercio al por mayor…" style="min-width:240px"></label>'+
+      '<label>Zona salario mínimo<select id="coc_zona" style="min-width:200px"><option value="general">General</option><option value="frontera">Zona Libre Frontera Norte</option></select></label>'+
+      '<label>Clase de riesgo del patrón (Art. 73 LSS)<select id="coc_clase_patron" style="min-width:150px">'+claseList.map(function(k){ return '<option value="'+k+'"'+(k==='III'?' selected':'')+'>'+k+' — '+primaDef[k].toFixed(5)+'%</option>'; }).join('')+'</select></label>'+
       '<label>Prima de riesgo del patrón (%)<input id="coc_prima_patron" type="number" step="0.00001" value="2.59840"></label>'+
       '<label>Tipo de contrato con los trabajadores<select id="coc_tipocontrato" style="min-width:220px"><option>Por tiempo determinado</option><option>Por tiempo indeterminado</option><option>Por obra o tiempo determinado</option><option>Servicios especializados (REPSE)</option></select></label>'+
       '<label>Periodicidad de pago<select id="coc_periodicidad" style="min-width:160px">'+perList.map(k=>'<option>'+esc(k)+'</option>').join('')+'</select></label>'+
@@ -1505,6 +1530,7 @@ async function viewCotizador(c){
     '<div class="card"><h3 id="coc_partog" style="cursor:pointer">Tasas y parámetros (editables) ▾</h3>'+
       '<div class="body" id="coc_parbody"><div class="frm">'+parHtml+'</div>'+
       '<div style="font-size:12px;color:var(--muted);margin-top:6px">Tasas estándar 2026 — verifíquelas/ajústelas. Se afinará con su COT-PRM-002.</div>'+
+      '<div style="font-size:12px;color:var(--muted);margin-top:4px">Referencia CONASAMI 2026 — no se puede pagar por debajo del mínimo general ni del mínimo profesional aplicable.</div>'+
       '</div></div>'+
     '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px" class="no-print">'+
       '<button class="btn2" id="coc_calc">Calcular</button>'+
@@ -1515,14 +1541,14 @@ async function viewCotizador(c){
     '<div id="coc_desglose"></div>';
 
   function rowHtml(r, idx){
-    const claseOpts = claseList.map(k=>'<option value="'+k+'"'+(r.clase===k?' selected':'')+'>'+k+'</option>').join('');
+    const claseOpts = claseList.map(k=>'<option value="'+k+'"'+(r.clase===k?' selected':'')+'>'+k+' — '+primaDef[k].toFixed(5)+'%</option>').join('');
     const jorOpts = jorList.map(k=>'<option'+(r.jornada===k?' selected':'')+'>'+esc(k)+'</option>').join('');
     const perOpts = perList.map(k=>'<option'+(r.periodicidad===k?' selected':'')+'>'+esc(k)+'</option>').join('');
     return '<tr>'+
       '<td><input class="ci_puesto" value="'+esc(r.puesto)+'" style="min-width:130px"></td>'+
       '<td><input class="ci_desc" value="'+esc(r.descripcion)+'" style="min-width:160px"></td>'+
       '<td><select class="ci_clase">'+claseOpts+'</select></td>'+
-      '<td><input class="ci_prima num-r" type="number" step="0.01" value="'+esc(r.prima)+'" style="width:80px"></td>'+
+      '<td><input class="ci_prima num-r" type="number" step="0.00001" value="'+esc(r.prima)+'" style="width:100px"></td>'+
       '<td><select class="ci_jornada">'+jorOpts+'</select></td>'+
       '<td><select class="ci_per">'+perOpts+'</select></td>'+
       '<td><input class="ci_sal" type="number" step="0.01" value="'+esc(r.salario)+'" style="width:120px"></td>'+
@@ -1564,11 +1590,16 @@ async function viewCotizador(c){
       cls[i].onchange = function(){
         const tr = this.closest('tr');
         const p = tr.getElementsByClassName('ci_prima')[0];
-        if(p && primaDef[this.value]!=null) p.value = primaDef[this.value];
+        if(p && primaDef[this.value]!=null) p.value = primaDef[this.value].toFixed(5);
       };
     }
   }
   renderRows();
+
+  g('coc_clase_patron').onchange = function(){
+    const p = g('coc_prima_patron');
+    if(p && primaDef[this.value]!=null) p.value = primaDef[this.value].toFixed(5);
+  };
 
   g('coc_partog').onclick = function(){
     const b = g('coc_parbody');
@@ -1581,7 +1612,7 @@ async function viewCotizador(c){
 
   g('coc_tpl').onclick = function(){
     const header = ['puesto','descripcion','clase_riesgo','prima','jornada','periodicidad','salario_mensual','num_trabajadores'].join(',');
-    const ejemplo = ['Auxiliar administrativo','Apoyo general de oficina','I','0.54','Diurna','Mensual','12000','1'].join(',');
+    const ejemplo = ['Auxiliar administrativo','Apoyo general de oficina','I','0.54355','Diurna','Mensual','12000','1'].join(',');
     const csv = header + NL2 + ejemplo + NL2;
     const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
     const url = URL.createObjectURL(blob);
@@ -1643,7 +1674,10 @@ async function viewCotizador(c){
     const agu = num('r_aguinaldo'), vac = num('r_vac'), primavac = num('r_primavac');
     const rHonorario = num('r_honorario'), rIva = num('r_iva');
     const d304 = 30.4;
+    const zona = (g('coc_zona') && g('coc_zona').value)==='frontera' ? 'Zona Libre Frontera Norte' : 'General';
+    const smAplicable = zona==='General' ? num('r_sm_general') : num('r_sm_frontera');
     const det = [];
+    const warnings = [];
     let subtotal = 0, cuotaTot = 0, isnTot = 0, numTot = 0;
     window.__cocRows.forEach(function(r){
       const salMen = parseFloat(r.salario) || 0;
@@ -1673,37 +1707,55 @@ async function viewCotizador(c){
       cuotaTot += cuotaUno*nTrab;
       isnTot += isnUno*nTrab;
       numTot += nTrab;
-      det.push({puesto:r.puesto, num:nTrab, salario:salMen, sdi:SDI, cuota:cuotaUno*nTrab, isn:isnUno*nTrab, costo:costoPuesto});
+      const isrUno = isrMensual(salMen);
+      const belowMin = salMen>0 && smAplicable>0 && salDia < smAplicable;
+      if(belowMin){
+        warnings.push('⚠ Puesto '+(r.puesto||'—')+': salario diario '+mny(salDia)+' por debajo del mínimo CONASAMI aplicable ('+mny(smAplicable)+'). Ajustar — no se puede pagar por debajo del mínimo.');
+      }
+      det.push({puesto:r.puesto, num:nTrab, salario:salMen, sdi:SDI, cuota:cuotaUno*nTrab, isn:isnUno*nTrab, costo:costoPuesto, isr:isrUno, neto:salMen-isrUno, belowMin:belowMin});
     });
     const honorario = (rHonorario/100)*subtotal;
     const base = subtotal + honorario;
     const iva = (rIva/100)*base;
     const total = base + iva;
-    window.__cocResult = {det:det, subtotal:subtotal, honorario:honorario, iva:iva, total:total, numTot:numTot, cuotaTot:cuotaTot, isnTot:isnTot};
+    window.__cocResult = {det:det, subtotal:subtotal, honorario:honorario, iva:iva, total:total, numTot:numTot, cuotaTot:cuotaTot, isnTot:isnTot, zona:zona, smAplicable:smAplicable, warnings:warnings};
     renderDesglose();
   }
 
   function sline(l,v){ return '<div style="display:flex;justify-content:space-between;padding:5px 0">'+esc(l)+'<b>'+mny(v)+'</b></div>'; }
   function desgloseTablaHtml(R){
     const body = R.det.map(function(d){
-      return '<tr><td>'+esc(d.puesto||'—')+'</td><td class="num-r">'+d.num+'</td>'+
+      const rowStyle = d.belowMin ? ' style="background:rgba(220,53,69,.14);color:var(--danger)"' : '';
+      return '<tr'+rowStyle+'><td>'+esc(d.puesto||'—')+'</td><td class="num-r">'+d.num+'</td>'+
         '<td class="num-r">'+mny(d.salario)+'</td><td class="num-r">'+mny(d.sdi)+'</td>'+
         '<td class="num-r">'+mny(d.cuota)+'</td><td class="num-r">'+mny(d.isn)+'</td>'+
-        '<td class="num-r">'+mny(d.costo)+'</td></tr>';
+        '<td class="num-r">'+mny(d.costo)+'</td>'+
+        '<td class="num-r">'+mny(d.isr||0)+'</td><td class="num-r">'+mny(d.neto!=null?d.neto:d.salario)+'</td></tr>';
     }).join('');
     const totRow = '<tr style="font-weight:700;background:var(--cream)"><td>Totales</td><td class="num-r">'+R.numTot+'</td>'+
-      '<td></td><td></td><td class="num-r">'+mny(R.cuotaTot)+'</td><td class="num-r">'+mny(R.isnTot)+'</td><td class="num-r">'+mny(R.subtotal)+'</td></tr>';
+      '<td></td><td></td><td class="num-r">'+mny(R.cuotaTot)+'</td><td class="num-r">'+mny(R.isnTot)+'</td><td class="num-r">'+mny(R.subtotal)+'</td><td></td><td></td></tr>';
     return '<div style="overflow-x:auto"><table><thead><tr>'+
       '<th>Puesto</th><th class="num-r">Nº</th><th class="num-r">Salario</th><th class="num-r">SDI</th>'+
       '<th class="num-r">Cuota IMSS+Inf</th><th class="num-r">ISN</th><th class="num-r">Costo mensual</th>'+
-      '</tr></thead><tbody>'+body+totRow+'</tbody></table></div>';
+      '<th class="num-r">ISR retención (mensual)</th><th class="num-r">Neto aprox. trabajador</th>'+
+      '</tr></thead><tbody>'+body+totRow+'</tbody></table></div>'+
+      '<div style="font-size:11px;color:var(--muted);margin-top:6px">ISR conforme a tarifa mensual Art. 96 LISR vigente 2026 (Anexo 8 RMF). Retención del trabajador — referencia informativa; el costo patronal no incluye ISR del trabajador.</div>';
+  }
+  function warningsHtml(R){
+    if(!R || !R.warnings || !R.warnings.length) return '';
+    return R.warnings.map(function(w){
+      return '<div style="background:rgba(220,53,69,.12);border:1px solid var(--danger);color:var(--danger);border-radius:8px;padding:10px 12px;margin:8px 0;font-weight:700">'+esc(w)+'</div>';
+    }).join('');
   }
   function renderDesglose(){
     const R = window.__cocResult;
     const out = g('coc_desglose');
     if(!R){ out.innerHTML=''; return; }
     out.innerHTML =
-      '<div class="card"><h3>Desglose</h3><div class="body">'+desgloseTablaHtml(R)+'</div></div>'+
+      warningsHtml(R)+
+      '<div class="card"><h3>Desglose</h3><div class="body">'+
+        '<div style="font-size:12px;color:var(--muted);margin-bottom:6px">Zona salario mínimo: '+esc(R.zona||'General')+' — mínimo diario aplicable '+mny(R.smAplicable||0)+'</div>'+
+        desgloseTablaHtml(R)+'</div></div>'+
       '<div class="card"><h3>Resumen</h3><div class="body">'+
         sline('Subtotal costo', R.subtotal)+
         sline('Honorario despacho', R.honorario)+
@@ -1725,6 +1777,7 @@ async function viewCotizador(c){
     const primaPatron = (g('coc_prima_patron') && g('coc_prima_patron').value) || '';
     const tipoContrato = (g('coc_tipocontrato') && g('coc_tipocontrato').value) || '';
     const periodicidad = (g('coc_periodicidad') && g('coc_periodicidad').value) || '';
+    const zonaSel = (R && R.zona) || (((g('coc_zona') && g('coc_zona').value)==='frontera') ? 'Zona Libre Frontera Norte' : 'General');
     let n = 1;
     try{
       const res = await sb.from('solicitudes').select('id',{count:'exact',head:true}).eq('tipo','cotizacion');
@@ -1745,8 +1798,9 @@ async function viewCotizador(c){
       '<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px;font-size:13px">'+
         '<div><b>Folio:</b> '+esc(folio)+'<br><b>Fecha:</b> '+esc(fecha)+'</div>'+
         '<div><b>Cliente:</b> '+esc(cliente||'—')+'<br><b>Registro patronal:</b> '+esc(rp||'—')+'<br><b>Estado:</b> '+esc(estado||'—')+'<br><b>Promotor:</b> '+esc(prom||'—')+'</div>'+
-        '<div><b>Actividad principal:</b> '+esc(actividad||'—')+'<br><b>Prima de riesgo del patrón:</b> '+esc(primaPatron?primaPatron+' %':'—')+'<br><b>Tipo de contrato:</b> '+esc(tipoContrato||'—')+'<br><b>Periodicidad de pago:</b> '+esc(periodicidad||'—')+'</div>'+
+        '<div><b>Actividad principal:</b> '+esc(actividad||'—')+'<br><b>Prima de riesgo del patrón:</b> '+esc(primaPatron?primaPatron+' %':'—')+'<br><b>Tipo de contrato:</b> '+esc(tipoContrato||'—')+'<br><b>Periodicidad de pago:</b> '+esc(periodicidad||'—')+'<br><b>Zona salario mínimo:</b> '+esc(zonaSel)+'</div>'+
       '</div>'+
+      warningsHtml(R)+
       '<div style="font-weight:700;color:var(--navy);margin-bottom:8px">Desglose de puestos</div>'+
       desgloseTablaHtml(R)+
       '<div style="max-width:360px;margin-left:auto;margin-top:18px">'+
@@ -3917,5 +3971,86 @@ async function viewLicitaciones(c){
     const {error:e}=await sb.from('licitaciones').update({etapa:s.value}).eq('id',s.dataset.id);
     if(e){ alert('Error: '+e.message); s.disabled=false; return; }
     viewLicitaciones(c);
+  });
+}
+
+/* ===== Sucursales (Base Madre) ===== */
+async function viewSucursales(c){
+  const {data,error}=await sb.from('sucursales').select('id,empresa,tipo,entidad,domicilio,aviso_sat').order('empresa',{ascending:true}).limit(300);
+  if(error) throw error;
+  const lista=data||[];
+  const matrices=lista.filter(x=>x.tipo==='Matriz').length;
+  const sucs=lista.filter(x=>x.tipo==='Sucursal').length;
+  const plazas=new Set(lista.map(x=>String(x.entidad||'').trim().toLowerCase()).filter(x=>x)).size;
+  const draw=(arr)=>arr.map(x=>{
+    const dom=String(x.domicilio||'');
+    const domFull=esc(dom).split('"').join('&quot;');
+    const domTx=dom.length>70?esc(dom.slice(0,70))+'…':esc(dom);
+    return '<tr><td><b>'+esc(x.empresa||'')+'</b></td>'+
+      '<td><span class="tag '+(x.tipo==='Matriz'?'on':'off')+'">'+esc(x.tipo||'')+'</span></td>'+
+      '<td>'+esc(x.entidad||'')+'</td>'+
+      '<td title="'+domFull+'">'+(domTx||'—')+'</td>'+
+      '<td>'+(x.aviso_sat?esc(x.aviso_sat):'—')+'</td></tr>';
+  }).join('');
+  const vacio='<tr><td colspan=5 class="empty">Sin sucursales que coincidan</td></tr>';
+  c.innerHTML='<h1 class="pg">Sucursales</h1><div class="pgsub">Registro de matrices y sucursales — cargado de tu Base Madre (108 registros).</div>'+
+    '<div class="kpis">'+
+      tile(lista.length,'Total','var(--navy)')+
+      tile(matrices,'Matrices','var(--gold)')+
+      tile(sucs,'Sucursales','var(--teal)')+
+      tile(plazas,'Plazas','var(--plum)')+
+    '</div>'+
+    '<div class="card"><div class="body"><div class="frm"><label>Buscar<input id="suc_q" placeholder="Empresa o entidad" autocomplete="off" style="min-width:260px"></label></div></div></div>'+
+    '<div class="card"><table><thead><tr><th>Empresa</th><th>Tipo</th><th>Entidad/Municipio</th><th>Domicilio</th><th>Aviso SAT</th></tr></thead><tbody id="suc_tb">'+
+    (draw(lista)||vacio)+'</tbody></table></div>';
+  const q=document.getElementById('suc_q'), tb=document.getElementById('suc_tb');
+  q.onkeyup=()=>{
+    const t=q.value.trim().toLowerCase();
+    const fil=lista.filter(x=>((x.empresa||'')+' '+(x.entidad||'')).toLowerCase().indexOf(t)>-1);
+    tb.innerHTML=draw(fil)||vacio;
+  };
+}
+
+/* ===== e.firmas SAT (control de reactivación) ===== */
+async function viewEfirmas(c){
+  const {data,error}=await sb.from('efirmas').select('id,empresa,estatus,vencimiento,notas').order('vencimiento',{ascending:true,nullsFirst:false}).limit(200);
+  if(error) throw error;
+  const lista=data||[];
+  const conVenc=lista.filter(x=>x.vencimiento).length;
+  const sinFecha=lista.length-conVenc;
+  const prox=lista.filter(x=>{const d=matDias(x.vencimiento); return d!==null&&d>=0&&d<180;}).length;
+  const rows=lista.map(x=>{
+    const d=matDias(x.vencimiento);
+    let vtx='—';
+    if(x.vencimiento){
+      vtx=esc(String(x.vencimiento).slice(0,10));
+      if(d!==null){
+        vtx+=d<0
+          ?' <span style="color:#c0392b;font-weight:700">vencida hace '+(-d)+' d</span>'
+          :' <span style="color:'+(d<180?'#e67e22':'#2f9e6b')+'">en '+d+' d</span>';
+      }
+    }
+    const activa=x.estatus==='activa';
+    const btn=activa?'':'<button class="mini ef-act" data-id="'+x.id+'">Activada</button>';
+    return '<tr><td><b>'+esc(x.empresa||'')+'</b></td>'+
+      '<td><span class="tag '+(activa?'on':'off')+'">'+esc(x.estatus||'inactiva')+'</span></td>'+
+      '<td>'+vtx+'</td>'+
+      '<td>'+esc(x.notas||'')+'</td>'+
+      '<td>'+btn+'</td></tr>';
+  }).join('');
+  c.innerHTML='<h1 class="pg">e.firmas (control)</h1><div class="pgsub">e.firmas SAT reportadas INACTIVAS en tu Base Madre — contrólalas aquí conforme se reactiven.</div>'+
+    '<div class="kpis">'+
+      tile(lista.length,'Registradas','var(--navy)')+
+      tile(conVenc,'Con vencimiento','var(--teal)')+
+      tile(prox,'Próximas a vencer (<180 días)',prox>0?'#e67e22':'var(--ok)')+
+      tile(sinFecha,'Sin fecha','#7f8c8d')+
+    '</div>'+
+    '<div class="card"><table><thead><tr><th>Empresa</th><th>Estatus</th><th>Vencimiento</th><th>Notas</th><th></th></tr></thead><tbody>'+
+    (rows||'<tr><td colspan=5 class="empty">Sin e.firmas registradas</td></tr>')+'</tbody></table></div>';
+  c.querySelectorAll('button.ef-act').forEach(b=>b.onclick=async()=>{
+    b.disabled=true;
+    const {error:e}=await sb.from('efirmas').update({estatus:'activa'}).eq('id',b.dataset.id);
+    if(e){ alert('Error: '+e.message); b.disabled=false; return; }
+    viewEfirmas(c);
   });
 }
