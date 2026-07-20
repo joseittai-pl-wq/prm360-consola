@@ -153,11 +153,11 @@ const MERGE_AREAS = [
   ['Comercial', [ ['Tablero Comercial','tabcom','n'],['Cotizador de nómina','cotizador','p'],['Solicitud (PDF / editable)','solicitudpdf','p'],['Checklist de documentos','checklistdocs','p'],['Presentaciones comerciales','bibliopresenta','p'],['Tablero de clientes','clientes','p'],['Boletín','boletin','p'] ]],
   ['Vinculación', [ ['Tablero Vinculación','tabvinc','n'],['Clientes','clientescombo','p'],['Trabajadores · IMSS','trabajadorescombo','p'],['Onboarding / KYC','onboarding','n'],['Validación + KYC (CSF/32-D/69)','kyc','p'],['Checklist de documentos','checklistdocs','p'],['Control de entregables','entregables','p'] ]],
   ['Operaciones', [ ['Tablero Operaciones','tabop','n'],['Trámites','tramitescombo','p'],['Facturación','facturacion','p'],['Nómina NOMEN','__soon_nomen','p'],['Layout de dispersión','__soon_layout','p'],['Expediente de Materialidad','materialidad','p'],['Conciliación disp. ↔ CFDI','__soon_concilia','p'],['Descargas SAT / CFDI','descargas','n'],['Calendario de vencimientos','calendario','n'] ]],
-  ['Jurídico', [ ['Tablero Jurídico','tabjur','n'],['Corporativo','corporativocombo','p'],['Bitácora de firmas','bitacorafirmas','p'],['Vigencias / Renovaciones','renovaciones','p'],['Gobierno y Padrones','padrones','n'],['Licitaciones y contratos','licitaciones','n'],['Plantillas de contratos','biblioplantillas','p'],['Juicios / defensa fiscal','juicios','p'],['Compliance jurídico','compliance','n'] ]],
+  ['Jurídico', [ ['Tablero Jurídico','tabjur','n'],['Corporativo','corporativocombo','p'],['Bitácora de firmas','bitacorafirmas','p'],['Vigencias / Renovaciones','renovaciones','p'],['Gobierno y Padrones','padrones','n'],['Licitaciones y contratos','licitaciones','n'],['Plantillas de contratos','biblioplantillas','p'],['Juicios / defensa fiscal','juicios','p'],['Documentales (púb. y priv.)','documentales','n'],['Compliance jurídico','compliance','n'] ]],
   ['Fiscal', [ ['Tablero Fiscal','tabfisc','n'],['Cumplimiento','cumplimientocombo','p'],['Calendario fiscal','calfiscal','p'],['Calendario REPSE (ICSOE/SISUB)','calrepse','p'],['Previsión social','previsioncombo','p'],['NOM-035','nom035','p'],['Cuestionario NOM-035','nom035cuest','n'],['e.firmas (control)','efirmasv','n'] ]],
   ['Contabilidad', [ ['Tablero Contable','tabcont','n'],['Contabilidad / Pólizas','contabilidad','n'],['Captura de servicios','captura','p'],['Descarga XML / CFDI','descargas','n'],['Bancos','bancoscombo','p'],['Motor de conciliación','__soon_motorconcilia','p'] ]],
   ['Tesorería', [ ['Tablero Tesorería','tabtes','n'],['Cobranza','cobranza','n'],['Cuentas por pagar','cxp','p'],['Bancos y flujo','flujo','p'],['Cuentas','cuentas','p'],['Pagos','pagos','p'],['Calendario fiscal','calfiscal','p'] ]],
-  ['Administración', [ ['Tablero Administración','tabadm','n'],['Empresas del grupo','empresascombo','p'],['Gastos y costeo','gastoscombo','p'],['Costeo por cliente','costeo','n'],['Importador de reportes','importador','n'],['Accesos y vinculación','accesos','n'],['Contraloría','contraloria','p'],['Organigrama y matrices','biblioorg','p'],['Directorio','directorio','n'],['Sucursales','sucursalesv','n'],['Personal interno','equipo','n'],['Reportes','reportes','p'] ]]
+  ['Administración', [ ['Tablero Administración','tabadm','n'],['Empresas del grupo','empresascombo','p'],['Gastos y costeo','gastoscombo','p'],['Costeo por cliente','costeo','n'],['Importador de reportes','importador','n'],['Accesos y vinculación','accesos','n'],['Contraloría','contraloria','p'],['Organigrama y matrices','biblioorg','p'],['Directorio','directorio','n'],['Sucursales','sucursalesv','n'],['Personal interno','equipo','n'],['Organigrama y funciones','organigramafn','n'],['Reportes','reportes','p'] ]]
 ];
 
 async function renderInterno(rol){
@@ -284,6 +284,8 @@ async function view(v, rol, label){
     if(v==='licitaciones') return await viewLicitaciones(c);
     if(v==='sucursalesv')  return await viewSucursales(c);
     if(v==='efirmasv')     return await viewEfirmas(c);
+    if(v==='documentales') return await viewDocumentales(c);
+    if(v==='organigramafn') return await viewOrganigrama(c);
     if(v && v.indexOf('__soon_')===0) return viewSoon(c, label);
     if(v==='resumen')      return await viewResumen(c);
     if(v==='kpis')         return await viewKpis360(c);
@@ -2042,12 +2044,237 @@ async function viewSustancia(c){
 }
 
 async function viewBoletin(c){
-  const {data,error}=await sb.from('boletines').select('asunto,destinatarios,estatus,enviado_en').order('enviado_en',{ascending:false,nullsFirst:false}).limit(100);
+  const {data,error}=await sb.from('boletines').select('asunto,contenido,destinatarios,estatus,enviado_en').order('enviado_en',{ascending:false,nullsFirst:false}).limit(100);
   if(error) throw error;
-  const rows=(data||[]).map(x=>`<tr><td>${esc(x.asunto||'')}</td><td>${esc(String(x.destinatarios==null?'':x.destinatarios))}</td><td><span class="tag">${esc(x.estatus||'')}</span></td><td>${esc(x.enviado_en||'')}</td></tr>`).join('');
-  c.innerHTML='<h1 class="pg">Boletín</h1><div class="pgsub">'+(data?data.length:0)+' envíos</div>'+
-    '<div class="card"><table><thead><tr><th>Asunto</th><th>Destinatarios</th><th>Estatus</th><th>Enviado</th></tr></thead><tbody>'+
+  const lista=data||[];
+  const rows=lista.map(x=>{
+    const cls=x.estatus==='enviado'?'on':'off';
+    const fecha=x.enviado_en?String(x.enviado_en).slice(0,10):'—';
+    return '<tr><td><b>'+esc(x.asunto||'')+'</b></td><td class="num-r">'+(x.destinatarios==null?'—':x.destinatarios)+'</td><td><span class="tag '+cls+'">'+esc(x.estatus||'')+'</span></td><td>'+esc(fecha)+'</td></tr>';
+  }).join('');
+  c.innerHTML='<h1 class="pg">Boletín (PR&amp;M Perspectivas)</h1><div class="pgsub">'+lista.length+' boletines (máx 100) · redacta, registra y deja listo el texto para enviar</div>'+
+    '<div class="card"><h3>Nuevo boletín</h3><div class="body">'+
+      '<div class="frm"><label style="flex:1;min-width:260px">Asunto<input id="bn_asunto" style="width:100%"></label></div>'+
+      '<div class="frm"><label style="flex:1;min-width:260px">Contenido<textarea id="bn_cont" rows="8" style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;font-family:inherit;resize:vertical"></textarea></label></div>'+
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">'+
+        '<button class="btn2 ghost" id="bn_count">Contar destinatarios</button>'+
+        '<button class="btn2" id="bn_draft">Guardar borrador</button>'+
+        '<button class="btn2" id="bn_send">Marcar enviado</button>'+
+        '<button class="btn2 ghost" id="bn_print">🖨 Vista para envío</button>'+
+        '<span id="bn_msg" style="font-size:12px"></span></div>'+
+      '<div style="font-size:12px;color:var(--muted);margin-top:8px">El envío se realiza desde tu correo (Outlook) — aquí queda el registro y el texto listo para copiar.</div>'+
+    '</div></div>'+
+    '<div class="card"><table><thead><tr><th>Asunto</th><th class="num-r">Destinatarios</th><th>Estatus</th><th>Fecha</th></tr></thead><tbody>'+
     (rows||'<tr><td colspan=4 class="empty">Sin boletines</td></tr>')+'</tbody></table></div>';
+  const g=id=>document.getElementById(id);
+  let nDest=null;
+  g('bn_count').onclick=async()=>{
+    const msg=g('bn_msg');
+    msg.textContent='Contando…'; msg.style.color='var(--muted)';
+    const {count,error:e}=await sb.from('clientes').select('id',{count:'exact',head:true}).not('email','is',null);
+    if(e){ msg.textContent='Error: '+e.message; msg.style.color='var(--danger)'; return; }
+    nDest=count||0;
+    msg.textContent=nDest+' clientes con correo'; msg.style.color='var(--ok)';
+  };
+  const guardar=async(estatus)=>{
+    const msg=g('bn_msg');
+    const asunto=g('bn_asunto').value.trim();
+    if(!asunto){ msg.textContent='El asunto es obligatorio.'; msg.style.color='var(--danger)'; return; }
+    msg.textContent='Guardando…'; msg.style.color='var(--muted)';
+    const payload={asunto:asunto, contenido:g('bn_cont').value.trim()||null, destinatarios:nDest, estatus:estatus};
+    if(estatus==='enviado') payload.enviado_en=new Date().toISOString();
+    const {error:e}=await sb.from('boletines').insert(payload);
+    if(e){ msg.textContent='Error: '+e.message; msg.style.color='var(--danger)'; return; }
+    viewBoletin(c);
+  };
+  g('bn_draft').onclick=()=>guardar('borrador');
+  g('bn_send').onclick=()=>guardar('enviado');
+  g('bn_print').onclick=()=>{
+    const asunto=g('bn_asunto').value.trim()||'(Sin asunto)';
+    const cont=g('bn_cont').value;
+    c.innerHTML=
+      '<div class="no-print" style="margin-bottom:12px;display:flex;gap:8px">'+
+        '<button class="btn2" id="bnp_print">🖨 Imprimir</button>'+
+        '<button class="btn2 ghost" id="bnp_volver">← Volver</button></div>'+
+      '<div style="text-align:center;margin-bottom:18px">'+
+        '<div style="font-size:20px;font-weight:800;letter-spacing:1px;color:var(--navy)">PR&amp;M Business Group</div>'+
+        '<div style="font-size:14px;margin-top:2px">PR&amp;M Perspectivas · Boletín</div>'+
+        '<div style="font-size:12px;color:var(--muted);margin-top:2px">'+matHoy()+'</div></div>'+
+      '<h2 style="font-size:16px;color:var(--navy);margin:0 0 12px">'+esc(asunto)+'</h2>'+
+      '<div style="white-space:pre-wrap;font-size:13px;line-height:1.6">'+esc(cont)+'</div>';
+    document.getElementById('bnp_print').onclick=()=>window.print();
+    document.getElementById('bnp_volver').onclick=()=>viewBoletin(c);
+  };
+}
+
+/* ===== Documentales públicas y privadas (Jurídico · Defensa Fiscal) ===== */
+async function viewDocumentales(c){
+  const {data,error}=await sb.from('documentales').select('id,folio,empresa,empresa_rfc,nivel,tipo_documental,naturaleza,materia,autoridad,expediente,fecha_emision,acredita,archivo_path,archivo_nombre').order('fecha_emision',{ascending:false,nullsFirst:false}).limit(300);
+  if(error) throw error;
+  const lista=data||[];
+  const pub=lista.filter(x=>x.naturaleza==='publica').length;
+  const priv=lista.filter(x=>x.naturaleza==='privada').length;
+  const n1=lista.filter(x=>x.nivel==='Nivel 1').length;
+  const MATERIAS=['Laboral','Administrativa','Fiscal','Civil','Mercantil','Penal'];
+  c.innerHTML='<h1 class="pg">Documentales públicas y privadas</h1>'+
+    '<div class="pgsub">Registro de documentales públicas y privadas — estructura de tu Base Madre (Defensa Fiscal). Cada documental indica qué acredita de la operación.</div>'+
+    '<div class="kpis">'+
+      tile(lista.length,'Total','var(--navy)')+
+      tile(pub,'Públicas','var(--ok)')+
+      tile(priv,'Privadas','var(--plum)')+
+      tile(n1,'Nivel 1','var(--gold)')+
+    '</div>'+
+    '<div class="card no-print"><h3>Filtrar</h3><div class="body"><div class="frm" style="margin-bottom:0">'+
+      '<label>Naturaleza<select id="doc_fnat"><option value="">Todas</option><option value="publica">Públicas</option><option value="privada">Privadas</option></select></label>'+
+      '<label>Materia<select id="doc_fmat"><option value="">Todas</option>'+MATERIAS.map(m=>'<option>'+m+'</option>').join('')+'</select></label>'+
+    '</div></div></div>'+
+    '<div class="card"><h3>Registrar documental</h3><div class="body"><div class="frm">'+
+      '<label>Empresa<input id="doc_emp" style="min-width:200px"></label>'+
+      '<label>Nivel<select id="doc_nivel"><option>Nivel 1</option><option>Nivel 2</option><option>Nivel 3</option></select></label>'+
+      '<label>Tipo documental<input id="doc_tipo" style="min-width:240px" placeholder="Demanda, contrato con ente público, acta, dictamen…"></label>'+
+      '<label>Naturaleza<select id="doc_nat"><option value="publica">Pública</option><option value="privada">Privada</option></select></label>'+
+      '<label>Materia<select id="doc_mat">'+MATERIAS.map(m=>'<option>'+m+'</option>').join('')+'</select></label>'+
+      '<label>Autoridad<input id="doc_aut" style="min-width:170px"></label>'+
+      '<label>Expediente<input id="doc_expd"></label>'+
+      '<label>Fecha emisión<input id="doc_fecha" type="date"></label>'+
+      '<label style="flex:1;min-width:280px">Descripción<input id="doc_desc" style="width:100%"></label>'+
+      '<label style="flex:1;min-width:280px">¿Qué acredita de la operación?<input id="doc_acr" style="width:100%"></label>'+
+      '<label>Contraparte<input id="doc_contra" style="min-width:170px"></label>'+
+    '</div><div style="margin-top:8px"><button class="btn2" id="doc_save">Guardar</button> <span id="doc_msg" style="font-size:12px;margin-left:8px"></span></div></div></div>'+
+    '<div class="card"><table><thead><tr><th>Folio</th><th>Empresa</th><th>Nivel</th><th>Tipo</th><th>Naturaleza</th><th>Materia</th><th>Autoridad</th><th>Expediente</th><th>Fecha</th><th>Acredita</th><th>📎</th></tr></thead><tbody id="doc_tbody"></tbody></table></div>';
+  const g=id=>document.getElementById(id);
+  const paint=()=>{
+    const fn=g('doc_fnat').value, fm=g('doc_fmat').value;
+    const vis=lista.filter(x=>(!fn||x.naturaleza===fn)&&(!fm||x.materia===fm));
+    const rows=vis.map(x=>{
+      const natCls=x.naturaleza==='publica'?'on':'repse';
+      const acr=String(x.acredita||'');
+      const acrTx=acr.length>40?acr.slice(0,40)+'…':acr;
+      const archivo=x.archivo_path
+        ? '<a href="#" class="doc-dl" data-path="'+esc(x.archivo_path)+'">📎 '+esc(x.archivo_nombre||'archivo')+'</a>'
+        : '<input type="file" class="doc-file" data-id="'+x.id+'" style="font-size:11px;max-width:170px">';
+      return '<tr><td><b>'+esc(x.folio||'')+'</b></td>'+
+        '<td>'+esc(x.empresa||'')+(x.empresa_rfc?' <span style="color:var(--muted);font-size:11px">('+esc(x.empresa_rfc)+')</span>':'')+'</td>'+
+        '<td><span class="tag">'+esc(x.nivel||'')+'</span></td>'+
+        '<td>'+esc(x.tipo_documental||'')+'</td>'+
+        '<td><span class="tag '+natCls+'">'+esc(x.naturaleza||'')+'</span></td>'+
+        '<td>'+esc(x.materia||'')+'</td>'+
+        '<td>'+esc(x.autoridad||'')+'</td>'+
+        '<td>'+esc(x.expediente||'')+'</td>'+
+        '<td>'+esc(x.fecha_emision||'')+'</td>'+
+        '<td title="'+esc(acr)+'">'+esc(acrTx)+'</td>'+
+        '<td>'+archivo+'</td></tr>';
+    }).join('');
+    const tb=g('doc_tbody');
+    tb.innerHTML=rows||'<tr><td colspan=11 class="empty">Sin documentales con ese filtro</td></tr>';
+    tb.querySelectorAll('input.doc-file').forEach(inp=>inp.onchange=async()=>{
+      const file=inp.files&&inp.files[0]; if(!file) return;
+      inp.disabled=true;
+      let nombre=file.name.split('').filter(ch=>/[a-zA-Z0-9._-]/.test(ch)).join('');
+      if(!nombre) nombre='archivo';
+      const path='materialidad/doc_'+inp.dataset.id+'_'+nombre;
+      try{
+        const up=await sb.storage.from('expedientes').upload(path, file);
+        if(up.error) throw up.error;
+        const {error:e2}=await sb.from('documentales').update({archivo_path:path, archivo_nombre:file.name}).eq('id',inp.dataset.id);
+        if(e2) throw e2;
+        viewDocumentales(c);
+      }catch(err){
+        alert('No se pudo subir (permisos de almacén): '+((err&&err.message)||err));
+        inp.disabled=false;
+      }
+    });
+    tb.querySelectorAll('a.doc-dl').forEach(a=>a.onclick=async(ev)=>{
+      ev.preventDefault();
+      try{
+        const {data:d2,error:e3}=await sb.storage.from('expedientes').createSignedUrl(a.dataset.path, 3600);
+        if(e3) throw e3;
+        window.open(d2.signedUrl);
+      }catch(err){ alert('No se pudo abrir el archivo (permisos de almacén): '+((err&&err.message)||err)); }
+    });
+  };
+  g('doc_fnat').onchange=paint;
+  g('doc_fmat').onchange=paint;
+  paint();
+  g('doc_save').onclick=async()=>{
+    const msg=g('doc_msg');
+    const emp=g('doc_emp').value.trim(), tipo=g('doc_tipo').value.trim();
+    if(!emp||!tipo){ msg.textContent='Empresa y tipo documental son obligatorios.'; msg.style.color='var(--danger)'; return; }
+    g('doc_save').disabled=true; msg.textContent='Guardando…'; msg.style.color='var(--muted)';
+    try{
+      const n=await cnt('documentales');
+      const folio='DOC-'+String(n+1).padStart(4,'0');
+      const {error:e}=await sb.from('documentales').insert({folio:folio, empresa:emp, nivel:g('doc_nivel').value, tipo_documental:tipo, naturaleza:g('doc_nat').value, materia:g('doc_mat').value, autoridad:g('doc_aut').value.trim()||null, expediente:g('doc_expd').value.trim()||null, fecha_emision:g('doc_fecha').value||null, descripcion:g('doc_desc').value.trim()||null, acredita:g('doc_acr').value.trim()||null, contraparte:g('doc_contra').value.trim()||null});
+      if(e) throw e;
+      viewDocumentales(c);
+    }catch(err){
+      msg.textContent='Error: '+((err&&err.message)||err); msg.style.color='var(--danger)'; g('doc_save').disabled=false;
+    }
+  };
+}
+
+/* ===== Organigrama, puestos y funciones (PRM-ADM-008 · julio 2026) ===== */
+const ORG=[
+  {area:'DIRECCIÓN GENERAL', plazas:'2 plazas', color:'#14303D', desc:'Estrategia, clientes Nivel 1, asignación de asuntos, control de calidad final y firma. Etapas 1, 2 y 5 del flujo.', puestos:[
+    {puesto:'Director General (Titular)', funciones:'Estrategia y crecimiento · atención a clientes Nivel 1 · firma de dictámenes y entregables · control de calidad final · decisiones de personal y precios · representación de la firma.', actividades:'Despacho y asignación de asuntos (diario) · revisión técnica y firma (24–48 h) · comité operativo semanal · revisión del tablero de compliance (semanal).'},
+    {puesto:'Coordinador de Dirección y Control de Gestión', funciones:'Brazo operativo de la DG: seguimiento de folios y fechas compromiso · agenda y priorización · enlace entre departamentos.', actividades:'Apertura de folio (mismo día) · seguimiento diario y semáforo de vencimientos · minuta del comité semanal · reporte de gestión mensual (días 1–3).'}
+  ]},
+  {area:'JURÍDICA', plazas:'2 plazas', color:'#7a5aa6', desc:'', puestos:[
+    {puesto:'Abogado Responsable — Defensa Fiscal y Laboral', funciones:'Estrategia de defensa fiscal · litigio y medios de defensa · previsión social y terminaciones · criterio jurídico · supervisión del abogado corporativo.', actividades:'Control de términos semanal · terminaciones y finiquitos por evento · expediente de materialidad preventivo (1 entidad Nivel 1 por semana) · revisión jurídica de entregables (48–72 h).'},
+    {puesto:'Abogado Corporativo', funciones:'Vida corporativa de las 68 entidades: actas, asambleas, poderes, libros · contratos con clientes y proveedores · convenios y renovaciones.', actividades:'Contratos y renovaciones (45 min con IA vs 240 manual) · actas y poderes (5–15 días hábiles) · libros corporativos (trimestral) · asambleas ordinarias (marzo–abril).'}
+  ]},
+  {area:'CONTABLE-FISCAL', plazas:'4 plazas (escalable a 3)', color:'#2e6f7e', desc:'', puestos:[
+    {puesto:'Contador Responsable de Área', funciones:'Responsable técnico de cierres y declaraciones · criterio fiscal · revisión de auxiliares · dictámenes de deducibilidad · interlocución con SAT.', actividades:'Cierre multiempresa (días 1–10) · papeles de trabajo (día 12) · provisionales y DIOT (día 17) · dictamen de deducción (3–5 días) · anuales PM (marzo).'},
+    {puesto:'Auxiliares Contables (3)', funciones:'Registro por bloque de sociedades (15–20 entidades c/u) · conciliaciones · expedientes contables.', actividades:'Captura y validación de CFDI (diaria, con IA de horas a minutos) · conciliaciones bancarias (30 min por entidad con IA vs 6 h) · balanzas (día 10).'}
+  ]},
+  {area:'OPERACIONES DE NÓMINA', plazas:'3 plazas', color:'#1d4152', desc:'', puestos:[
+    {puesto:'Coordinador de Operaciones de Nómina', funciones:'Ciclo de nómina punta a punta · calendario de quincenas · relación con clientes de nómina · calidad del timbrado.', actividades:'Cálculo y timbrado (5 min por nómina con IA vs 30) · cierre ≤1.5 días tras fin de periodo · control de nóminas sin timbrar (meta cero) · reporte quincenal a DG.'},
+    {puesto:'Analista de Afiliación y Conciliación IMSS', funciones:'Altas/bajas/modificaciones IMSS (NOMEN) · SUA/IDSE/SIPARE · conciliación nómina vs IMSS.', actividades:'Movimientos afiliatorios (diario en quincena) · confronta IDSE–SUA (mensual) · requerimientos IMSS/Infonavit (por evento).'},
+    {puesto:'Analista de Facturación y Pre-dispersión', funciones:'Facturación del servicio de nómina · layouts de dispersión · primera llave del pago.', actividades:'CFDI de servicio por pagadora (quincenal) · complementos de pago (mensual) · layout validado vs nómina timbrada → Tesorería (mismo día).'}
+  ]},
+  {area:'COMPLIANCE Y CONTROL', plazas:'1 plaza', color:'#b8442f', desc:'', puestos:[
+    {puesto:'Coordinador de Compliance', funciones:'Verificación de cumplimiento de cada entregable · tracker de 68 entidades · 69-B, REPSE, PLD · renovaciones · evidencia de materialidad.', actividades:'Verificación pre-firma (24 h por folio) · alertas y tablero (viernes) · ICSOE/SISUB (ene·may·sep) · verificación de domicilios 41 reactivos 69-B (semestral) · semáforo de riesgo a DG (semanal).'}
+  ]},
+  {area:'ADMINISTRACIÓN Y FINANZAS', plazas:'2 plazas', color:'#A8843C', desc:'', puestos:[
+    {puesto:'Director de Administración y Finanzas', funciones:'Finanzas internas · flujo y presupuesto · facturación y cobranza a clientes · proveedores · políticas internas y RH administrativo.', actividades:'Facturación (días 1–3) · cortes de cobranza (quincenal) · conciliaciones internas (primeros 5 días) · reporte financiero a DG (mensual).'},
+    {puesto:'Coordinador de Tesorería y Servicios Generales', funciones:'Ejecución de pagos y dispersiones autorizadas (segunda llave) · bancos · gestoría · respaldo de información.', actividades:'Dispersión cuatro ojos (por quincena, mismo día del layout) · pagos e impuestos (día 17) · gestoría diaria · respaldo NAS+nube (semanal).'}
+  ]},
+  {area:'COMERCIAL Y VINCULACIÓN', plazas:'2 plazas', color:'#3f8f5b', desc:'', puestos:[
+    {puesto:'Ejecutivo Comercial Senior', funciones:'Meta de ventas y reactivación · prospección y cierre · alianzas · precios con DG · pipeline documentado.', actividades:'Campaña de reactivación (lista de 20 contactos semanal) · propuestas en 48 h con IA · reporte de conversión semanal · cobranza comercial 90 días.'},
+    {puesto:'Ejecutivo de Vinculación y Atención', funciones:'Ventanilla única de solicitudes (etapa 1) · experiencia del cliente · cross-sell sobre cartera activa.', actividades:'Registro de solicitudes con folio (mismo día) · bitácora de solicitudes · encuestas de satisfacción (mensual) · coordinación de entregas.'}
+  ]}
+];
+
+async function viewOrganigrama(c){
+  const bloque=p=>'<div style="border:1px solid var(--line);border-radius:8px;margin-top:8px;overflow:hidden">'+
+    '<div class="org-p" style="padding:8px 11px;font-weight:700;font-size:12.5px;color:var(--navy);cursor:pointer;background:var(--cream);display:flex;justify-content:space-between;gap:8px"><span>'+esc(p.puesto)+'</span><span style="color:var(--muted);font-weight:400">▾</span></div>'+
+    '<div style="display:none;padding:9px 11px;font-size:12px;line-height:1.55;border-top:1px solid var(--line)">'+
+      '<div><b>Funciones:</b> '+esc(p.funciones)+'</div>'+
+      '<div style="margin-top:6px"><b>Actividades:</b> '+esc(p.actividades)+'</div></div></div>';
+  const cardArea=a=>'<div class="card" style="margin-bottom:0">'+
+    '<h3 style="background:'+a.color+';color:#fff;border-bottom:0;display:flex;justify-content:space-between;gap:8px;letter-spacing:.5px"><span>'+esc(a.area)+'</span><span style="font-weight:600;opacity:.85">'+esc(a.plazas)+'</span></h3>'+
+    '<div class="body">'+(a.desc?'<div style="font-size:12px;color:var(--muted)">'+esc(a.desc)+'</div>':'')+a.puestos.map(bloque).join('')+'</div></div>';
+  c.innerHTML='<h1 class="pg">Organigrama, puestos y funciones (PRM-ADM-008 · julio 2026)</h1>'+
+    '<div class="pgsub">PRM-ADM-008 · julio 2026 — estructura oficial. Documento confidencial de Dirección.</div>'+
+    '<div class="kpis" style="grid-template-columns:repeat(3,1fr)">'+
+      tile('33','Plantilla actual: 33 personas · ~$566 mil/mes','var(--navy)')+
+      tile('16','Estructura propuesta: 16 plazas (−52%)','var(--ok)')+
+      tile('4 ojos','Regla intocable: dispersión a cuatro ojos','var(--danger)')+
+    '</div>'+
+    '<div style="max-width:640px;margin:0 auto 16px">'+cardArea(ORG[0])+'</div>'+
+    '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;align-items:start;margin-bottom:20px">'+ORG.slice(1).map(cardArea).join('')+'</div>'+
+    '<div class="card"><h3>Criterios de transición (33 → 16)</h3><div class="body" style="font-size:13px;line-height:1.6">'+
+      '<div><b>1. Medición primero</b> — evaluar carga real y desempeño con datos antes de cualquier decisión.</div>'+
+      '<div><b>2. Capacitación y compromiso</b> — dar a cada persona la oportunidad de adoptar las herramientas de IA.</div>'+
+      '<div><b>3. Reubicar antes que liquidar</b> — privilegiar movimientos internos hacia las áreas con carga de trabajo.</div>'+
+      '<div><b>4. Segregación innegociable</b> — nunca una sola persona calcula, factura y dispersa.</div>'+
+      '<div><b>5. Gradualidad medible</b> — transición por etapas con métricas, sin cortes abruptos.</div>'+
+      '<div style="margin-top:10px;font-size:12px;color:var(--muted)">La decisión sobre personas concretas es exclusiva de la Dirección General.</div>'+
+    '</div></div>';
+  c.querySelectorAll('.org-p').forEach(h=>h.onclick=()=>{
+    const d=h.nextElementSibling;
+    d.style.display = d.style.display==='none' ? 'block' : 'none';
+  });
 }
 
 async function viewActas(c){
