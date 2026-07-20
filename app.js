@@ -2395,121 +2395,235 @@ async function viewContratoIndividual(c){
 
 /* ===== Tableros por área ===== */
 async function viewTabGen(c){
-  c.innerHTML='<h1 class="pg">Tablero General</h1><div class="pgsub">Vista de mando · integra todos los departamentos</div>';
-  const [emp,repse,cli,trab,alr,ren,con,jui,tar,mov]=await Promise.all([
+  c.innerHTML='<h1 class="pg">Tablero General</h1><div class="pgsub">Vista de mando · integra todos los departamentos</div><div class="loader">Cargando indicadores…</div>';
+  const [emp,repse,cli,trab,alr,ren,con,jui,tar]=await Promise.all([
     cnt('empresas'), cnt('empresas',[['repse',true]]), cnt('clientes'),
     cnt('trabajadores',[['estatus','activo']]), cnt('alertas_repse'), cnt('renovaciones'),
-    cnt('contratos'), cnt('juicios'), cnt('tareas'), cnt('movimientos_bancarios')
+    cnt('contratos'), cnt('juicios'), cnt('tareas')
   ]);
-  c.innerHTML += '<div class="kpis">'+
-    tile(emp,'Empresas','var(--navy)')+
-    tile(repse,'Empresas REPSE','var(--teal)')+
-    tile(cli,'Clientes','var(--navy)')+
-    tile(trab,'Trabajadores activos','var(--ok)')+
-    tile(alr,'Alertas REPSE',sem(alr,'alert'))+
-    tile(ren,'Renovaciones','var(--wait)')+
-    tile(con,'Contratos','var(--navy)')+
-    tile(jui,'Juicios','var(--navy)')+
-    tile(tar,'Tareas',sem(tar,'alert'))+
-    tile(mov,'Mov. bancarios','var(--teal)')+
-    '</div>';
+  const [padC,padA,mdpV,pipe,adh,repPor,respPor,fic]=await Promise.all([
+    cnt('padron_prov_pendientes',[['prioridad','CRÍTICA'],['estatus','Pendiente']]),
+    cnt('padron_prov_pendientes',[['prioridad','ALTA'],['estatus','Pendiente']]),
+    cnt('mdp_control',[['estatus','vigente']]),
+    cnt('pipeline_comercial'),
+    cnt('adhesiones'),
+    cnt('repse_informativas',[['estatus','por_presentar']]),
+    cnt('responsables_frentes',[['responsable','POR ASIGNAR']]),
+    cnt('vin05_fichas')
+  ]);
+  const D=await nomenDatos(); const T=D.T;
+  const pctTim=T.reg?Math.round(T.timb/T.reg*100):0;
+  c.innerHTML='<h1 class="pg">Tablero General</h1><div class="pgsub">Vista de mando · integra todos los departamentos · datos vivos</div>'+
+    '<div class="card"><h3>Operación NOMEN (semestre)</h3><div class="body"><div class="kpis">'+
+      tile(mny(T.pagar),'Total a pagar','var(--gold)')+
+      tile(mny(T.social),'Costo social','var(--navy)')+
+      tile(pctTim+'%','Timbrado',pctTim>=90?'var(--ok)':'var(--danger)')+
+      tile(D.cli.length,'Clientes NOMEN','var(--navy)')+
+      tile(mny(T.isr),'ISR retenido','var(--navy)')+
+    '</div></div></div>'+
+    '<div class="card"><h3>Cumplimiento y riesgo</h3><div class="body"><div class="kpis">'+
+      tile(padC,'Padrones: críticos',padC?'var(--danger)':'var(--ok)')+
+      tile(padA,'Padrones: altos',padA?'#e67e22':'var(--ok)')+
+      tile(mdpV+'/350','Documentales MDP vigentes',mdpV>250?'var(--ok)':'#e67e22')+
+      tile(repPor,'ICSOE/SISUB por presentar',repPor?'#e67e22':'var(--ok)')+
+      tile(alr,'Alertas REPSE',sem(alr,'alert'))+
+      tile(ren,'Renovaciones','var(--wait)')+
+    '</div></div></div>'+
+    '<div class="card"><h3>Estructura y cartera</h3><div class="body"><div class="kpis">'+
+      tile(emp,'Empresas','var(--navy)')+
+      tile(repse,'Empresas REPSE','var(--teal)')+
+      tile(cli,'Clientes','var(--navy)')+
+      tile(trab,'Trabajadores activos','var(--ok)')+
+      tile(con,'Contratos','var(--navy)')+
+      tile(jui,'Juicios','var(--navy)')+
+      tile(pipe,'Prospectos en pipeline','var(--teal)')+
+      tile(adh,'Adhesiones digitales',adh?'var(--ok)':'#e67e22')+
+      tile(fic,'Fichas VIN-05','var(--navy)')+
+      tile(tar,'Tareas',sem(tar,'alert'))+
+      tile(respPor,'Frentes sin responsable',respPor?'#e67e22':'var(--ok)')+
+    '</div></div></div>';
 }
 async function viewTabCom(c){
-  c.innerHTML='<h1 class="pg">Tablero Comercial</h1><div class="pgsub">Prospección, cotización y cartera de clientes</div>';
-  const [sol,serv,cli,cot]=await Promise.all([
-    cnt('solicitudes'), cnt('servicios'), cnt('clientes'), cnt('solicitudes')
-  ]);
-  c.innerHTML += '<div class="kpis">'+
-    tile(sol,'Solicitudes','var(--navy)')+
-    tile(serv,'Servicios','var(--teal)')+
-    tile(cli,'Clientes','var(--navy)')+
-    tile(cot,'Cotizaciones','var(--wait)')+
-    '</div>';
+  c.innerHTML='<h1 class="pg">Tablero Comercial</h1><div class="pgsub">Prospección, cotización y cartera</div><div class="loader">Cargando…</div>';
+  const [sol,cli]=await Promise.all([cnt('solicitudes'), cnt('clientes')]);
+  const r=await sb.from('pipeline_comercial').select('prospecto,etapa,valor_estimado,valor_ponderado,dias_sin_seguimiento,proxima_accion').order('valor_ponderado',{ascending:false});
+  const pipe=(r.data||[]);
+  const act=pipe.filter(function(x){ return String(x.etapa||'').indexOf('Cerrado')<0; });
+  const valP=act.reduce(function(a,x){ return a+Number(x.valor_ponderado||0); },0);
+  const valT=act.reduce(function(a,x){ return a+Number(x.valor_estimado||0); },0);
+  const sinSeg=act.filter(function(x){ return Number(x.dias_sin_seguimiento||0)>7; }).length;
+  const top=act.slice(0,5).map(function(x){
+    return '<tr><td><b>'+esc(x.prospecto)+'</b></td><td>'+esc(x.etapa)+'</td><td class="num-r">'+mny(x.valor_ponderado)+'</td><td>'+esc(x.proxima_accion||'')+'</td></tr>';
+  }).join('');
+  c.innerHTML='<h1 class="pg">Tablero Comercial</h1><div class="pgsub">Prospección, cotización y cartera de clientes</div>'+
+    '<div class="kpis">'+
+      tile(act.length,'Prospectos activos','var(--navy)')+
+      tile(mny(valT),'Valor estimado anual','var(--gold)')+
+      tile(mny(valP),'Valor ponderado','var(--teal)')+
+      tile(sinSeg,'Sin seguimiento >7 días',sinSeg?'var(--danger)':'var(--ok)')+
+      tile(sol,'Solicitudes / cotizaciones','var(--wait)')+
+      tile(cli,'Clientes en cartera','var(--navy)')+
+    '</div>'+
+    '<div class="card"><h3>Top pipeline (por valor ponderado)</h3><div class="body"><table style="font-size:12.5px"><thead><tr><th>Prospecto</th><th>Etapa</th><th class="num-r">Ponderado</th><th>Próxima acción</th></tr></thead><tbody>'+
+    (top||'<tr><td colspan=4 class="empty">Sin prospectos activos</td></tr>')+'</tbody></table></div></div>';
 }
 async function viewTabVinc(c){
-  c.innerHTML='<h1 class="pg">Tablero Vinculación</h1><div class="pgsub">Expediente, IMSS y onboarding de clientes</div>';
-  const [cli,trab,onb,con]=await Promise.all([
-    cnt('clientes'), cnt('trabajadores',[['estatus','activo']]), cnt('onboarding_cliente'), cnt('contratos')
+  c.innerHTML='<h1 class="pg">Tablero Vinculación</h1><div class="pgsub">Expediente, IMSS y onboarding</div><div class="loader">Cargando…</div>';
+  const [cli,trab,onb,con,adh,ficCap,ficEnt,movP]=await Promise.all([
+    cnt('clientes'), cnt('trabajadores',[['estatus','activo']]), cnt('onboarding_cliente'), cnt('contratos'),
+    cnt('adhesiones'), cnt('vin05_fichas',[['estatus','En captura']]),
+    cnt('vin05_fichas',[['estatus','Entregada a Operación']]), cnt('mov_afiliatorios',[['estatus','Capturado']])
   ]);
-  c.innerHTML += '<div class="kpis">'+
-    tile(cli,'Clientes','var(--navy)')+
-    tile(trab,'Trabajadores activos','var(--ok)')+
-    tile(onb,'Onboarding','var(--wait)')+
-    tile(con,'Contratos','var(--navy)')+
-    '</div>';
+  c.innerHTML='<h1 class="pg">Tablero Vinculación</h1><div class="pgsub">Expediente, IMSS, adhesiones y hand-off a Operación</div>'+
+    '<div class="kpis">'+
+      tile(cli,'Clientes','var(--navy)')+
+      tile(trab,'Trabajadores activos','var(--ok)')+
+      tile(adh+' / '+trab,'Adhesiones previsión firmadas',adh>=trab&&trab>0?'var(--ok)':'#e67e22')+
+      tile(ficCap,'Fichas VIN-05 en captura',ficCap?'#e67e22':'var(--ok)')+
+      tile(ficEnt,'Fichas entregadas a Operación','var(--ok)')+
+      tile(movP,'Mov. afiliatorios por presentar',movP?'#e67e22':'var(--ok)')+
+      tile(onb,'Onboarding','var(--wait)')+
+      tile(con,'Contratos','var(--navy)')+
+    '</div>'+
+    '<div class="card"><div class="body" style="font-size:12.5px;color:var(--muted)">Meta de adhesiones: cada trabajador activo con su plan de previsión firmado (módulo Adhesión digital: firma + foto + INE). Los movimientos capturados se exportan a NOMEN desde Movimientos afiliatorios.</div></div>';
 }
 async function viewTabOp(c){
-  c.innerHTML='<h1 class="pg">Tablero Operaciones</h1><div class="pgsub">Trámites, movimientos y descargas SAT</div>';
-  const [tar,mov,des,bit,matAb]=await Promise.all([
-    cnt('tareas'), cnt('operaciones_movimientos'), cnt('descarga_solicitudes'), cnt('bitacora'),
-    cnt('materialidad_expedientes',[['estatus','abierto']])
+  c.innerHTML='<h1 class="pg">Tablero Operaciones</h1><div class="pgsub">Nómina, timbrado y materialidad</div><div class="loader">Cargando…</div>';
+  const [tar,matAb,ftSol,ftApr,ftTim,movP]=await Promise.all([
+    cnt('tareas'), cnt('materialidad_expedientes',[['estatus','abierto']]),
+    cnt('fac_timbrado_control',[['estatus','Solicitado']]),
+    cnt('fac_timbrado_control',[['estatus','Aprobado']]),
+    cnt('fac_timbrado_control',[['estatus','Timbrado']]),
+    cnt('mov_afiliatorios',[['estatus','Capturado']])
   ]);
-  c.innerHTML += '<div class="kpis">'+
-    tile(tar,'Tareas',sem(tar,'alert'))+
-    tile(mov,'Movimientos','var(--teal)')+
-    tile(des,'Descargas SAT','var(--wait)')+
-    tile(bit,'Bitácora','var(--navy)')+
-    tile(matAb,'Expedientes materialidad abiertos', matAb>0?'var(--wait)':'var(--ok)')+
-    '</div>';
+  const D=await nomenDatos(); const T=D.T;
+  const pctTim=T.reg?Math.round(T.timb/T.reg*100):0;
+  const peor=D.cli.filter(function(x){ return (x.sin_timbrar||0)>0; }).sort(function(a,b){ return b.sin_timbrar-a.sin_timbrar; }).slice(0,5);
+  c.innerHTML='<h1 class="pg">Tablero Operaciones</h1><div class="pgsub">Nómina NOMEN, timbrado FAC-01, dispersión y materialidad</div>'+
+    '<div class="kpis">'+
+      tile(T.reg.toLocaleString(),'Registros NOMEN','var(--navy)')+
+      tile(pctTim+'%','Timbrado',pctTim>=90?'var(--ok)':'var(--danger)')+
+      tile(T.sin.toLocaleString(),'Sin timbrar',T.sin?'var(--danger)':'var(--ok)')+
+      tile(mny(T.pagar),'Total a pagar','var(--gold)')+
+      tile(ftSol,'FAC-01 solicitados',ftSol?'#e67e22':'var(--ok)')+
+      tile(ftApr,'FAC-01 por timbrar',ftApr?'#e67e22':'var(--ok)')+
+      tile(ftTim,'FAC-01 timbrados','var(--ok)')+
+      tile(matAb,'Expedientes materialidad abiertos',matAb?'var(--wait)':'var(--ok)')+
+      tile(movP,'Afiliatorios por presentar',movP?'#e67e22':'var(--ok)')+
+      tile(tar,'Tareas',sem(tar,'alert'))+
+    '</div>'+
+    '<div class="card"><h3>Prioridad de timbrado (top 5 clientes con pendiente)</h3><div class="body"><table style="font-size:12.5px"><thead><tr><th>Cliente</th><th class="num-r">Sin timbrar</th><th class="num-r">Total a pagar</th></tr></thead><tbody>'+
+    (peor.map(function(x){ return '<tr><td>'+esc(x.cliente)+'</td><td class="num-r" style="color:var(--danger);font-weight:700">'+x.sin_timbrar+'</td><td class="num-r">'+mny(x.total_pagar)+'</td></tr>'; }).join('')||'<tr><td colspan=3 class="empty">Sin pendientes de timbrado</td></tr>')+
+    '</tbody></table></div></div>';
 }
 async function viewTabJur(c){
-  c.innerHTML='<h1 class="pg">Tablero Jurídico</h1><div class="pgsub">Contratos, juicios y gobierno corporativo</div>';
-  const [con,jui,act]=await Promise.all([
-    cnt('contratos'), cnt('juicios'), cnt('actas_poderes')
+  c.innerHTML='<h1 class="pg">Tablero Jurídico</h1><div class="pgsub">Contratos, padrones y documentales</div><div class="loader">Cargando…</div>';
+  const [con,jui,act,lic,padC,padA,padR,mdpV,mdpX]=await Promise.all([
+    cnt('contratos'), cnt('juicios'), cnt('actas_poderes'), cnt('licitaciones'),
+    cnt('padron_prov_pendientes',[['prioridad','CRÍTICA'],['estatus','Pendiente']]),
+    cnt('padron_prov_pendientes',[['prioridad','ALTA'],['estatus','Pendiente']]),
+    cnt('padron_prov_pendientes',[['estatus','Resuelto']]),
+    cnt('mdp_control',[['estatus','vigente']]),
+    cnt('mdp_control',[['estatus','vencida']])
   ]);
-  c.innerHTML += '<div class="kpis">'+
-    tile(con,'Contratos','var(--navy)')+
-    tile(jui,'Juicios','var(--danger)')+
-    tile(act,'Actas y poderes','var(--navy)')+
-    '</div>';
+  c.innerHTML='<h1 class="pg">Tablero Jurídico</h1><div class="pgsub">Contratos, gobierno, padrones de proveedores y documentales públicas</div>'+
+    '<div class="kpis">'+
+      tile(con,'Contratos','var(--navy)')+
+      tile(act,'Actas y poderes',act?'var(--navy)':'#e67e22')+
+      tile(jui,'Juicios','var(--danger)')+
+      tile(lic,'Licitaciones','var(--wait)')+
+      tile(padC,'Padrones: pend. críticos',padC?'var(--danger)':'var(--ok)')+
+      tile(padA,'Padrones: pend. altos',padA?'#e67e22':'var(--ok)')+
+      tile(padR,'Padrones: resueltos','var(--ok)')+
+      tile(mdpV+'/350','MDP vigentes',mdpV>250?'var(--ok)':'#e67e22')+
+      tile(mdpX,'MDP vencidas',mdpX?'var(--danger)':'var(--ok)')+
+    '</div>'+
+    '<div class="card"><div class="body" style="font-size:12.5px;color:var(--muted)">Los pendientes críticos de padrones bloquean el empadronamiento (e.firmas inactivas, SAT inactivas, verificaciones de domicilio). Trabájelos en Jurídico → Padrones de proveedores 2026; las documentales por empresa en Documentales públicas (MDP).</div></div>';
 }
 async function viewTabCont(c){
-  c.innerHTML='<h1 class="pg">Tablero Contable</h1><div class="pgsub">Pólizas, bancos y conciliación</div>';
-  const [mov,cta]=await Promise.all([
-    cnt('movimientos_bancarios'), cnt('tesoreria_cuentas')
+  c.innerHTML='<h1 class="pg">Tablero Contable</h1><div class="pgsub">Pólizas, bancos y conciliación</div><div class="loader">Cargando…</div>';
+  const [mov,cta,cap]=await Promise.all([
+    cnt('movimientos_bancarios'), cnt('tesoreria_cuentas'), cnt('servicios')
   ]);
-  c.innerHTML += '<div class="kpis">'+
-    tile(mov,'Mov. bancarios','var(--teal)')+
-    tile(cta,'Cuentas','var(--navy)')+
-    '</div>';
+  const D=await nomenDatos(); const T=D.T;
+  c.innerHTML='<h1 class="pg">Tablero Contable</h1><div class="pgsub">Pólizas, bancos, conciliación e impuestos de la operación</div>'+
+    '<div class="kpis">'+
+      tile(mov,'Mov. bancarios','var(--teal)')+
+      tile(cta,'Cuentas','var(--navy)')+
+      tile(mny(T.isr),'ISR retenido (NOMEN)','var(--navy)')+
+      tile(mny(T.isn),'ISN del periodo','var(--navy)')+
+      tile(mny(T.patron),'Cuotas patronales','var(--navy)')+
+      tile(cap,'Servicios (catálogo)','var(--wait)')+
+    '</div>'+
+    '<div class="card"><div class="body" style="font-size:12.5px;color:var(--muted)">Piloto acordado: pólizas + IXEF, y rutina de viernes de carga bancaria. El Motor de conciliación acepta el TXT de CONTPAQi y el estado de cuenta tal cual se descargan (incluye demo de prueba).</div></div>';
 }
 async function viewTabFisc(c){
-  c.innerHTML='<h1 class="pg">Tablero Fiscal</h1><div class="pgsub">Cumplimiento, REPSE y previsión social</div>';
+  c.innerHTML='<h1 class="pg">Tablero Fiscal</h1><div class="pgsub">Cumplimiento, REPSE y previsión</div><div class="loader">Cargando…</div>';
   const tot=await cnt('compliance_empresa',[['aplica',true]]);
   const ok=await cnt('compliance_empresa',[['aplica',true],['cumplido',true]]);
   const pct=tot?Math.round(ok/tot*100):0;
-  const [alr,ren,prev]=await Promise.all([
-    cnt('alertas_repse'), cnt('renovaciones'), cnt('prevision_social')
+  const [alr,ren,prev,repPor,repVen,repPre,efIn,n35]=await Promise.all([
+    cnt('alertas_repse'), cnt('renovaciones'), cnt('prevision_social'),
+    cnt('repse_informativas',[['estatus','por_presentar']]),
+    cnt('repse_informativas',[['estatus','vencida_revisar']]),
+    cnt('repse_informativas',[['estatus','presentada']]),
+    cnt('efirmas',[['estatus','inactiva']]),
+    cnt('nom035_respuestas')
   ]);
-  c.innerHTML += '<div class="kpis">'+
-    tile(pct+'%','Cumplimiento',sem(pct,'pct'))+
-    tile(alr,'Alertas REPSE',sem(alr,'alert'))+
-    tile(ren,'Renovaciones','var(--wait)')+
-    tile(prev,'Previsión social','var(--navy)')+
-    '</div>';
+  c.innerHTML='<h1 class="pg">Tablero Fiscal</h1><div class="pgsub">Cumplimiento, calendario REPSE, e.firmas y NOM-035</div>'+
+    '<div class="kpis">'+
+      tile(pct+'%','Cumplimiento',sem(pct,'pct'))+
+      tile(repPor,'ICSOE/SISUB por presentar',repPor?'#e67e22':'var(--ok)')+
+      tile(repVen,'Informativas vencidas',repVen?'var(--danger)':'var(--ok)')+
+      tile(repPre,'Presentadas','var(--ok)')+
+      tile(efIn,'e.firmas inactivas',efIn?'var(--danger)':'var(--ok)')+
+      tile(n35,'Cuestionarios NOM-035',n35?'var(--ok)':'#e67e22')+
+      tile(alr,'Alertas REPSE',sem(alr,'alert'))+
+      tile(ren,'Renovaciones','var(--wait)')+
+      tile(prev,'Planes de previsión','var(--navy)')+
+    '</div>'+
+    '<div class="card"><div class="body" style="font-size:12.5px;color:var(--muted)">Los acuses ICSOE/SISUB se suben directo en el Calendario REPSE (quedan en el repositorio seguro). NOM-035: aplicación al personal programada el miércoles tras la capacitación.</div></div>';
 }
 async function viewTabTes(c){
-  c.innerHTML='<h1 class="pg">Tablero Tesorería</h1><div class="pgsub">Cuentas, cobranza y pagos</div>';
-  const [cta,cob,pag]=await Promise.all([
-    cnt('tesoreria_cuentas'), cnt('cobranza'), cnt('pagos')
+  c.innerHTML='<h1 class="pg">Tablero Tesorería</h1><div class="pgsub">Cuentas, cobranza y pagos</div><div class="loader">Cargando…</div>';
+  const [cta,pag,cxpP]=await Promise.all([
+    cnt('tesoreria_cuentas'), cnt('pagos'), cnt('cuentas_por_pagar',[['estatus','pendiente']])
   ]);
-  c.innerHTML += '<div class="kpis">'+
-    tile(cta,'Cuentas','var(--navy)')+
-    tile(cob,'Cobranza','var(--teal)')+
-    tile(pag,'Pagos','var(--wait)')+
-    '</div>';
+  const rc=await sb.from('cobranza').select('monto,dias_vencido,estatus').limit(1000);
+  const cob=rc.data||[];
+  const carteraTot=cob.reduce(function(a,x){ return a+Number(x.monto||0); },0);
+  const vencido=cob.filter(function(x){ return Number(x.dias_vencido||0)>0 || x.estatus==='vencido'; }).reduce(function(a,x){ return a+Number(x.monto||0); },0);
+  c.innerHTML='<h1 class="pg">Tablero Tesorería</h1><div class="pgsub">Cuentas, cobranza, pagos y cuentas por pagar</div>'+
+    '<div class="kpis">'+
+      tile(cob.length,'Facturas en cobranza',cob.length?'var(--navy)':'#e67e22')+
+      tile(mny(carteraTot),'Cartera por cobrar','var(--gold)')+
+      tile(mny(vencido),'Vencido',vencido?'var(--danger)':'var(--ok)')+
+      tile(cta,'Cuentas','var(--navy)')+
+      tile(pag,'Pagos registrados','var(--wait)')+
+      tile(cxpP,'CxP pendientes',cxpP?'#e67e22':'var(--ok)')+
+    '</div>'+
+    '<div class="card"><div class="body" style="font-size:12.5px;color:var(--muted)">Cobranza se enciende al importar su reporte de facturación del NOMEN (Importador → Cartera de facturas); después se concilia contra los XML descargados. Los pagos del personal se registran con el formato protegido y se cotejan cada viernes contra el estado de cuenta del banco.</div></div>';
 }
 async function viewTabAdm(c){
-  c.innerHTML='<h1 class="pg">Tablero Administración</h1><div class="pgsub">Empresas del grupo, gastos y personal interno</div>';
-  const [emp,gas,per,ofi]=await Promise.all([
-    cnt('empresas'), cnt('gastos'), cnt('perfiles'), cnt('oficinas')
+  c.innerHTML='<h1 class="pg">Tablero Administración</h1><div class="pgsub">Empresas, gastos y personal</div><div class="loader">Cargando…</div>';
+  const [emp,per,ofi,suc,respPor]=await Promise.all([
+    cnt('empresas'), cnt('perfiles'), cnt('oficinas'), cnt('sucursales'),
+    cnt('responsables_frentes',[['responsable','POR ASIGNAR']])
   ]);
-  c.innerHTML += '<div class="kpis">'+
-    tile(emp,'Empresas','var(--navy)')+
-    tile(gas,'Gastos','var(--teal)')+
-    tile(per,'Personal','var(--navy)')+
-    tile(ofi,'Oficinas','var(--wait)')+
-    '</div>';
+  const rg=await sb.from('gastos').select('monto').limit(1000);
+  const gas=rg.data||[];
+  const gasTot=gas.reduce(function(a,x){ return a+Number(x.monto||0); },0);
+  c.innerHTML='<h1 class="pg">Tablero Administración</h1><div class="pgsub">Empresas del grupo, gastos, sucursales y personal interno</div>'+
+    '<div class="kpis">'+
+      tile(emp,'Empresas','var(--navy)')+
+      tile(gas.length,'Gastos capturados',gas.length?'var(--teal)':'#e67e22')+
+      tile(mny(gasTot),'Gasto acumulado','var(--gold)')+
+      tile(per,'Usuarios de consola','var(--navy)')+
+      tile(ofi,'Oficinas','var(--wait)')+
+      tile(suc,'Sucursales','var(--navy)')+
+      tile(respPor,'Frentes sin responsable',respPor?'#e67e22':'var(--ok)')+
+    '</div>'+
+    '<div class="card"><div class="body" style="font-size:12.5px;color:var(--muted)">El Costeo por cliente se activa al capturar o importar gastos (Importador → Gastos, con el flujo de efectivo protegido como espejo). Los accesos del equipo se asignan en Accesos y vinculación conforme a la matriz PRM-DIR-15.</div></div>';
 }
 
 function exportContentCSV(){
