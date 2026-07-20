@@ -150,14 +150,14 @@ function renderPendiente(){
 
 const MERGE_AREAS = [
   ['Dirección', [ ['Tablero General','tabgen','n'],['Rentabilidad','rentabilidad','n'],['Frentes · semáforos','frentes','n'] ]],
-  ['Comercial', [ ['Tablero Comercial','tabcom','n'],['Cotizador de nómina','cotizador','p'],['Solicitud (PDF / editable)','__soon_solicitudpdf','p'],['Checklist de documentos','__soon_checklistcom','p'],['Presentaciones','__soon_presentaciones','p'],['Tablero de clientes','clientes','p'],['Boletín','boletin','p'] ]],
-  ['Vinculación', [ ['Tablero Vinculación','tabvinc','n'],['Clientes','clientescombo','p'],['Trabajadores · IMSS','trabajadorescombo','p'],['Onboarding / KYC','onboarding','n'],['Validación + KYC (CSF/32-D/69)','kyc','p'],['Checklist de documentos','__soon_checklistvinc','p'],['Control de entregables','__soon_entregables','p'] ]],
+  ['Comercial', [ ['Tablero Comercial','tabcom','n'],['Cotizador de nómina','cotizador','p'],['Solicitud (PDF / editable)','solicitudpdf','p'],['Checklist de documentos','__soon_checklistcom','p'],['Presentaciones','__soon_presentaciones','p'],['Tablero de clientes','clientes','p'],['Boletín','boletin','p'] ]],
+  ['Vinculación', [ ['Tablero Vinculación','tabvinc','n'],['Clientes','clientescombo','p'],['Trabajadores · IMSS','trabajadorescombo','p'],['Onboarding / KYC','onboarding','n'],['Validación + KYC (CSF/32-D/69)','kyc','p'],['Checklist de documentos','__soon_checklistvinc','p'],['Control de entregables','entregables','p'] ]],
   ['Operaciones', [ ['Tablero Operaciones','tabop','n'],['Trámites','tramitescombo','p'],['Facturación','facturacion','p'],['Nómina NOMEN','__soon_nomen','p'],['Layout de dispersión','__soon_layout','p'],['Expediente de Materialidad','materialidad','p'],['Conciliación disp. ↔ CFDI','__soon_concilia','p'],['Descargas SAT / CFDI','descargas','n'],['Calendario de vencimientos','calendario','n'] ]],
   ['Jurídico', [ ['Tablero Jurídico','tabjur','n'],['Corporativo','corporativocombo','p'],['Bitácora de firmas','bitacorafirmas','p'],['Vigencias / Renovaciones','renovaciones','p'],['Plantillas de contratos','__soon_plantillas','p'],['Juicios / defensa fiscal','juicios','p'],['Compliance jurídico','compliance','n'] ]],
   ['Fiscal', [ ['Tablero Fiscal','tabfisc','n'],['Cumplimiento','cumplimientocombo','p'],['Calendario fiscal','calfiscal','p'],['Calendario REPSE (ICSOE/SISUB)','__soon_calrepse','p'],['Previsión social','previsioncombo','p'],['NOM-035','nom035','p'] ]],
   ['Contabilidad', [ ['Tablero Contable','tabcont','n'],['Contabilidad / Pólizas','contabilidad','n'],['Captura de servicios','captura','p'],['Descarga XML / CFDI','descargas','n'],['Bancos','bancoscombo','p'],['Motor de conciliación','__soon_motorconcilia','p'] ]],
   ['Tesorería', [ ['Tablero Tesorería','tabtes','n'],['Cobranza','cobranza','n'],['Cuentas por pagar','cxp','p'],['Bancos y flujo','flujo','p'],['Cuentas','cuentas','p'],['Pagos','pagos','p'],['Calendario fiscal','calfiscal','p'] ]],
-  ['Administración', [ ['Tablero Administración','tabadm','n'],['Empresas del grupo','empresascombo','p'],['Gastos y costeo','gastoscombo','p'],['Importador de reportes','importador','n'],['Accesos y vinculación','accesos','n'],['Contraloría','__soon_contraloria','p'],['Organigrama y matrices','__soon_organigrama','p'],['Directorio','directorio','n'],['Personal interno','equipo','n'],['Reportes','__soon_reportes','p'] ]]
+  ['Administración', [ ['Tablero Administración','tabadm','n'],['Empresas del grupo','empresascombo','p'],['Gastos y costeo','gastoscombo','p'],['Importador de reportes','importador','n'],['Accesos y vinculación','accesos','n'],['Contraloría','contraloria','p'],['Organigrama y matrices','__soon_organigrama','p'],['Directorio','directorio','n'],['Personal interno','equipo','n'],['Reportes','__soon_reportes','p'] ]]
 ];
 
 async function renderInterno(rol){
@@ -269,6 +269,9 @@ async function view(v, rol, label){
     if(v==='kyc')          return await viewKyc(c);
     if(v==='calfiscal')    return await viewCalFiscal(c);
     if(v==='importador')   return await viewImportador(c);
+    if(v==='solicitudpdf') return await viewSolicitudPdf(c);
+    if(v==='entregables')  return await viewEntregables(c);
+    if(v==='contraloria')  return await viewContraloria(c);
     if(v && v.indexOf('__soon_')===0) return viewSoon(c, label);
     if(v==='resumen')      return await viewResumen(c);
     if(v==='kpis')         return await viewKpis360(c);
@@ -2932,4 +2935,193 @@ async function viewImportador(c){
       g('imp_prev').innerHTML='';
     }
   };
+}
+
+/* ===== Solicitud de servicio (PDF / editable) · Comercial ===== */
+async function viewSolicitudPdf(c){
+  const g=id=>document.getElementById(id);
+  const hoy=new Date().toISOString().slice(0,10);
+  c.innerHTML='<h1 class="pg">Solicitud (PDF / editable)</h1>'+
+    '<div class="pgsub">Captura la solicitud de servicio, guárdala y genera el PDF con membrete.</div>'+
+    '<div class="card"><h3>Solicitud de servicio / cotización</h3><div class="body"><div class="frm">'+
+      '<label>Fecha<input id="sp_fecha" type="date" value="'+hoy+'"></label>'+
+      '<label>Empresa solicitante<input id="sp_emp" style="min-width:240px"></label>'+
+      '<label>RFC<input id="sp_rfc" maxlength="13"></label>'+
+      '<label>Contacto<input id="sp_contacto" style="min-width:200px"></label>'+
+      '<label>Correo<input id="sp_correo" type="email" style="min-width:200px"></label>'+
+      '<label>Teléfono<input id="sp_tel"></label>'+
+      '<label>Servicio solicitado<select id="sp_serv"><option>Fiscal</option><option>Contable</option><option>Nómina y timbrado</option><option>REPSE / especializados</option><option>Materialidad</option><option>Jurídico</option><option>Otro</option></select></label>'+
+      '<label style="flex:1">Descripción de la solicitud<input id="sp_desc" style="min-width:320px"></label>'+
+      '<label style="flex:1">Observaciones<input id="sp_obs" style="min-width:320px"></label>'+
+    '</div><div style="margin-top:8px">'+
+      '<button class="btn2" id="sp_save">Guardar solicitud</button> '+
+      '<button class="btn2 ghost" id="sp_pdf">Generar PDF</button> '+
+      '<span id="sp_msg" style="font-size:12px;margin-left:8px"></span>'+
+    '</div></div></div>';
+  function capturar(){
+    return {
+      fecha:g('sp_fecha').value||hoy,
+      emp:g('sp_emp').value.trim(), rfc:g('sp_rfc').value.trim(),
+      contacto:g('sp_contacto').value.trim(), correo:g('sp_correo').value.trim(),
+      tel:g('sp_tel').value.trim(), serv:g('sp_serv').value,
+      desc:g('sp_desc').value.trim(), obs:g('sp_obs').value.trim()
+    };
+  }
+  g('sp_save').onclick=async()=>{
+    const msg=g('sp_msg'); const d=capturar();
+    if(!d.emp||!d.desc){ msg.textContent='Empresa solicitante y descripción son obligatorias.'; msg.style.color='var(--danger)'; return; }
+    g('sp_save').disabled=true; msg.textContent='Guardando…'; msg.style.color='var(--muted)';
+    const resumen='Solicitud de servicio · '+d.emp+(d.rfc?' ('+d.rfc+')':'')+' · '+d.serv+' · '+d.desc+
+      (d.obs?' · Obs: '+d.obs:'')+(d.contacto?' · Contacto: '+d.contacto:'')+(d.correo?' '+d.correo:'')+(d.tel?' '+d.tel:'')+' · Fecha: '+d.fecha;
+    let ok=false, lastErr=null;
+    const intentos=[{tipo:'solicitud', descripcion:resumen},{descripcion:resumen}];
+    for(let i=0;i<intentos.length;i++){
+      try{
+        const {error}=await sb.from('solicitudes').insert(intentos[i]);
+        if(!error){ ok=true; break; }
+        lastErr=error;
+      }catch(e){ lastErr=e; }
+    }
+    g('sp_save').disabled=false;
+    if(ok){ msg.style.color='var(--ok)'; msg.textContent='✓ Solicitud guardada.'; }
+    else { msg.style.color='var(--danger)'; msg.textContent='No se pudo guardar'+(lastErr&&lastErr.message?(': '+lastErr.message):'.'); }
+  };
+  g('sp_pdf').onclick=async()=>{
+    const d=capturar();
+    let n=1;
+    try{
+      const res=await sb.from('solicitudes').select('id',{count:'exact',head:true});
+      if(res&&typeof res.count==='number') n=res.count+1;
+    }catch(e){}
+    const folio='SOL-'+String(n).padStart(4,'0');
+    const fila=(a,b)=>'<tr><td style="width:32%;font-weight:700;color:var(--navy);padding:7px 10px;border:1px solid var(--line)">'+a+'</td><td style="padding:7px 10px;border:1px solid var(--line)">'+esc(b||'—')+'</td></tr>';
+    c.innerHTML=
+      '<div style="max-width:860px;margin:0 auto;padding:10px">'+
+      '<div style="display:flex;gap:8px;margin-bottom:16px" class="no-print">'+
+        '<button class="btn2" id="sp_print">🖨 Imprimir</button>'+
+        '<button class="btn2 ghost" id="sp_volver">← Volver</button>'+
+      '</div>'+
+      '<div style="border-bottom:3px solid var(--navy);padding-bottom:12px;margin-bottom:18px">'+
+        '<div style="font-size:22px;font-weight:800;color:var(--navy)">PR&amp;M Business Group</div>'+
+        '<div style="font-size:14px;color:var(--gold);font-weight:700">Solicitud de servicio</div>'+
+      '</div>'+
+      '<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px;font-size:13px">'+
+        '<div><b>Folio:</b> '+esc(folio)+'</div><div><b>Fecha:</b> '+esc(d.fecha)+'</div>'+
+      '</div>'+
+      '<table style="width:100%;border-collapse:collapse;font-size:13px">'+
+        fila('Empresa solicitante', d.emp)+
+        fila('RFC', d.rfc)+
+        fila('Contacto', d.contacto)+
+        fila('Correo', d.correo)+
+        fila('Teléfono', d.tel)+
+        fila('Servicio solicitado', d.serv)+
+        fila('Descripción de la solicitud', d.desc)+
+        fila('Observaciones', d.obs)+
+      '</table>'+
+      '<div style="margin-top:70px;max-width:340px">'+
+        '<div style="border-top:1px solid #333;padding-top:6px;font-size:12px;text-align:center">Nombre y firma del solicitante</div>'+
+      '</div>'+
+      '<div style="margin-top:26px;font-size:11px;color:var(--muted);border-top:1px solid var(--line);padding-top:10px">Documento generado por PRM 360 · '+esc(d.fecha)+'</div>'+
+      '</div>';
+    g('sp_print').onclick=function(){ window.print(); };
+    g('sp_volver').onclick=function(){ viewSolicitudPdf(c); };
+  };
+}
+
+/* ===== Control de entregables (Vinculación) ===== */
+async function viewEntregables(c){
+  const {data,error}=await sb.from('entregables').select('id,cliente,folio,entregable,area,fecha_compromiso,entregado,fecha_entrega,medio').order('fecha_compromiso',{ascending:true,nullsFirst:false}).limit(300);
+  if(error) throw error;
+  const lista=data||[]; const hoy=new Date().toISOString().slice(0,10);
+  const pend=lista.filter(x=>!x.entregado).length;
+  const venc=lista.filter(x=>!x.entregado&&x.fecha_compromiso&&String(x.fecha_compromiso).slice(0,10)<hoy).length;
+  const entreg=lista.filter(x=>x.entregado).length;
+  const rows=lista.map(x=>{
+    const d=matDias(x.fecha_compromiso);
+    let extra='';
+    if(d!==null&&!x.entregado){ extra=d<0?'<div style="font-size:11px;color:#c0392b;font-weight:700">vencido hace '+(-d)+' d</div>':'<div style="font-size:11px;color:'+(d<=7?'#e67e22':'#2f9e6b')+'">en '+d+' d</div>'; }
+    const btn=x.entregado?'':'<button class="mini ent-done" data-id="'+x.id+'">Entregar</button>';
+    return '<tr><td><b>'+esc(x.cliente||'')+'</b></td><td>'+esc(x.folio||'')+'</td><td>'+esc(x.entregable||'')+'</td><td>'+esc(x.area||'')+'</td><td>'+esc(x.fecha_compromiso||'—')+extra+'</td><td>'+esc(x.medio||'')+'</td><td><span class="tag '+(x.entregado?'on':'off')+'">'+(x.entregado?'entregado':'pendiente')+'</span></td><td>'+btn+'</td></tr>';
+  }).join('');
+  c.innerHTML='<h1 class="pg">Control de entregables</h1><div class="pgsub">'+lista.length+' entregables (máx 300) · compromisos con clientes y su entrega</div>'+
+    '<div class="kpis">'+
+      tile(pend,'Pendientes',pend>0?'#e67e22':'var(--ok)')+
+      tile(venc,'Vencidos',venc>0?'#c0392b':'var(--ok)')+
+      tile(entreg,'Entregados','var(--ok)')+
+    '</div>'+
+    '<div class="card"><h3>Nuevo entregable</h3><div class="body"><div class="frm">'+
+      '<label>Cliente<input id="en_cli" style="min-width:200px"></label>'+
+      '<label>Folio<input id="en_folio"></label>'+
+      '<label>Entregable<input id="en_ent" style="min-width:240px"></label>'+
+      '<label>Área<select id="en_area"><option>Fiscal</option><option>Contable</option><option>Nómina</option><option>REPSE</option><option>Jurídico</option><option>Otro</option></select></label>'+
+      '<label>Fecha compromiso<input id="en_fc" type="date"></label>'+
+      '<label>Medio<select id="en_medio"><option value="correo">Correo</option><option value="portal">Portal</option><option value="fisico">Físico</option></select></label>'+
+    '</div><div style="margin-top:8px"><button class="btn2" id="en_save">Guardar</button> <span id="en_msg" style="font-size:12px;margin-left:8px"></span></div></div></div>'+
+    '<div class="card"><table><thead><tr><th>Cliente</th><th>Folio</th><th>Entregable</th><th>Área</th><th>Compromiso</th><th>Medio</th><th>Estatus</th><th></th></tr></thead><tbody>'+
+    (rows||'<tr><td colspan=8 class="empty">Sin entregables</td></tr>')+'</tbody></table></div>';
+  const g=id=>document.getElementById(id);
+  g('en_save').onclick=async()=>{
+    const msg=g('en_msg');
+    const cli=g('en_cli').value.trim(), ent=g('en_ent').value.trim();
+    if(!cli||!ent){ msg.textContent='Cliente y entregable son obligatorios.'; msg.style.color='var(--danger)'; return; }
+    g('en_save').disabled=true; msg.textContent='Guardando…'; msg.style.color='var(--muted)';
+    const {error:e}=await sb.from('entregables').insert({cliente:cli, folio:g('en_folio').value.trim()||null, entregable:ent, area:g('en_area').value, fecha_compromiso:g('en_fc').value||null, medio:g('en_medio').value, entregado:false});
+    if(e){ msg.textContent='Error: '+e.message; msg.style.color='var(--danger)'; g('en_save').disabled=false; return; }
+    viewEntregables(c);
+  };
+  c.querySelectorAll('button.ent-done').forEach(b=>b.onclick=async()=>{
+    b.disabled=true;
+    const {error:e}=await sb.from('entregables').update({entregado:true, fecha_entrega:new Date().toISOString().slice(0,10)}).eq('id',b.dataset.id);
+    if(e){ alert('Error: '+e.message); b.disabled=false; return; }
+    viewEntregables(c);
+  });
+}
+
+/* ===== Contraloría (Administración · solo lectura) ===== */
+async function viewContraloria(c){
+  const hoy=new Date().toISOString().slice(0,10);
+  const [tareas,renov,emps,comp,fact,mat,cxp,calf]=await Promise.all([
+    sb.from('tareas').select('estatus,prioridad,vence').then(r=>r.data||[]).catch(()=>[]),
+    sb.from('renovaciones').select('estatus').then(r=>r.data||[]).catch(()=>[]),
+    sb.from('empresas').select('estatus').then(r=>r.data||[]).catch(()=>[]),
+    sb.from('compliance_empresa').select('aplica,cumplido').eq('aplica',true).then(r=>r.data||[]).catch(()=>[]),
+    sb.from('facturacion_conceptos').select('estatus,total').then(r=>r.data||[]).catch(()=>[]),
+    sb.from('materialidad_expedientes').select('estatus,fecha_limite').then(r=>r.data||[]).catch(()=>[]),
+    sb.from('cuentas_por_pagar').select('estatus,fecha_vence').then(r=>r.data||[]).catch(()=>[]),
+    sb.from('calendario_fiscal').select('estatus,fecha').then(r=>r.data||[]).catch(()=>[])
+  ]);
+  const cerradas=['cerrada','cancelada','completada'];
+  const tPend=tareas.filter(x=>cerradas.indexOf(String(x.estatus||''))<0).length;
+  const rVenc=renov.filter(x=>String(x.estatus||'').toLowerCase().indexOf('venc')>=0).length;
+  const eAct=emps.filter(x=>x.estatus==='activa').length, eTot=emps.length;
+  const cTot=comp.length, cCum=comp.filter(x=>x.cumplido).length, cFal=cTot-cCum;
+  const pct=cTot>0?Math.round(cCum*100/cTot):100;
+  const fBorr=fact.filter(x=>x.estatus==='borrador').length;
+  const mAb=mat.filter(x=>x.estatus==='abierto').length;
+  const cxpV=cxp.filter(x=>x.fecha_vence&&String(x.fecha_vence).slice(0,10)<hoy&&x.estatus!=='pagado').length;
+  const oVenc=calf.filter(x=>x.fecha&&String(x.fecha).slice(0,10)<hoy&&x.estatus==='pendiente').length;
+  const ambar=n=> n>0?'#e67e22':'var(--ok)';
+  const exc=[];
+  if(tPend>0) exc.push('⚠ '+tPend+' tarea(s) pendientes abiertas — Operación diaria');
+  if(rVenc>0) exc.push('⚠ '+rVenc+' renovaciones vencidas — Jurídico');
+  if(cFal>0) exc.push('⚠ '+cFal+' obligaciones de compliance sin cumplir ('+pct+'% de cumplimiento) — Compliance');
+  if(fBorr>0) exc.push('⚠ '+fBorr+' conceptos de facturación en borrador sin validar — Operaciones');
+  if(mAb>0) exc.push('⚠ '+mAb+' expedientes de materialidad abiertos — Operaciones');
+  if(cxpV>0) exc.push('⚠ '+cxpV+' cuentas por pagar vencidas — Tesorería');
+  if(oVenc>0) exc.push('⚠ '+oVenc+' obligaciones fiscales vencidas — Fiscal');
+  const excHtml=exc.length
+    ? exc.map(t=>'<div style="padding:8px 4px;border-bottom:1px solid var(--line);font-size:13px">'+t+'</div>').join('')
+    : '<div class="empty">Sin excepciones — todo en orden</div>';
+  c.innerHTML='<h1 class="pg">Contraloría</h1><div class="pgsub">Estado consolidado del despacho · lectura directa de los módulos</div>'+
+    '<div class="kpis">'+
+      tile(tPend,'Pendientes abiertos',tPend>10?'#c0392b':ambar(tPend))+
+      tile(rVenc,'Renovaciones vencidas',sem(rVenc,'alert'))+
+      tile(eAct+'/'+eTot,'Empresas activas','var(--navy)')+
+      tile(pct+'%','Cumplimiento',sem(pct,'pct'))+
+      tile(fBorr,'Facturación sin validar',ambar(fBorr))+
+      tile(mAb,'Materialidad abiertos',ambar(mAb))+
+      tile(cxpV,'CxP vencidas',sem(cxpV,'alert'))+
+      tile(oVenc,'Obligaciones fiscales vencidas',sem(oVenc,'alert'))+
+    '</div>'+
+    '<div class="card"><h3>Excepciones que requieren atención</h3><div class="body">'+excHtml+'</div></div>';
 }
