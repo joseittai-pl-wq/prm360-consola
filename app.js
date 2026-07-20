@@ -151,13 +151,13 @@ function renderPendiente(){
 const MERGE_AREAS = [
   ['Dirección', [ ['Tablero General','tabgen','n'],['Rentabilidad','rentabilidad','n'],['Frentes · semáforos','frentes','n'] ]],
   ['Comercial', [ ['Tablero Comercial','tabcom','n'],['Cotizador de nómina','cotizador','p'],['Solicitud (PDF / editable)','__soon_solicitudpdf','p'],['Checklist de documentos','__soon_checklistcom','p'],['Presentaciones','__soon_presentaciones','p'],['Tablero de clientes','clientes','p'],['Boletín','boletin','p'] ]],
-  ['Vinculación', [ ['Tablero Vinculación','tabvinc','n'],['Clientes','clientescombo','p'],['Trabajadores · IMSS','trabajadorescombo','p'],['Onboarding / KYC','onboarding','n'],['Validación + KYC (CSF/32-D/69)','__soon_kyc','p'],['Checklist de documentos','__soon_checklistvinc','p'],['Control de entregables','__soon_entregables','p'] ]],
+  ['Vinculación', [ ['Tablero Vinculación','tabvinc','n'],['Clientes','clientescombo','p'],['Trabajadores · IMSS','trabajadorescombo','p'],['Onboarding / KYC','onboarding','n'],['Validación + KYC (CSF/32-D/69)','kyc','p'],['Checklist de documentos','__soon_checklistvinc','p'],['Control de entregables','__soon_entregables','p'] ]],
   ['Operaciones', [ ['Tablero Operaciones','tabop','n'],['Trámites','tramitescombo','p'],['Facturación','facturacion','p'],['Nómina NOMEN','__soon_nomen','p'],['Layout de dispersión','__soon_layout','p'],['Expediente de Materialidad','materialidad','p'],['Conciliación disp. ↔ CFDI','__soon_concilia','p'],['Descargas SAT / CFDI','descargas','n'],['Calendario de vencimientos','calendario','n'] ]],
-  ['Jurídico', [ ['Tablero Jurídico','tabjur','n'],['Corporativo','corporativocombo','p'],['Bitácora de firmas','__soon_bitacorafirmas','p'],['Vigencias / Renovaciones','renovaciones','p'],['Plantillas de contratos','__soon_plantillas','p'],['Juicios / defensa fiscal','juicios','p'],['Compliance jurídico','compliance','n'] ]],
-  ['Fiscal', [ ['Tablero Fiscal','tabfisc','n'],['Cumplimiento','cumplimientocombo','p'],['Calendario fiscal','__soon_calfiscal','p'],['Calendario REPSE (ICSOE/SISUB)','__soon_calrepse','p'],['Previsión social','previsioncombo','p'],['NOM-035','nom035','p'] ]],
+  ['Jurídico', [ ['Tablero Jurídico','tabjur','n'],['Corporativo','corporativocombo','p'],['Bitácora de firmas','bitacorafirmas','p'],['Vigencias / Renovaciones','renovaciones','p'],['Plantillas de contratos','__soon_plantillas','p'],['Juicios / defensa fiscal','juicios','p'],['Compliance jurídico','compliance','n'] ]],
+  ['Fiscal', [ ['Tablero Fiscal','tabfisc','n'],['Cumplimiento','cumplimientocombo','p'],['Calendario fiscal','calfiscal','p'],['Calendario REPSE (ICSOE/SISUB)','__soon_calrepse','p'],['Previsión social','previsioncombo','p'],['NOM-035','nom035','p'] ]],
   ['Contabilidad', [ ['Tablero Contable','tabcont','n'],['Contabilidad / Pólizas','contabilidad','n'],['Captura de servicios','captura','p'],['Descarga XML / CFDI','descargas','n'],['Bancos','bancoscombo','p'],['Motor de conciliación','__soon_motorconcilia','p'] ]],
-  ['Tesorería', [ ['Tablero Tesorería','tabtes','n'],['Cobranza','cobranza','n'],['Cuentas por pagar','__soon_cxp','p'],['Bancos y flujo','flujo','p'],['Cuentas','cuentas','p'],['Pagos','pagos','p'],['Calendario fiscal','__soon_calfiscal2','p'] ]],
-  ['Administración', [ ['Tablero Administración','tabadm','n'],['Empresas del grupo','empresascombo','p'],['Gastos y costeo','gastoscombo','p'],['Accesos y vinculación','accesos','n'],['Contraloría','__soon_contraloria','p'],['Organigrama y matrices','__soon_organigrama','p'],['Directorio','directorio','n'],['Personal interno','equipo','n'],['Reportes','__soon_reportes','p'] ]]
+  ['Tesorería', [ ['Tablero Tesorería','tabtes','n'],['Cobranza','cobranza','n'],['Cuentas por pagar','cxp','p'],['Bancos y flujo','flujo','p'],['Cuentas','cuentas','p'],['Pagos','pagos','p'],['Calendario fiscal','calfiscal','p'] ]],
+  ['Administración', [ ['Tablero Administración','tabadm','n'],['Empresas del grupo','empresascombo','p'],['Gastos y costeo','gastoscombo','p'],['Importador de reportes','importador','n'],['Accesos y vinculación','accesos','n'],['Contraloría','__soon_contraloria','p'],['Organigrama y matrices','__soon_organigrama','p'],['Directorio','directorio','n'],['Personal interno','equipo','n'],['Reportes','__soon_reportes','p'] ]]
 ];
 
 async function renderInterno(rol){
@@ -264,6 +264,11 @@ async function view(v, rol, label){
     if(v==='busqueda') return await viewBusqueda(c, window.__gterm||'');
     if(v==='facturacion')  return await viewFacturacion(c);
     if(v==='materialidad') return await viewMaterialidad(c);
+    if(v==='cxp')          return await viewCxP(c);
+    if(v==='bitacorafirmas') return await viewBitacoraFirmas(c);
+    if(v==='kyc')          return await viewKyc(c);
+    if(v==='calfiscal')    return await viewCalFiscal(c);
+    if(v==='importador')   return await viewImportador(c);
     if(v && v.indexOf('__soon_')===0) return viewSoon(c, label);
     if(v==='resumen')      return await viewResumen(c);
     if(v==='kpis')         return await viewKpis360(c);
@@ -2650,5 +2655,281 @@ async function matKit(body){
     const {error:e}=await sb.from('kit_mensual').insert({cliente:cliente, cliente_rfc:rfc||null, periodo:per, medio:g('kt_medio').value, entregado:entregado, fecha_entrega:entregado?matHoy():null, notas:notas||null});
     if(e){ msg.textContent='Error: '+e.message; msg.style.color='var(--danger)'; g('kt_save').disabled=false; return; }
     matKit(body);
+  };
+}
+
+/* ===== Cuentas por pagar (Tesorería) ===== */
+async function viewCxP(c){
+  const {data,error}=await sb.from('cuentas_por_pagar').select('id,proveedor,concepto,empresa,monto,fecha_factura,fecha_vence,estatus,fecha_pago').order('fecha_vence',{ascending:true,nullsFirst:false}).limit(200);
+  if(error) throw error;
+  const lista=data||[]; const hoy=new Date().toISOString().slice(0,10);
+  const totPend=lista.filter(x=>x.estatus!=='pagado').reduce((s,x)=>s+(Number(x.monto)||0),0);
+  const vencidas=lista.filter(x=>x.fecha_vence&&String(x.fecha_vence).slice(0,10)<hoy&&x.estatus!=='pagado').length;
+  const pagadas=lista.filter(x=>x.estatus==='pagado').length;
+  const tagEst=e=> e==='pagado'?'on':(e==='programado'?'repse':'off');
+  const rows=lista.map(x=>{
+    const d=matDias(x.fecha_vence);
+    let extra='';
+    if(d!==null&&x.estatus!=='pagado'){ extra=d<0?'<div style="font-size:11px;color:#c0392b;font-weight:700">vencido hace '+(-d)+' d</div>':'<div style="font-size:11px;color:'+(d<=7?'#e67e22':'#2f9e6b')+'">en '+d+' d</div>'; }
+    const btns=(x.estatus==='pendiente'?'<button class="mini cxp-prog" data-id="'+x.id+'">Programar</button> ':'')+
+      (x.estatus!=='pagado'?'<button class="mini cxp-pay" data-id="'+x.id+'">Pagar</button>':'');
+    return '<tr><td><b>'+esc(x.proveedor||'')+'</b></td><td>'+esc(x.concepto||'')+'</td><td>'+esc(x.empresa||'')+'</td><td class="num-r">'+mny(x.monto)+'</td><td>'+esc(x.fecha_vence||'—')+extra+'</td><td><span class="tag '+tagEst(x.estatus)+'">'+esc(x.estatus||'')+'</span></td><td>'+btns+'</td></tr>';
+  }).join('');
+  c.innerHTML='<h1 class="pg">Cuentas por pagar</h1><div class="pgsub">'+lista.length+' cuentas (máx 200) · programa y registra pagos a proveedores</div>'+
+    '<div class="kpis">'+
+      tile(mny(totPend),'Total pendiente','var(--navy)')+
+      tile(vencidas,'Vencidas',vencidas>0?'#c0392b':'var(--ok)')+
+      tile(pagadas,'Pagadas','var(--ok)')+
+    '</div>'+
+    '<div class="card"><h3>Nueva cuenta por pagar</h3><div class="body"><div class="frm">'+
+      '<label>Proveedor<input id="cxp_prov" style="min-width:200px"></label>'+
+      '<label>Concepto<input id="cxp_conc" style="min-width:220px"></label>'+
+      '<label>Empresa<input id="cxp_emp"></label>'+
+      '<label>Monto<input id="cxp_monto" type="number" step="0.01" min="0" style="width:120px"></label>'+
+      '<label>Fecha factura<input id="cxp_ff" type="date"></label>'+
+      '<label>Vence<input id="cxp_fv" type="date"></label>'+
+    '</div><div style="margin-top:8px"><button class="btn2" id="cxp_save">Guardar</button> <span id="cxp_msg" style="font-size:12px;margin-left:8px"></span></div></div></div>'+
+    '<div class="card"><table><thead><tr><th>Proveedor</th><th>Concepto</th><th>Empresa</th><th class="num-r">Monto</th><th>Vence</th><th>Estatus</th><th></th></tr></thead><tbody>'+
+    (rows||'<tr><td colspan=7 class="empty">Sin cuentas por pagar</td></tr>')+'</tbody></table></div>';
+  const g=id=>document.getElementById(id);
+  g('cxp_save').onclick=async()=>{
+    const msg=g('cxp_msg');
+    const prov=g('cxp_prov').value.trim(), conc=g('cxp_conc').value.trim(), monto=Number(g('cxp_monto').value);
+    if(!prov||!(monto>0)){ msg.textContent='Proveedor y monto mayor a cero son obligatorios.'; msg.style.color='var(--danger)'; return; }
+    g('cxp_save').disabled=true; msg.textContent='Guardando…'; msg.style.color='var(--muted)';
+    const {error:e}=await sb.from('cuentas_por_pagar').insert({proveedor:prov, concepto:conc||null, empresa:g('cxp_emp').value.trim()||null, monto:monto, fecha_factura:g('cxp_ff').value||null, fecha_vence:g('cxp_fv').value||null, estatus:'pendiente'});
+    if(e){ msg.textContent='Error: '+e.message; msg.style.color='var(--danger)'; g('cxp_save').disabled=false; return; }
+    viewCxP(c);
+  };
+  c.querySelectorAll('button.cxp-prog').forEach(b=>b.onclick=async()=>{
+    b.disabled=true;
+    const {error:e}=await sb.from('cuentas_por_pagar').update({estatus:'programado'}).eq('id',b.dataset.id);
+    if(e){ alert('Error: '+e.message); b.disabled=false; return; }
+    viewCxP(c);
+  });
+  c.querySelectorAll('button.cxp-pay').forEach(b=>b.onclick=async()=>{
+    b.disabled=true;
+    const {error:e}=await sb.from('cuentas_por_pagar').update({estatus:'pagado', fecha_pago:new Date().toISOString().slice(0,10)}).eq('id',b.dataset.id);
+    if(e){ alert('Error: '+e.message); b.disabled=false; return; }
+    viewCxP(c);
+  });
+}
+
+/* ===== Bitácora de firmas (Jurídico) ===== */
+async function viewBitacoraFirmas(c){
+  const {data,error}=await sb.from('bitacora_firmas').select('id,documento,tipo,empresa,cliente,firmante,cargo,fecha_firma,medio,folio,estatus').order('fecha_firma',{ascending:false}).limit(200);
+  if(error) throw error;
+  const lista=data||[];
+  const rows=lista.map(x=>{
+    const quien=esc(x.firmante||'')+(x.cargo?' <span style="color:var(--muted);font-size:11px">('+esc(x.cargo)+')</span>':'');
+    const empCli=[x.empresa,x.cliente].filter(Boolean).map(esc).join(' / ');
+    return '<tr><td>'+esc(x.fecha_firma||'')+'</td><td><b>'+esc(x.documento||'')+'</b></td><td>'+esc(x.tipo||'')+'</td><td>'+empCli+'</td><td>'+quien+'</td><td><span class="tag '+(x.medio==='mifiel'?'repse':'off')+'">'+esc(x.medio||'')+'</span></td><td>'+esc(x.folio||'')+'</td><td><span class="tag '+(x.estatus==='firmado'?'on':'off')+'">'+esc(x.estatus||'')+'</span></td></tr>';
+  }).join('');
+  c.innerHTML='<h1 class="pg">Bitácora de firmas</h1><div class="pgsub">'+lista.length+' firmas registradas (máx 200) · control de documentos firmados</div>'+
+    '<div class="card"><h3>Registrar firma</h3><div class="body"><div class="frm">'+
+      '<label>Documento<input id="bf_doc" style="min-width:220px"></label>'+
+      '<label>Tipo<input id="bf_tipo"></label>'+
+      '<label>Empresa<input id="bf_emp"></label>'+
+      '<label>Cliente<input id="bf_cli"></label>'+
+      '<label>Firmante<input id="bf_fir" style="min-width:180px"></label>'+
+      '<label>Cargo<input id="bf_cargo"></label>'+
+      '<label>Fecha firma<input id="bf_fecha" type="date"></label>'+
+      '<label>Medio<select id="bf_medio"><option value="autografa">Autógrafa</option><option value="mifiel">MiFiel</option><option value="otro">Otro</option></select></label>'+
+      '<label>Folio<input id="bf_folio"></label>'+
+    '</div><div style="margin-top:8px"><button class="btn2" id="bf_save">Guardar</button> <span id="bf_msg" style="font-size:12px;margin-left:8px"></span></div></div></div>'+
+    '<div class="card"><table><thead><tr><th>Fecha</th><th>Documento</th><th>Tipo</th><th>Empresa/Cliente</th><th>Firmante</th><th>Medio</th><th>Folio</th><th>Estatus</th></tr></thead><tbody>'+
+    (rows||'<tr><td colspan=8 class="empty">Sin firmas registradas</td></tr>')+'</tbody></table></div>';
+  const g=id=>document.getElementById(id);
+  g('bf_save').onclick=async()=>{
+    const msg=g('bf_msg');
+    const doc=g('bf_doc').value.trim(), fir=g('bf_fir').value.trim();
+    if(!doc||!fir){ msg.textContent='Documento y firmante son obligatorios.'; msg.style.color='var(--danger)'; return; }
+    g('bf_save').disabled=true; msg.textContent='Guardando…'; msg.style.color='var(--muted)';
+    const {error:e}=await sb.from('bitacora_firmas').insert({documento:doc, tipo:g('bf_tipo').value.trim()||null, empresa:g('bf_emp').value.trim()||null, cliente:g('bf_cli').value.trim()||null, firmante:fir, cargo:g('bf_cargo').value.trim()||null, fecha_firma:g('bf_fecha').value||new Date().toISOString().slice(0,10), medio:g('bf_medio').value, folio:g('bf_folio').value.trim()||null, estatus:'firmado'});
+    if(e){ msg.textContent='Error: '+e.message; msg.style.color='var(--danger)'; g('bf_save').disabled=false; return; }
+    viewBitacoraFirmas(c);
+  };
+}
+
+/* ===== Validación + KYC (Vinculación) ===== */
+async function viewKyc(c){
+  const {data,error}=await sb.from('kyc_validaciones').select('id,cliente,cliente_rfc,csf,opinion_32d,lista_69b,lista_69,beneficiario_controlador,fecha_validacion,vigencia,resultado').order('creado_en',{ascending:false}).limit(200);
+  if(error) throw error;
+  const lista=data||[];
+  const rojo='<span class="tag" style="background:#c0392b;color:#fff">';
+  const t32=v=> v==='positiva'?'<span class="tag on">positiva</span>':(v==='negativa'?rojo+'negativa</span>':'<span class="tag repse">'+esc(v||'pendiente')+'</span>');
+  const t69b=v=> v==='limpio'?'<span class="tag on">limpio</span>':(v==='definitivo'?rojo+'definitivo</span>':(v==='presunto'?'<span class="tag off">presunto</span>':'<span class="tag repse">'+esc(v||'pendiente')+'</span>'));
+  const t69=v=> v==='limpio'?'<span class="tag on">limpio</span>':(v==='listado'?rojo+'listado</span>':'<span class="tag repse">'+esc(v||'pendiente')+'</span>');
+  const tRes=v=> v==='aprobado'?'on':(v==='rechazado'?'off':'repse');
+  const rows=lista.map(x=>
+    '<tr><td><b>'+esc(x.cliente||'')+'</b></td><td>'+esc(x.cliente_rfc||'')+'</td><td>'+(x.csf?'Sí':'No')+'</td><td>'+t32(x.opinion_32d)+'</td><td>'+t69b(x.lista_69b)+'</td><td>'+t69(x.lista_69)+'</td><td>'+(x.beneficiario_controlador?'Sí':'No')+'</td><td>'+esc(x.vigencia||'')+'</td><td><span class="tag '+tRes(x.resultado)+'">'+esc(x.resultado||'pendiente')+'</span></td></tr>'
+  ).join('');
+  c.innerHTML='<h1 class="pg">Validación + KYC</h1><div class="pgsub">Regla de oro: no se timbra sin expediente verificado.</div>'+
+    '<div class="card"><h3>Nueva validación</h3><div class="body"><div class="frm">'+
+      '<label>Cliente<input id="ky_cli" style="min-width:220px"></label>'+
+      '<label>RFC<input id="ky_rfc" maxlength="13"></label>'+
+      '<label>CSF verificada<input id="ky_csf" type="checkbox" style="width:18px;height:18px"></label>'+
+      '<label>Opinión 32-D<select id="ky_32d"><option value="pendiente">pendiente</option><option value="positiva">positiva</option><option value="negativa">negativa</option></select></label>'+
+      '<label>Lista 69-B<select id="ky_69b"><option value="pendiente">pendiente</option><option value="limpio">limpio</option><option value="presunto">presunto</option><option value="definitivo">definitivo</option></select></label>'+
+      '<label>Lista 69<select id="ky_69"><option value="pendiente">pendiente</option><option value="limpio">limpio</option><option value="listado">listado</option></select></label>'+
+      '<label>Beneficiario controlador (32-B)<input id="ky_ben" type="checkbox" style="width:18px;height:18px"></label>'+
+      '<label>Vigencia<input id="ky_vig" type="date"></label>'+
+    '</div><div style="margin-top:8px"><button class="btn2" id="ky_save">Guardar</button> <span id="ky_msg" style="font-size:12px;margin-left:8px"></span></div></div></div>'+
+    '<div class="card"><h3>Validaciones ('+lista.length+')</h3><table><thead><tr><th>Cliente</th><th>RFC</th><th>CSF</th><th>32-D</th><th>69-B</th><th>69</th><th>Benef.</th><th>Vigencia</th><th>Resultado</th></tr></thead><tbody>'+
+    (rows||'<tr><td colspan=9 class="empty">Sin validaciones</td></tr>')+'</tbody></table></div>';
+  const g=id=>document.getElementById(id);
+  g('ky_save').onclick=async()=>{
+    const msg=g('ky_msg');
+    const cli=g('ky_cli').value.trim(), rfc=g('ky_rfc').value.trim();
+    if(!cli){ msg.textContent='El cliente es obligatorio.'; msg.style.color='var(--danger)'; return; }
+    const csf=g('ky_csf').checked, o32=g('ky_32d').value, l69b=g('ky_69b').value, l69=g('ky_69').value;
+    let resultado='pendiente';
+    if(o32==='negativa'||l69b==='definitivo') resultado='rechazado';
+    else if(csf&&o32==='positiva'&&l69b==='limpio'&&l69==='limpio') resultado='aprobado';
+    g('ky_save').disabled=true; msg.textContent='Guardando…'; msg.style.color='var(--muted)';
+    const {error:e}=await sb.from('kyc_validaciones').insert({cliente:cli, cliente_rfc:rfc||null, csf:csf, opinion_32d:o32, lista_69b:l69b, lista_69:l69, beneficiario_controlador:g('ky_ben').checked, fecha_validacion:new Date().toISOString().slice(0,10), vigencia:g('ky_vig').value||null, resultado:resultado});
+    if(e){ msg.textContent='Error: '+e.message; msg.style.color='var(--danger)'; g('ky_save').disabled=false; return; }
+    viewKyc(c);
+  };
+}
+
+/* ===== Calendario fiscal ===== */
+async function viewCalFiscal(c){
+  const {data,error}=await sb.from('calendario_fiscal').select('id,fecha,obligacion,aplica_a,tipo,estatus').order('fecha',{ascending:true}).limit(300);
+  if(error) throw error;
+  const lista=data||[]; const hoy=new Date().toISOString().slice(0,10);
+  const prox7=lista.filter(x=>{const d=matDias(x.fecha); return x.estatus==='pendiente'&&d!==null&&d>=0&&d<=7;}).length;
+  const vencSin=lista.filter(x=>x.fecha&&String(x.fecha).slice(0,10)<hoy&&x.estatus==='pendiente').length;
+  const present=lista.filter(x=>x.estatus==='presentado').length;
+  const tagEst=e=> e==='presentado'?'on':(e==='vencido'?'off':'repse');
+  const rows=lista.map(x=>{
+    const d=matDias(x.fecha);
+    let dias='—';
+    if(d!==null){ dias=d<0?'<span style="color:#c0392b;font-weight:700">vencido hace '+(-d)+' d</span>':'<span style="color:'+(d<=7?'#e67e22':'#2f9e6b')+'">en '+d+' d</span>'; }
+    const btn=x.estatus!=='presentado'?'<button class="mini cf-pres" data-id="'+x.id+'">Presentado</button>':'';
+    return '<tr><td>'+esc(x.fecha||'')+'</td><td><b>'+esc(x.obligacion||'')+'</b></td><td>'+esc(x.aplica_a||'')+'</td><td>'+dias+'</td><td><span class="tag '+tagEst(x.estatus)+'">'+esc(x.estatus||'')+'</span></td><td>'+btn+'</td></tr>';
+  }).join('');
+  c.innerHTML='<h1 class="pg">Calendario fiscal</h1><div class="pgsub">'+lista.length+' obligaciones (máx 300) · declaraciones y pagos por vencer</div>'+
+    '<div class="kpis">'+
+      tile(prox7,'Próximos 7 días',prox7>0?'#e67e22':'var(--ok)')+
+      tile(vencSin,'Vencidas sin presentar',vencSin>0?'#c0392b':'var(--ok)')+
+      tile(present,'Presentadas','var(--ok)')+
+    '</div>'+
+    '<div class="card"><h3>Nueva obligación</h3><div class="body"><div class="frm">'+
+      '<label>Fecha<input id="cf_fecha" type="date"></label>'+
+      '<label>Obligación<input id="cf_obl" style="min-width:260px"></label>'+
+      '<label>Aplica a<input id="cf_apl" style="min-width:180px"></label>'+
+    '</div><div style="margin-top:8px"><button class="btn2" id="cf_save">Guardar</button> <span id="cf_msg" style="font-size:12px;margin-left:8px"></span></div></div></div>'+
+    '<div class="card"><table><thead><tr><th>Fecha</th><th>Obligación</th><th>Aplica a</th><th>Días</th><th>Estatus</th><th></th></tr></thead><tbody>'+
+    (rows||'<tr><td colspan=6 class="empty">Sin obligaciones registradas</td></tr>')+'</tbody></table></div>';
+  const g=id=>document.getElementById(id);
+  g('cf_save').onclick=async()=>{
+    const msg=g('cf_msg');
+    const fecha=g('cf_fecha').value, obl=g('cf_obl').value.trim();
+    if(!fecha||!obl){ msg.textContent='Fecha y obligación son obligatorias.'; msg.style.color='var(--danger)'; return; }
+    g('cf_save').disabled=true; msg.textContent='Guardando…'; msg.style.color='var(--muted)';
+    const {error:e}=await sb.from('calendario_fiscal').insert({fecha:fecha, obligacion:obl, aplica_a:g('cf_apl').value.trim()||null, estatus:'pendiente'});
+    if(e){ msg.textContent='Error: '+e.message; msg.style.color='var(--danger)'; g('cf_save').disabled=false; return; }
+    viewCalFiscal(c);
+  };
+  c.querySelectorAll('button.cf-pres').forEach(b=>b.onclick=async()=>{
+    b.disabled=true;
+    const {error:e}=await sb.from('calendario_fiscal').update({estatus:'presentado'}).eq('id',b.dataset.id);
+    if(e){ alert('Error: '+e.message); b.disabled=false; return; }
+    viewCalFiscal(c);
+  });
+}
+
+/* ===== Importador de reportes (Administración) ===== */
+async function viewImportador(c){
+  const IMP_DEFS={
+    cobranza:{label:'Cartera de facturas → Cobranza', table:'cobranza', cols:['cliente','detalle','monto','dias_vencido','estatus']},
+    incidencias:{label:'Incidencias → Trabajadores', table:'trabajador_incidencias', cols:['trabajador_nss','tipo','ramo','fecha_inicio','fecha_fin','dias','folio']},
+    gastos:{label:'Gastos → Gastos y costeo', table:'gastos', cols:['fecha','concepto','monto','tipo','proveedor','empresa_rfc','folio']}
+  };
+  c.innerHTML='<h1 class="pg">Importador de reportes</h1><div class="pgsub">Carga masiva desde Excel o CSV hacia los módulos de PRM 360</div>'+
+    '<div class="card"><h3>Importar archivo</h3><div class="body">'+
+    '<div style="font-size:12.5px;color:var(--muted);margin-bottom:8px">Sube un Excel/CSV y elige a qué módulo cargar. Descarga la plantilla para ver las columnas mínimas.</div>'+
+    '<div class="frm">'+
+      '<label>Destino<select id="imp_tipo">'+Object.keys(IMP_DEFS).map(k=>'<option value="'+k+'">'+IMP_DEFS[k].label+'</option>').join('')+'</select></label>'+
+    '</div>'+
+    '<div style="margin-top:8px"><button class="btn2 ghost" id="imp_tpl">⬇ Plantilla</button> <button class="btn2" id="imp_pick">📄 Elegir archivo</button>'+
+    '<input type="file" id="imp_file" accept=".xlsx,.xls,.csv" style="display:none">'+
+    ' <span id="imp_msg" style="font-size:12px;margin-left:8px"></span></div>'+
+    '</div></div>'+
+    '<div id="imp_prev"></div>';
+  const g=id=>document.getElementById(id);
+  let parsed=[]; let parsedTipo='';
+  g('imp_tpl').onclick=()=>{
+    const tipo=g('imp_tipo').value, def=IMP_DEFS[tipo];
+    const NL=String.fromCharCode(10);
+    const blob=new Blob([def.cols.join(',')+NL],{type:'text/csv;charset=utf-8'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob); a.download='plantilla_'+tipo+'.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(a.href);
+  };
+  g('imp_pick').onclick=()=>g('imp_file').click();
+  g('imp_file').onchange=async(ev)=>{
+    const f=ev.target.files[0]; if(!f) return;
+    const msg=g('imp_msg'); msg.textContent='Leyendo archivo…'; msg.style.color='var(--muted)';
+    try{
+      const buf=await f.arrayBuffer();
+      const wb=XLSX.read(buf,{type:'array',cellDates:true});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const raw=XLSX.utils.sheet_to_json(ws,{defval:''});
+      const tipo=g('imp_tipo').value, def=IMP_DEFS[tipo];
+      const norm=v=>{ if(v instanceof Date) return v.toISOString().slice(0,10); if(typeof v==='string') return v.trim(); return v; };
+      parsed=raw.map(r=>{
+        const low={}; Object.keys(r).forEach(k=>{ low[String(k).trim().toLowerCase()]=norm(r[k]); });
+        const o={}; def.cols.forEach(cn=>{ const v=low[cn]; o[cn]=(v===undefined?'':v); });
+        return o;
+      }).filter(o=>def.cols.some(cn=>o[cn]!==''&&o[cn]!==null&&o[cn]!==undefined));
+      parsedTipo=tipo;
+      ev.target.value='';
+      if(!parsed.length){ msg.textContent='No se encontraron filas con datos. Revisa que los encabezados coincidan con la plantilla.'; msg.style.color='var(--danger)'; g('imp_prev').innerHTML=''; return; }
+      msg.textContent='';
+      const head=def.cols.map(cn=>'<th>'+esc(cn)+'</th>').join('');
+      const prevRows=parsed.slice(0,10).map(o=>'<tr>'+def.cols.map(cn=>'<td>'+esc(o[cn])+'</td>').join('')+'</tr>').join('');
+      g('imp_prev').innerHTML='<div class="card"><h3>Vista previa · '+parsed.length+' registro(s) — '+esc(def.label)+'</h3>'+
+        '<table><thead><tr>'+head+'</tr></thead><tbody>'+prevRows+'</tbody></table>'+
+        (parsed.length>10?'<div style="font-size:12px;color:var(--muted);margin-top:6px">Mostrando 10 de '+parsed.length+'</div>':'')+
+        '<div style="margin-top:10px"><button class="btn2" id="imp_load">Cargar '+parsed.length+' registros</button> <span id="imp_load_msg" style="font-size:12px;margin-left:8px"></span></div></div>';
+      g('imp_load').onclick=async()=>{
+        const lm=g('imp_load_msg'); const btn=g('imp_load');
+        btn.disabled=true; lm.textContent='Preparando carga…'; lm.style.color='var(--muted)';
+        try{
+          let nssMap={};
+          if(parsedTipo==='incidencias'){
+            lm.textContent='Resolviendo trabajadores por NSS…';
+            const {data:tr,error:te}=await sb.from('trabajadores').select('id,nss');
+            if(te) throw te;
+            (tr||[]).forEach(t=>{ if(t.nss) nssMap[String(t.nss).trim()]=t.id; });
+          }
+          const payloads=parsed.map(o=>{
+            if(parsedTipo==='cobranza') return {cliente:String(o.cliente||'').trim()||null, detalle:String(o.detalle||'').trim()||null, monto:Number(o.monto)||0, dias_vencido:parseInt(o.dias_vencido,10)||0, estatus:String(o.estatus||'').trim()||'pendiente'};
+            if(parsedTipo==='incidencias'){ const nss=String(o.trabajador_nss||'').trim(); return {trabajador_id:(nss&&nssMap[nss])?nssMap[nss]:null, tipo:String(o.tipo||'').trim()||null, ramo:String(o.ramo||'').trim()||null, fecha_inicio:o.fecha_inicio||null, fecha_fin:o.fecha_fin||null, dias:parseInt(o.dias,10)||0, folio:String(o.folio||'').trim()||null}; }
+            return {fecha:o.fecha||null, concepto:String(o.concepto||'').trim()||null, monto:Number(o.monto)||0, tipo:String(o.tipo||'').trim()||null, empresa_rfc:String(o.empresa_rfc||'').trim()||null, folio:String(o.folio||'').trim()||null, proveedor:String(o.proveedor||'').trim()||null};
+          });
+          const tabla=IMP_DEFS[parsedTipo].table;
+          let ok=0, mal=0; const errores=[];
+          for(let i=0;i<payloads.length;i+=100){
+            const batch=payloads.slice(i,i+100);
+            lm.textContent='Cargando '+Math.min(i+batch.length,payloads.length)+' de '+payloads.length+'…';
+            const {error:be}=await sb.from(tabla).insert(batch);
+            if(be){ mal+=batch.length; errores.push(be.message); } else ok+=batch.length;
+          }
+          lm.textContent='✔ '+ok+' cargados, '+mal+' con error'+(errores.length?(' · '+errores[0]):'');
+          lm.style.color=mal>0?'var(--danger)':'var(--ok)';
+          if(mal===0) btn.textContent='Carga completada';
+          else btn.disabled=false;
+        }catch(err){
+          lm.textContent='Error al cargar: '+(err.message||err); lm.style.color='var(--danger)'; btn.disabled=false;
+        }
+      };
+    }catch(err){
+      msg.textContent='No se pudo leer el archivo: '+(err.message||err)+'. Verifica que sea un Excel o CSV válido.'; msg.style.color='var(--danger)';
+      g('imp_prev').innerHTML='';
+    }
   };
 }
