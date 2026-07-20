@@ -150,10 +150,10 @@ function renderPendiente(){
 
 const MERGE_AREAS = [
   ['Dirección', [ ['Tablero General','tabgen','n'],['Rentabilidad','rentabilidad','n'],['Frentes · semáforos','frentes','n'] ]],
-  ['Comercial', [ ['Tablero Comercial','tabcom','n'],['Cotizador de nómina','cotizador','p'],['Pipeline de prospectos','pipelinecom','p'],['Solicitud (PDF / editable)','solicitudpdf','p'],['Checklist de documentos','checklistdocs','p'],['Presentaciones comerciales','bibliopresenta','p'],['Tablero de clientes','clientes','p'],['Boletín','boletin','p'] ]],
-  ['Vinculación', [ ['Tablero Vinculación','tabvinc','n'],['Clientes','clientescombo','p'],['Trabajadores · IMSS','trabajadorescombo','p'],['Adhesión digital (firma)','adhesiondig','p'],['Onboarding / KYC','onboarding','n'],['Validación + KYC (CSF/32-D/69)','kyc','p'],['Checklist de documentos','checklistdocs','p'],['Control de entregables','entregables','p'] ]],
-  ['Operaciones', [ ['Tablero Operaciones','tabop','n'],['Trámites','tramitescombo','p'],['Facturación','facturacion','p'],['Tablero NOMEN','tablonomen','p'],['Layout de dispersión','layoutdisp','p'],['Expediente de Materialidad','materialidad','p'],['Conciliación disp. ↔ CFDI','__soon_concilia','p'],['Descargas SAT / CFDI','descargas','n'],['Calendario de vencimientos','calendario','n'] ]],
-  ['Jurídico', [ ['Tablero Jurídico','tabjur','n'],['Corporativo','corporativocombo','p'],['Bitácora de firmas','bitacorafirmas','p'],['Vigencias / Renovaciones','renovaciones','p'],['Gobierno y Padrones','padrones','n'],['Licitaciones y contratos','licitaciones','n'],['Plantillas de contratos','biblioplantillas','p'],['Juicios / defensa fiscal','juicios','p'],['Documentales (púb. y priv.)','documentales','n'],['Compliance jurídico','compliance','n'] ]],
+  ['Comercial', [ ['Tablero Comercial','tabcom','n'],['Cotizador de nómina','cotizador','p'],['Pipeline de prospectos','pipelinecom','p'],['Solicitud (PDF / editable)','solicitudpdf','p'],['Solicitud de Cotización (web)','solicitudweb','p'],['Checklist de documentos','checklistdocs','p'],['Presentaciones comerciales','bibliopresenta','p'],['Tablero de clientes','clientes','p'],['Boletín','boletin','p'] ]],
+  ['Vinculación', [ ['Tablero Vinculación','tabvinc','n'],['Clientes','clientescombo','p'],['Trabajadores · IMSS','trabajadorescombo','p'],['Adhesión digital (firma)','adhesiondig','p'],['Movimientos afiliatorios','movafil','p'],['Onboarding / KYC','onboarding','n'],['Validación + KYC (CSF/32-D/69)','kyc','p'],['Checklist de documentos','checklistdocs','p'],['Control de entregables','entregables','p'] ]],
+  ['Operaciones', [ ['Tablero Operaciones','tabop','n'],['Trámites','tramitescombo','p'],['Facturación','facturacion','p'],['Control de timbrado FAC-01','factimbrado','p'],['Tablero NOMEN','tablonomen','p'],['Layout de dispersión','layoutdisp','p'],['Expediente de Materialidad','materialidad','p'],['Conciliación disp. ↔ CFDI','__soon_concilia','p'],['Descargas SAT / CFDI','descargas','n'],['Calendario de vencimientos','calendario','n'] ]],
+  ['Jurídico', [ ['Tablero Jurídico','tabjur','n'],['Corporativo','corporativocombo','p'],['Bitácora de firmas','bitacorafirmas','p'],['Vigencias / Renovaciones','renovaciones','p'],['Gobierno y Padrones','padrones','n'],['Padrones de proveedores 2026','padronprov','p'],['Licitaciones y contratos','licitaciones','n'],['Plantillas de contratos','biblioplantillas','p'],['Juicios / defensa fiscal','juicios','p'],['Documentales (púb. y priv.)','documentales','n'],['Compliance jurídico','compliance','n'] ]],
   ['Fiscal', [ ['Tablero Fiscal','tabfisc','n'],['Cumplimiento','cumplimientocombo','p'],['Calendario fiscal','calfiscal','p'],['Calendario REPSE (ICSOE/SISUB)','calrepse','p'],['Previsión social','previsioncombo','p'],['NOM-035','nom035','p'],['Cuestionario NOM-035','nom035cuest','n'],['e.firmas (control)','efirmasv','n'] ]],
   ['Contabilidad', [ ['Tablero Contable','tabcont','n'],['Contabilidad / Pólizas','contabilidad','n'],['Captura de servicios','captura','p'],['Descarga XML / CFDI','descargas','n'],['Bancos','bancoscombo','p'],['Motor de conciliación','conciliador','p'] ]],
   ['Tesorería', [ ['Tablero Tesorería','tabtes','n'],['Cobranza','cobranza','n'],['Cuentas por pagar','cxp','p'],['Bancos y flujo','flujo','p'],['Cuentas','cuentas','p'],['Pagos','pagos','p'],['Calendario fiscal','calfiscal','p'] ]],
@@ -221,6 +221,10 @@ async function view(v, rol, label){
   const c=$('#content'); c.innerHTML='<div class="loader">Cargando…</div>';
   try{
     if(v==='cotizador')    return await viewCotizador(c);
+    if(v==='padronprov')   return await viewPadronProv(c);
+    if(v==='movafil')      return await viewMovAfil(c);
+    if(v==='factimbrado')  return await viewFacTimbrado(c);
+    if(v==='solicitudweb') return await viewSolicitudWeb(c);
     if(v==='layoutdisp')   return await viewLayoutDisp(c);
     if(v==='pipelinecom')  return await viewPipelineCom(c);
     if(v==='tablonomen')   return await viewTabNomen(c);
@@ -4762,6 +4766,236 @@ async function viewLayoutDisp(c){
     } else {
       msg.style.color='var(--danger)'; msg.textContent='Corrija los errores para poder descargar.';
     }
+  };
+}
+
+
+/* ===== v17 · Padrones de proveedores de gobierno 2026 ===== */
+async function viewPadronProv(c){
+  comboTabs(c,'Padrones de proveedores de gobierno 2026',[
+    {label:'Pendientes por empresa',fn:ppPendientes},
+    {label:'Matriz comparativa',fn:ppMatriz},
+    {label:'Requisitos por entidad',fn:ppRequisitos}
+  ]);
+}
+async function ppPendientes(body, fprio, femp){
+  fprio=fprio||''; femp=femp||'';
+  body.innerHTML='<div class="loader">Cargando…</div>';
+  let q=sb.from('padron_prov_pendientes').select('*').order('prioridad').order('empresa').limit(400);
+  if(fprio) q=q.eq('prioridad',fprio);
+  const {data,error}=await q;
+  if(error){ body.innerHTML='<div class="empty">Error: '+esc(error.message)+'</div>'; return; }
+  let lista=data||[];
+  const ordP={'CRÍTICA':0,'ALTA':1,'MEDIA':2};
+  lista.sort(function(a,b){ return (ordP[a.prioridad]||9)-(ordP[b.prioridad]||9); });
+  if(femp) lista=lista.filter(function(x){ return String(x.empresa||'').toLowerCase().indexOf(femp.toLowerCase())>=0; });
+  const nC=lista.filter(function(x){ return x.prioridad==='CRÍTICA'&&x.estatus!=='Resuelto'; }).length;
+  const nA=lista.filter(function(x){ return x.prioridad==='ALTA'&&x.estatus!=='Resuelto'; }).length;
+  const nM=lista.filter(function(x){ return x.prioridad==='MEDIA'&&x.estatus!=='Resuelto'; }).length;
+  const nR=lista.filter(function(x){ return x.estatus==='Resuelto'; }).length;
+  const colP=function(p){ return p==='CRÍTICA'?'var(--danger)':(p==='ALTA'?'#e67e22':'var(--muted)'); };
+  const rows=lista.map(function(x){
+    const done=x.estatus==='Resuelto';
+    return '<tr'+(done?' style="opacity:.55"':'')+'><td style="min-width:170px"><b>'+esc(x.empresa||'')+'</b></td>'+
+      '<td><span class="tag" style="background:'+colP(x.prioridad)+';color:#fff">'+esc(x.prioridad||'')+'</span></td>'+
+      '<td>'+esc(x.categoria||'')+'</td><td>'+esc(x.pendiente||'')+'<br><span style="font-size:11px;color:var(--muted)">'+esc(x.comentario||'')+'</span></td>'+
+      '<td><button class="mini pp-res" data-id="'+x.id+'" data-v="'+(done?'Pendiente':'Resuelto')+'"'+(done?'':' style="background:var(--ok)"')+'>'+(done?'↩ Reabrir':'✓ Resuelto')+'</button></td></tr>';
+  }).join('');
+  body.innerHTML='<div class="pgsub">Plan de empadronamiento 2026 — sus 236 pendientes reales cargados desde su Excel oficial.</div>'+
+    '<div class="kpis">'+tile(nC,'Críticos',nC?'var(--danger)':'var(--ok)')+tile(nA,'Altos',nA?'#e67e22':'var(--ok)')+tile(nM,'Medios','var(--muted)')+tile(nR,'Resueltos','var(--ok)')+'</div>'+
+    '<div class="card"><div class="body"><div class="frm">'+
+    '<label>Prioridad<select id="pp_prio"><option value="">Todas</option>'+['CRÍTICA','ALTA','MEDIA'].map(function(p){ return '<option'+(fprio===p?' selected':'')+'>'+p+'</option>'; }).join('')+'</select></label>'+
+    '<label>Empresa<input id="pp_emp" value="'+esc(femp)+'" placeholder="Filtrar por empresa…" style="min-width:220px"></label>'+
+    '</div></div></div>'+
+    '<div class="card"><table style="font-size:12.5px"><thead><tr><th>Empresa</th><th>Prioridad</th><th>Categoría</th><th>Pendiente</th><th></th></tr></thead><tbody>'+
+    (rows||'<tr><td colspan=5 class="empty">Sin pendientes con ese filtro</td></tr>')+'</tbody></table></div>';
+  document.getElementById('pp_prio').onchange=function(){ ppPendientes(body,this.value,document.getElementById('pp_emp').value); };
+  document.getElementById('pp_emp').onkeydown=function(e){ if(e.key==='Enter') ppPendientes(body,document.getElementById('pp_prio').value,this.value); };
+  body.querySelectorAll('button.pp-res').forEach(function(b){
+    b.onclick=async function(){
+      b.disabled=true;
+      const {error:e}=await sb.from('padron_prov_pendientes').update({estatus:b.dataset.v}).eq('id',b.dataset.id);
+      if(e){ alert('Error: '+e.message); b.disabled=false; return; }
+      ppPendientes(body,fprio,femp);
+    };
+  });
+}
+async function ppMatriz(body){
+  body.innerHTML='<div class="loader">Cargando…</div>';
+  const {data,error}=await sb.from('padron_prov_matriz').select('*').order('id');
+  if(error){ body.innerHTML='<div class="empty">Error: '+esc(error.message)+'</div>'; return; }
+  const rows=(data||[]).map(function(x){
+    return '<tr><td><span class="tag repse">'+esc(x.ambito||'')+'</span></td><td><b>'+esc(x.padron||'')+'</b><br><span style="font-size:11px;color:var(--muted)">'+esc(x.organismo||'')+'</span></td>'+
+      '<td style="font-size:11.5px">'+esc(x.portal||'')+'</td><td>'+esc(x.en_linea||'')+'</td><td>'+esc(x.costo||'')+'</td><td>'+esc(x.vigencia||'')+'</td><td>'+esc(x.plazo||'')+'</td></tr>';
+  }).join('');
+  body.innerHTML='<div class="pgsub">Los 21 padrones públicos priorizados para PR&amp;M — ámbito federal, OPD y 8 entidades.</div>'+
+    '<div class="card"><div style="overflow-x:auto"><table style="font-size:12px"><thead><tr><th>Ámbito</th><th>Padrón</th><th>Portal</th><th>En línea</th><th>Costo</th><th>Vigencia</th><th>Plazo</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
+}
+async function ppRequisitos(body){
+  body.innerHTML='<div class="loader">Cargando…</div>';
+  let data=null;
+  try{
+    const r=await fetch('padrones_requisitos.json');
+    data=await r.json();
+  }catch(e){ body.innerHTML='<div class="empty">No se encontró padrones_requisitos.json — suba el archivo al repositorio junto con index.html y app.js.</div>'; return; }
+  const ents=Object.keys(data);
+  body.innerHTML='<div class="pgsub">Requisitos detallados por entidad (investigación oficial 2026 — fundamentos, portales, costos y foráneas).</div>'+
+    '<div class="card"><div class="body"><div class="frm"><label>Entidad<select id="pq_ent">'+ents.map(function(e){ return '<option>'+esc(e)+'</option>'; }).join('')+'</select></label></div></div></div>'+
+    '<div id="pq_out"></div>';
+  function draw(ent){
+    const rows=(data[ent]||[]).map(function(kv){
+      return '<tr><th style="min-width:180px;vertical-align:top">'+esc(kv[0])+'</th><td style="font-size:12.5px">'+esc(kv[1])+'</td></tr>';
+    }).join('');
+    document.getElementById('pq_out').innerHTML='<div class="card"><h3>'+esc(ent)+'</h3><table>'+rows+'</table></div>';
+  }
+  draw(ents[0]);
+  document.getElementById('pq_ent').onchange=function(){ draw(this.value); };
+}
+
+/* ===== v17 · Movimientos afiliatorios NOM-007 (formato de carga masiva NOMEN) ===== */
+async function viewMovAfil(c){
+  const NL=String.fromCharCode(10);
+  const MOVS=['ALTA','BAJA','MODIFICACION SALARIO','REINGRESO'];
+  const {data}=await sb.from('mov_afiliatorios').select('*').order('creado_en',{ascending:false}).limit(200);
+  const lista=data||[];
+  const rows=lista.map(function(x){
+    return '<tr><td>'+esc(x.empresa||'')+'</td><td>'+esc(x.nss||'')+'</td><td>'+esc((x.paterno||'')+' '+(x.materno||'')+' '+(x.nombre||''))+'</td>'+
+      '<td><span class="tag repse">'+esc(x.movimiento||'')+'</span></td><td>'+esc(x.fecha||'')+'</td><td class="num-r">'+mny(x.sdi)+'</td>'+
+      '<td><span class="tag '+(x.estatus==='Presentado'?'on':'off')+'">'+esc(x.estatus||'')+'</span></td></tr>';
+  }).join('');
+  c.innerHTML='<h1 class="pg">Movimientos afiliatorios · NOM-007</h1>'+
+    '<div class="pgsub">Se captura una vez y se exporta en el formato EXACTO de carga masiva del NOMEN (columnas alineadas a su PRM-NOM-007).</div>'+
+    '<div class="card"><h3>Capturar movimiento</h3><div class="body"><div class="frm">'+
+      '<label>Empresa<input id="ma_emp" style="min-width:200px"></label>'+
+      '<label>Reg. patronal<input id="ma_rp" style="width:130px"></label>'+
+      '<label>NSS<input id="ma_nss" maxlength="11" style="width:120px"></label>'+
+      '<label>Paterno<input id="ma_pat"></label>'+
+      '<label>Materno<input id="ma_mat"></label>'+
+      '<label>Nombre(s)<input id="ma_nom"></label>'+
+      '<label>RFC<input id="ma_rfc" style="width:140px"></label>'+
+      '<label>CURP<input id="ma_curp" style="width:170px"></label>'+
+      '<label>Movimiento<select id="ma_mov">'+MOVS.map(function(m){ return '<option>'+m+'</option>'; }).join('')+'</select></label>'+
+      '<label>Fecha<input id="ma_fec" type="date"></label>'+
+      '<label>SDI<input id="ma_sdi" type="number" step="0.01" style="width:100px"></label>'+
+      '<label>F.I.<input id="ma_fi" type="number" step="0.0001" value="1.0493" style="width:90px"></label>'+
+      '<label>Salario fijo<input id="ma_sal" type="number" step="0.01" style="width:110px"></label>'+
+      '<label>Tipo trabajador<select id="ma_tt"><option>1 - Permanente</option><option>2 - Eventual</option><option>3 - Eventual construcción</option></select></label>'+
+      '<label>Tipo salario<select id="ma_ts"><option>0 - Fijo</option><option>1 - Variable</option><option>2 - Mixto</option></select></label>'+
+    '</div><div style="margin-top:8px"><button class="btn2" id="ma_add">➕ Capturar</button> <span id="ma_msg" style="font-size:12px;margin-left:8px"></span></div></div></div>'+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">'+
+      '<button class="btn2 ghost" id="ma_exp">⬇ Exportar carga masiva NOMEN (pendientes)</button>'+
+    '</div>'+
+    '<div class="card"><h3>Movimientos ('+lista.length+')</h3><div class="body"><div style="overflow-x:auto"><table style="font-size:12.5px"><thead><tr><th>Empresa</th><th>NSS</th><th>Trabajador</th><th>Movimiento</th><th>Fecha</th><th class="num-r">SDI</th><th>Estatus</th></tr></thead><tbody>'+
+    (rows||'<tr><td colspan=7 class="empty">Sin movimientos — capture el primero arriba</td></tr>')+'</tbody></table></div></div></div>';
+  const g=id=>document.getElementById(id);
+  g('ma_add').onclick=async function(){
+    const msg=g('ma_msg');
+    if(!g('ma_nss').value.trim()||!g('ma_pat').value.trim()){ msg.style.color='var(--danger)'; msg.textContent='Mínimo NSS y apellido paterno.'; return; }
+    const ins=await sb.from('mov_afiliatorios').insert({empresa:g('ma_emp').value.trim(),rpatronal:g('ma_rp').value.trim(),nss:g('ma_nss').value.trim(),paterno:g('ma_pat').value.trim(),materno:g('ma_mat').value.trim(),nombre:g('ma_nom').value.trim(),rfc:g('ma_rfc').value.trim().toUpperCase(),curp:g('ma_curp').value.trim().toUpperCase(),movimiento:g('ma_mov').value,fecha:g('ma_fec').value||null,sdi:parseFloat(g('ma_sdi').value)||null,fi:parseFloat(g('ma_fi').value)||null,salario_fijo:parseFloat(g('ma_sal').value)||null,tipo_trabajador:g('ma_tt').value,tipo_salario:g('ma_ts').value});
+    if(ins.error){ msg.style.color='var(--danger)'; msg.textContent='Error: '+ins.error.message; return; }
+    viewMovAfil(c);
+  };
+  g('ma_exp').onclick=async function(){
+    const {data:pend}=await sb.from('mov_afiliatorios').select('*').eq('estatus','Capturado').order('empresa');
+    const list=pend||[];
+    if(!list.length){ alert('No hay movimientos capturados sin presentar.'); return; }
+    const H=['EMPRESA','RPATRONAL','NSS','PATERNO','MATERNO','NOMBRE','RFC','CURP','MOVIMIENTO','FECHA','SDI','FI','SALARIO_FIJO','TIPO_TRABAJADOR','TIPO_SALARIO'];
+    const lineas=[H.join(',')].concat(list.map(function(x){
+      return [x.empresa,x.rpatronal,x.nss,x.paterno,x.materno,x.nombre,x.rfc,x.curp,x.movimiento,x.fecha,x.sdi,x.fi,x.salario_fijo,x.tipo_trabajador,x.tipo_salario].map(function(v){ return v==null?'':String(v); }).join(',');
+    }));
+    const blob=new Blob([lineas.join(NL)+NL],{type:'text/csv;charset=utf-8;'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url; a.download='carga_masiva_NOMEN_afiliatorios.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+}
+
+/* ===== v17 · Control de validación y timbrado FAC-01 ===== */
+async function viewFacTimbrado(c){
+  const {data}=await sb.from('fac_timbrado_control').select('*').order('creado_en',{ascending:false}).limit(200);
+  const lista=data||[];
+  const nSol=lista.filter(function(x){ return x.estatus==='Solicitado'; }).length;
+  const nVal=lista.filter(function(x){ return x.estatus==='Validado'; }).length;
+  const nApr=lista.filter(function(x){ return x.estatus==='Aprobado'; }).length;
+  const nTim=lista.filter(function(x){ return x.estatus==='Timbrado'; }).length;
+  const rows=lista.map(function(x){
+    let btn='';
+    if(x.estatus==='Solicitado') btn='<button class="mini ft-go" data-id="'+x.id+'" data-next="Validado">→ Validar</button>';
+    else if(x.estatus==='Validado') btn='<button class="mini ft-go" data-id="'+x.id+'" data-next="Aprobado">→ Aprobar</button>';
+    else if(x.estatus==='Aprobado') btn='<button class="mini ft-uuid" data-id="'+x.id+'" style="background:var(--ok)">→ Timbrado (UUID)</button>';
+    const col=x.estatus==='Timbrado'?'on':(x.estatus==='Solicitado'?'off':'repse');
+    return '<tr><td>'+esc(x.fecha_solicitud||'')+'</td><td><b>'+esc(x.cliente||'')+'</b></td><td>'+esc(x.concepto||'')+'<br><span style="font-size:11px;color:var(--muted)">'+esc(x.clave_prodserv||'')+'</span></td>'+
+      '<td class="num-r">'+mny(x.importe)+'</td><td>'+esc(x.aprobado_por||'—')+'</td>'+
+      '<td style="font-size:11px;max-width:160px;overflow:hidden;text-overflow:ellipsis">'+esc(x.uuid||'—')+'</td>'+
+      '<td>'+esc(x.entregable||'—')+'</td><td><span class="tag '+col+'">'+esc(x.estatus||'')+'</span></td><td>'+btn+'</td></tr>';
+  }).join('');
+  c.innerHTML='<h1 class="pg">Control de timbrado · FAC-01</h1>'+
+    '<div class="pgsub">Bitácora solicitud → validación → aprobación → timbrado, con UUID y entregable ligado. Nada se timbra sin aprobación.</div>'+
+    '<div class="kpis">'+tile(nSol,'Solicitados',nSol?'#e67e22':'var(--ok)')+tile(nVal,'Validados','var(--navy)')+tile(nApr,'Aprobados (por timbrar)',nApr?'#e67e22':'var(--ok)')+tile(nTim,'Timbrados','var(--ok)')+'</div>'+
+    '<div class="card"><h3>Nueva solicitud de timbrado</h3><div class="body"><div class="frm">'+
+      '<label>Fecha<input id="ft_fec" type="date"></label>'+
+      '<label>Cliente<input id="ft_cli" style="min-width:200px"></label>'+
+      '<label>Concepto<input id="ft_con" style="min-width:240px"></label>'+
+      '<label>ClaveProdServ<input id="ft_cps" style="width:110px" placeholder="84111506"></label>'+
+      '<label>Importe<input id="ft_imp" type="number" step="0.01" style="width:120px"></label>'+
+      '<label>Entregable ligado<input id="ft_ent" style="min-width:160px" placeholder="ENT-2026-…"></label>'+
+    '</div><div style="margin-top:8px"><button class="btn2" id="ft_add">➕ Registrar solicitud</button> <span id="ft_msg" style="font-size:12px;margin-left:8px"></span></div></div></div>'+
+    '<div class="card"><h3>Bitácora ('+lista.length+')</h3><div class="body"><div style="overflow-x:auto"><table style="font-size:12.5px"><thead><tr><th>Fecha sol.</th><th>Cliente</th><th>Concepto</th><th class="num-r">Importe</th><th>Aprobó</th><th>UUID</th><th>Entregable</th><th>Estatus</th><th></th></tr></thead><tbody>'+
+    (rows||'<tr><td colspan=9 class="empty">Sin solicitudes — registre la primera arriba</td></tr>')+'</tbody></table></div></div></div>';
+  const g=id=>document.getElementById(id);
+  g('ft_add').onclick=async function(){
+    const msg=g('ft_msg');
+    if(!g('ft_cli').value.trim()){ msg.style.color='var(--danger)'; msg.textContent='Falta el cliente.'; return; }
+    const ins=await sb.from('fac_timbrado_control').insert({fecha_solicitud:g('ft_fec').value||null,cliente:g('ft_cli').value.trim(),concepto:g('ft_con').value.trim(),clave_prodserv:g('ft_cps').value.trim(),importe:parseFloat(g('ft_imp').value)||0,entregable:g('ft_ent').value.trim()||null});
+    if(ins.error){ msg.style.color='var(--danger)'; msg.textContent='Error: '+ins.error.message; return; }
+    viewFacTimbrado(c);
+  };
+  c.querySelectorAll('button.ft-go').forEach(function(b){
+    b.onclick=async function(){
+      b.disabled=true;
+      const upd={estatus:b.dataset.next};
+      if(b.dataset.next==='Aprobado'){
+        const quien=prompt('¿Quién aprueba el timbrado?');
+        if(!quien){ b.disabled=false; return; }
+        upd.aprobado_por=quien;
+      }
+      if(b.dataset.next==='Validado') upd.validado='Sí';
+      const {error:e}=await sb.from('fac_timbrado_control').update(upd).eq('id',b.dataset.id);
+      if(e){ alert('Error: '+e.message); b.disabled=false; return; }
+      viewFacTimbrado(c);
+    };
+  });
+  c.querySelectorAll('button.ft-uuid').forEach(function(b){
+    b.onclick=async function(){
+      const uuid=prompt('UUID del CFDI timbrado:');
+      if(!uuid) return;
+      const hoy=new Date().toISOString().slice(0,10);
+      const {error:e}=await sb.from('fac_timbrado_control').update({estatus:'Timbrado',uuid:uuid.trim(),fecha_timbrado:hoy}).eq('id',b.dataset.id);
+      if(e){ alert('Error: '+e.message); return; }
+      viewFacTimbrado(c);
+    };
+  });
+}
+
+/* ===== v17 · Solicitud de Cotización web (formato oficial completo) ===== */
+async function viewSolicitudWeb(c){
+  c.innerHTML='<h1 class="pg">Solicitud de Cotización · formato completo</h1>'+
+    '<div class="pgsub">Su formato oficial: datos del contribuyente, la operación, asociación del gasto con el ingreso, materialidad y elementos jurídicos, con acuse. Compártalo al cliente con el botón.</div>'+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px" class="no-print">'+
+      '<button class="btn2" id="sw_open">🔗 Abrir en pestaña nueva (para compartir)</button>'+
+      '<button class="btn2 ghost" id="sw_copy">📋 Copiar liga para el cliente</button>'+
+      '<span id="sw_msg" style="align-self:center;font-size:12px"></span>'+
+    '</div>'+
+    '<iframe src="solicitud.html" style="width:100%;height:78vh;border:1px solid var(--line);border-radius:10px;background:#fff"></iframe>';
+  const url=window.location.origin+'/solicitud.html';
+  document.getElementById('sw_open').onclick=function(){ window.open('solicitud.html','_blank'); };
+  document.getElementById('sw_copy').onclick=function(){
+    navigator.clipboard.writeText(url).then(function(){
+      const m=document.getElementById('sw_msg');
+      m.style.color='var(--ok)'; m.textContent='✓ Liga copiada: '+url;
+    });
   };
 }
 
