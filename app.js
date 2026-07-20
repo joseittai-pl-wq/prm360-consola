@@ -151,7 +151,7 @@ function renderPendiente(){
 const MERGE_AREAS = [
   ['Dirección', [ ['Tablero General','tabgen','n'],['Rentabilidad','rentabilidad','n'],['Responsables por frente','responsables','n'],['Frentes · semáforos','frentes','n'] ]],
   ['Comercial', [ ['Tablero Comercial','tabcom','n'],['Cotizador de nómina','cotizador','p'],['Pipeline de prospectos','pipelinecom','p'],['Solicitud (PDF / editable)','solicitudpdf','p'],['Solicitud de Cotización (web)','solicitudweb','p'],['Checklist de documentos','checklistdocs','p'],['Presentaciones comerciales','bibliopresenta','p'],['Tablero de clientes','clientes','p'],['Boletín','boletin','p'] ]],
-  ['Vinculación', [ ['Tablero Vinculación','tabvinc','n'],['Clientes','clientescombo','p'],['Trabajadores · IMSS','trabajadorescombo','p'],['Adhesión digital (firma)','adhesiondig','p'],['Movimientos afiliatorios','movafil','p'],['Onboarding / KYC','onboarding','n'],['Validación + KYC (CSF/32-D/69)','kyc','p'],['Checklist de documentos','checklistdocs','p'],['Control de entregables','entregables','p'] ]],
+  ['Vinculación', [ ['Tablero Vinculación','tabvinc','n'],['Clientes','clientescombo','p'],['Ficha VIN-05 (perfil cliente)','vin05','p'],['Trabajadores · IMSS','trabajadorescombo','p'],['Adhesión digital (firma)','adhesiondig','p'],['Movimientos afiliatorios','movafil','p'],['Onboarding / KYC','onboarding','n'],['Validación + KYC (CSF/32-D/69)','kyc','p'],['Checklist de documentos','checklistdocs','p'],['Control de entregables','entregables','p'] ]],
   ['Operaciones', [ ['Tablero Operaciones','tabop','n'],['Trámites','tramitescombo','p'],['Facturación','facturacion','p'],['Control de timbrado FAC-01','factimbrado','p'],['Constructor de concepto FAC-02','constructorfac','p'],['Tablero NOMEN','tablonomen','p'],['Layout de dispersión','layoutdisp','p'],['Expediente de Materialidad','materialidad','p'],['Checklists de materialidad','matchecklists','p'],['Conciliación disp. ↔ CFDI','__soon_concilia','p'],['Descargas SAT / CFDI','descargas','n'],['Calendario de vencimientos','calendario','n'] ]],
   ['Jurídico', [ ['Tablero Jurídico','tabjur','n'],['Corporativo','corporativocombo','p'],['Bitácora de firmas','bitacorafirmas','p'],['Vigencias / Renovaciones','renovaciones','p'],['Gobierno y Padrones','padrones','n'],['Padrones de proveedores 2026','padronprov','p'],['Licitaciones y contratos','licitaciones','n'],['Plantillas de contratos','biblioplantillas','p'],['Juicios / defensa fiscal','juicios','p'],['Documentales (púb. y priv.)','documentales','n'],['Documentales públicas (MDP)','mdp','p'],['Compliance jurídico','compliance','n'] ]],
   ['Fiscal', [ ['Tablero Fiscal','tabfisc','n'],['Cumplimiento','cumplimientocombo','p'],['Calendario fiscal','calfiscal','p'],['Calendario REPSE (ICSOE/SISUB)','calrepse','p'],['Previsión social','previsioncombo','p'],['NOM-035','nom035','p'],['Cuestionario NOM-035','nom035cuest','n'],['e.firmas (control)','efirmasv','n'] ]],
@@ -236,6 +236,7 @@ async function view(v, rol, label){
   const c=$('#content'); c.innerHTML='<div class="loader">Cargando…</div>';
   try{
     if(v==='cotizador')    return await viewCotizador(c);
+    if(v==='vin05')        return await viewVin05(c);
     if(v==='mdp')          return await viewMdp(c);
     if(v==='responsables') return await viewResponsables(c);
     if(v==='basemaestra')  return await viewBaseMaestra(c);
@@ -5351,5 +5352,131 @@ async function mdpMasc(body){
     'MDP-MASC-F01 · Solicitud de mediación — <b>Prestación de servicios</b> &nbsp;·&nbsp; MDP-MASC-F02 · Solicitud de mediación — <b>Compraventa / suministro</b>.<br>'+
     '<span style="color:var(--muted);font-size:12px">Los machotes se llenan con los datos del caso y se presentan ante el CJA; el acuse se sube al expediente de materialidad del cliente y se certifica NOM-151 el mismo día (protocolo de la pestaña anterior). Guárdelos en la biblioteca de Jurídico → Plantillas.</span>'+
     '</div></div>';
+}
+
+/* ===== v21 · Ficha VIN-05 · Perfil del cliente y hand-off a Operación ===== */
+async function viewVin05(c){
+  const {data}=await sb.from('vin05_fichas').select('id,razon_social,rfc,clave_cliente,estatus,entregada_en,ejecutivo_vinculacion').order('creado_en',{ascending:false}).limit(200);
+  const lista=data||[];
+  const enCap=lista.filter(function(x){ return x.estatus==='En captura'; }).length;
+  const entreg=lista.filter(function(x){ return x.estatus==='Entregada a Operación'; }).length;
+  const rows=lista.map(function(x){
+    return '<tr class="clk" data-id="'+x.id+'"><td><b>'+esc(x.razon_social||'')+'</b></td><td>'+esc(x.rfc||'')+'</td><td>'+esc(x.clave_cliente||'')+'</td>'+
+      '<td>'+esc(x.ejecutivo_vinculacion||'')+'</td><td><span class="tag '+(x.estatus==='Entregada a Operación'?'on':'repse')+'">'+esc(x.estatus||'')+'</span></td>'+
+      '<td>'+esc(String(x.entregada_en||'—').slice(0,10))+'</td></tr>';
+  }).join('');
+  c.innerHTML='<h1 class="pg">Ficha VIN-05 · Perfil del cliente</h1>'+
+    '<div class="pgsub">Expediente de hand-off de Vinculación (Etapa 2) hacia Operación (Etapa 3). Confidencialidad N2. Toda operación se documenta desde el origen: materialidad, indispensabilidad y asociación gasto-ingreso.</div>'+
+    '<div class="kpis">'+tile(lista.length,'Fichas','var(--navy)')+tile(enCap,'En captura',enCap?'#e67e22':'var(--ok)')+tile(entreg,'Entregadas a Operación','var(--ok)')+'</div>'+
+    '<div style="margin-bottom:12px"><button class="btn2" id="v5_new">➕ Nueva ficha</button></div>'+
+    '<div class="card"><table style="font-size:12.5px"><thead><tr><th>Razón social</th><th>RFC</th><th>Clave</th><th>Ejecutivo</th><th>Estatus</th><th>Entregada</th></tr></thead><tbody>'+
+    (rows||'<tr><td colspan=6 class="empty">Sin fichas — capture la primera</td></tr>')+'</tbody></table></div>'+
+    '<div id="v5_form"></div>';
+  document.getElementById('v5_new').onclick=function(){ vin05Form(c,null); };
+  c.querySelectorAll('tr.clk').forEach(function(tr){ tr.onclick=function(){ vin05Form(c,tr.getAttribute('data-id')); }; });
+}
+async function vin05Form(c, id){
+  let x={};
+  if(id){
+    const r=await sb.from('vin05_fichas').select('*').eq('id',id).maybeSingle();
+    x=r.data||{};
+  }
+  const g=idd=>document.getElementById(idd);
+  function inp(fid,label,val,w){ return '<label>'+label+'<input id="v5_'+fid+'" value="'+esc(val==null?'':val)+'" style="min-width:'+(w||160)+'px"></label>'; }
+  function ta(fid,label,val){ return '<label style="flex:1;min-width:280px">'+label+'<textarea id="v5_'+fid+'" rows="2" style="width:100%">'+esc(val==null?'':val)+'</textarea></label>'; }
+  const svcs=Array.isArray(x.servicios)?x.servicios:[];
+  c.innerHTML='<h1 class="pg">Ficha VIN-05 · '+(id?esc(x.razon_social||''):'Nueva')+'</h1>'+
+    '<div class="pgsub">PRM-VIN-05 v1.0 · Documento editable · Uso interno · N2 restringido por función</div>'+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px" class="no-print">'+
+      '<button class="btn2 ghost" id="v5_back">← Lista</button>'+
+      '<button class="btn2" id="v5_save">💾 Guardar</button>'+
+      (id?'<button class="btn2" id="v5_hand" style="background:var(--ok)">📤 Entregar a Operación</button>':'')+
+      (id?'<button class="btn2 ghost" id="v5_print">🖨 Imprimir ficha</button>':'')+
+      '<span id="v5_msg" style="align-self:center;font-size:12px"></span></div>'+
+    '<div class="card"><h3>1 · Identificación</h3><div class="body"><div class="frm">'+
+      inp('razon','Razón social',x.razon_social,240)+inp('rfc','RFC',x.rfc,140)+inp('regimen','Régimen fiscal',x.regimen,180)+
+      inp('giro','Giro / actividad preponderante',x.giro,240)+inp('ntrab','No. de trabajadores',x.num_trabajadores,90)+
+      inp('plaza','Plaza / ciudad',x.plaza,140)+inp('clave','Clave de cliente',x.clave_cliente,120)+'</div></div></div>'+
+    '<div class="card"><h3>2 · Contacto</h3><div class="body"><div class="frm">'+
+      inp('rep','Representante legal',x.representante,220)+inp('cop','Contacto operativo',x.contacto_operativo,200)+
+      inp('correo','Correo',x.correo,200)+inp('tel','Teléfono',x.telefono,130)+'</div></div></div>'+
+    '<div class="card"><h3>3 · Datos fiscales</h3><div class="body"><div class="frm">'+
+      inp('csf','CSF (sí/no)',x.csf,90)+inp('efirma','e.firma / CSD vigente',x.efirma_csd,150)+
+      inp('o32d','Opinión de cumplimiento 32-D',x.opinion_32d,170)+ta('oblig','Obligaciones registradas',x.obligaciones)+'</div></div></div>'+
+    '<div class="card"><h3>4 · Datos laborales / nómina</h3><div class="body"><div class="frm">'+
+      inp('rp','Registro patronal',x.registro_patronal,150)+inp('clase','Clase de riesgo IMSS',x.clase_riesgo,110)+
+      inp('repse','Registro REPSE (si aplica)',x.repse,160)+inp('pernom','Periodicidad de nómina',x.periodicidad_nomina,140)+
+      inp('esquema','Esquema actual (NOMEN u otro)',x.esquema_actual,170)+'</div></div></div>'+
+    '<div class="card"><h3>5 · Servicios contratados</h3><div class="body">'+
+      '<table><thead><tr><th>Servicio</th><th>Alcance</th><th>Periodicidad</th><th>Responsable</th><th></th></tr></thead><tbody id="v5_svc"></tbody></table>'+
+      '<div style="margin-top:8px"><button class="mini" id="v5_addsvc">➕ Agregar servicio</button></div></div></div>'+
+    '<div class="card"><h3>6 · Información operativa para Etapa 3</h3><div class="body"><div class="frm">'+
+      ta('concepto','Concepto base de la operación',x.concepto_base)+ta('mat','Materialidad esperada / evidencia',x.materialidad_esperada)+
+      inp('tcon','Tipo de contrato aplicable',x.tipo_contrato,220)+ta('riesgos','Particularidades / riesgos',x.riesgos)+'</div></div></div>'+
+    '<div class="card"><h3>7 · Responsables</h3><div class="body"><div class="frm">'+
+      inp('prom','Promotor / asesor',x.promotor,180)+inp('ejec','Ejecutivo de Vinculación',x.ejecutivo_vinculacion,180)+
+      inp('coord','Coordinadores de Etapa 3 asignados',x.coordinadores_e3,240)+'</div></div></div>'+
+    '<div style="font-size:11.5px;color:var(--muted);margin-bottom:16px">8 · El expediente documental se controla en el Checklist de Documentos del Cliente (PRM-VIN-06 / módulo Checklist de documentos). Acceso: Vinculación (dueño); Operación, Jurídico y Nómina solo del cliente asignado; Contraloría consulta.</div>';
+  function svcRow(s,i){
+    return '<tr><td><input class="sv_s" value="'+esc(s.s||'')+'" style="min-width:140px"></td><td><input class="sv_a" value="'+esc(s.a||'')+'" style="min-width:180px"></td>'+
+      '<td><input class="sv_p" value="'+esc(s.p||'')+'" style="width:110px"></td><td><input class="sv_r" value="'+esc(s.r||'')+'" style="width:130px"></td>'+
+      '<td><button class="mini sv_del" data-i="'+i+'" style="background:var(--danger)">🗑</button></td></tr>';
+  }
+  let SV=svcs.length?svcs.slice():[{s:'',a:'',p:'',r:''}];
+  function drawSvc(){
+    g('v5_svc').innerHTML=SV.map(svcRow).join('');
+    c.querySelectorAll('button.sv_del').forEach(function(b){
+      b.onclick=function(){ syncSvc(); SV.splice(Number(b.getAttribute('data-i')),1); if(!SV.length)SV=[{s:'',a:'',p:'',r:''}]; drawSvc(); };
+    });
+  }
+  function syncSvc(){
+    const trs=g('v5_svc').getElementsByTagName('tr');
+    const arr=[];
+    for(let i=0;i<trs.length;i++){
+      const q=function(cl){ const e=trs[i].getElementsByClassName(cl)[0]; return e?e.value.trim():''; };
+      arr.push({s:q('sv_s'),a:q('sv_a'),p:q('sv_p'),r:q('sv_r')});
+    }
+    SV=arr;
+  }
+  drawSvc();
+  g('v5_addsvc').onclick=function(){ syncSvc(); SV.push({s:'',a:'',p:'',r:''}); drawSvc(); };
+  g('v5_back').onclick=function(){ viewVin05(c); };
+  function payload(){
+    syncSvc();
+    return {razon_social:g('v5_razon').value.trim(), rfc:g('v5_rfc').value.trim(), regimen:g('v5_regimen').value.trim(),
+      giro:g('v5_giro').value.trim(), num_trabajadores:parseInt(g('v5_ntrab').value,10)||null, plaza:g('v5_plaza').value.trim(),
+      clave_cliente:g('v5_clave').value.trim(), representante:g('v5_rep').value.trim(), contacto_operativo:g('v5_cop').value.trim(),
+      correo:g('v5_correo').value.trim(), telefono:g('v5_tel').value.trim(), csf:g('v5_csf').value.trim(),
+      efirma_csd:g('v5_efirma').value.trim(), opinion_32d:g('v5_o32d').value.trim(), obligaciones:g('v5_oblig').value.trim(),
+      registro_patronal:g('v5_rp').value.trim(), clase_riesgo:g('v5_clase').value.trim(), repse:g('v5_repse').value.trim(),
+      periodicidad_nomina:g('v5_pernom').value.trim(), esquema_actual:g('v5_esquema').value.trim(),
+      servicios:SV.filter(function(s){ return s.s||s.a; }),
+      concepto_base:g('v5_concepto').value.trim(), materialidad_esperada:g('v5_mat').value.trim(),
+      tipo_contrato:g('v5_tcon').value.trim(), riesgos:g('v5_riesgos').value.trim(),
+      promotor:g('v5_prom').value.trim(), ejecutivo_vinculacion:g('v5_ejec').value.trim(), coordinadores_e3:g('v5_coord').value.trim()};
+  }
+  g('v5_save').onclick=async function(){
+    const msg=g('v5_msg');
+    const p=payload();
+    if(!p.razon_social){ msg.style.color='var(--danger)'; msg.textContent='Falta la razón social.'; return; }
+    msg.style.color='var(--muted)'; msg.textContent='Guardando…';
+    let res;
+    if(id) res=await sb.from('vin05_fichas').update(p).eq('id',id);
+    else res=await sb.from('vin05_fichas').insert(p);
+    if(res.error){ msg.style.color='var(--danger)'; msg.textContent='Error: '+res.error.message; return; }
+    msg.style.color='var(--ok)'; msg.textContent='✓ Guardada.';
+    if(!id) viewVin05(c);
+  };
+  const hand=g('v5_hand');
+  if(hand) hand.onclick=async function(){
+    const p=payload();
+    p.estatus='Entregada a Operación';
+    p.entregada_en=new Date().toISOString();
+    const res=await sb.from('vin05_fichas').update(p).eq('id',id);
+    if(res.error){ alert('Error: '+res.error.message); return; }
+    viewVin05(c);
+  };
+  const pr=g('v5_print');
+  if(pr) pr.onclick=function(){ window.print(); };
 }
 
