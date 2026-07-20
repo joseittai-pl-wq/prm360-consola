@@ -150,12 +150,12 @@ function renderPendiente(){
 
 const MERGE_AREAS = [
   ['Dirección', [ ['Tablero General','tabgen','n'],['Rentabilidad','rentabilidad','n'],['Frentes · semáforos','frentes','n'] ]],
-  ['Comercial', [ ['Tablero Comercial','tabcom','n'],['Cotizador de nómina','cotizador','p'],['Solicitud (PDF / editable)','solicitudpdf','p'],['Checklist de documentos','checklistdocs','p'],['Presentaciones comerciales','bibliopresenta','p'],['Tablero de clientes','clientes','p'],['Boletín','boletin','p'] ]],
-  ['Vinculación', [ ['Tablero Vinculación','tabvinc','n'],['Clientes','clientescombo','p'],['Trabajadores · IMSS','trabajadorescombo','p'],['Onboarding / KYC','onboarding','n'],['Validación + KYC (CSF/32-D/69)','kyc','p'],['Checklist de documentos','checklistdocs','p'],['Control de entregables','entregables','p'] ]],
-  ['Operaciones', [ ['Tablero Operaciones','tabop','n'],['Trámites','tramitescombo','p'],['Facturación','facturacion','p'],['Nómina NOMEN','__soon_nomen','p'],['Layout de dispersión','__soon_layout','p'],['Expediente de Materialidad','materialidad','p'],['Conciliación disp. ↔ CFDI','__soon_concilia','p'],['Descargas SAT / CFDI','descargas','n'],['Calendario de vencimientos','calendario','n'] ]],
+  ['Comercial', [ ['Tablero Comercial','tabcom','n'],['Cotizador de nómina','cotizador','p'],['Pipeline de prospectos','pipelinecom','p'],['Solicitud (PDF / editable)','solicitudpdf','p'],['Checklist de documentos','checklistdocs','p'],['Presentaciones comerciales','bibliopresenta','p'],['Tablero de clientes','clientes','p'],['Boletín','boletin','p'] ]],
+  ['Vinculación', [ ['Tablero Vinculación','tabvinc','n'],['Clientes','clientescombo','p'],['Trabajadores · IMSS','trabajadorescombo','p'],['Adhesión digital (firma)','adhesiondig','p'],['Onboarding / KYC','onboarding','n'],['Validación + KYC (CSF/32-D/69)','kyc','p'],['Checklist de documentos','checklistdocs','p'],['Control de entregables','entregables','p'] ]],
+  ['Operaciones', [ ['Tablero Operaciones','tabop','n'],['Trámites','tramitescombo','p'],['Facturación','facturacion','p'],['Tablero NOMEN','tablonomen','p'],['Layout de dispersión','__soon_layout','p'],['Expediente de Materialidad','materialidad','p'],['Conciliación disp. ↔ CFDI','__soon_concilia','p'],['Descargas SAT / CFDI','descargas','n'],['Calendario de vencimientos','calendario','n'] ]],
   ['Jurídico', [ ['Tablero Jurídico','tabjur','n'],['Corporativo','corporativocombo','p'],['Bitácora de firmas','bitacorafirmas','p'],['Vigencias / Renovaciones','renovaciones','p'],['Gobierno y Padrones','padrones','n'],['Licitaciones y contratos','licitaciones','n'],['Plantillas de contratos','biblioplantillas','p'],['Juicios / defensa fiscal','juicios','p'],['Documentales (púb. y priv.)','documentales','n'],['Compliance jurídico','compliance','n'] ]],
   ['Fiscal', [ ['Tablero Fiscal','tabfisc','n'],['Cumplimiento','cumplimientocombo','p'],['Calendario fiscal','calfiscal','p'],['Calendario REPSE (ICSOE/SISUB)','calrepse','p'],['Previsión social','previsioncombo','p'],['NOM-035','nom035','p'],['Cuestionario NOM-035','nom035cuest','n'],['e.firmas (control)','efirmasv','n'] ]],
-  ['Contabilidad', [ ['Tablero Contable','tabcont','n'],['Contabilidad / Pólizas','contabilidad','n'],['Captura de servicios','captura','p'],['Descarga XML / CFDI','descargas','n'],['Bancos','bancoscombo','p'],['Motor de conciliación','__soon_motorconcilia','p'] ]],
+  ['Contabilidad', [ ['Tablero Contable','tabcont','n'],['Contabilidad / Pólizas','contabilidad','n'],['Captura de servicios','captura','p'],['Descarga XML / CFDI','descargas','n'],['Bancos','bancoscombo','p'],['Motor de conciliación','conciliador','p'] ]],
   ['Tesorería', [ ['Tablero Tesorería','tabtes','n'],['Cobranza','cobranza','n'],['Cuentas por pagar','cxp','p'],['Bancos y flujo','flujo','p'],['Cuentas','cuentas','p'],['Pagos','pagos','p'],['Calendario fiscal','calfiscal','p'] ]],
   ['Administración', [ ['Tablero Administración','tabadm','n'],['Empresas del grupo','empresascombo','p'],['Gastos y costeo','gastoscombo','p'],['Costeo por cliente','costeo','n'],['Importador de reportes','importador','n'],['Accesos y vinculación','accesos','n'],['Contraloría','contraloria','p'],['Organigrama y matrices','biblioorg','p'],['Directorio','directorio','n'],['Sucursales','sucursalesv','n'],['Personal interno','equipo','n'],['Organigrama y funciones','organigramafn','n'],['Reportes','reportes','p'] ]]
 ];
@@ -221,6 +221,10 @@ async function view(v, rol, label){
   const c=$('#content'); c.innerHTML='<div class="loader">Cargando…</div>';
   try{
     if(v==='cotizador')    return await viewCotizador(c);
+    if(v==='pipelinecom')  return await viewPipelineCom(c);
+    if(v==='tablonomen')   return await viewTabNomen(c);
+    if(v==='conciliador')  return await viewConciliador(c);
+    if(v==='adhesiondig')  return await viewAdhesionDig(c);
     if(v==='trabajadores') return await viewTrabajadores(c);
     if(v==='clifiscal')    return await viewClientesFiscal(c);
     if(v==='clientescombo') return await viewClientesCombo(c);
@@ -1439,191 +1443,160 @@ function viewSoon(c, label){
 async function viewCotizador(c){
   const NL2 = String.fromCharCode(10);
   const g = id => document.getElementById(id);
-  const primaDef = {I:0.54355, II:1.13065, III:2.59840, IV:4.65325, V:7.58875};
+  /* ===== MODELO OFICIAL PRM-COM-06 / COT-PRM-002 (fórmulas idénticas al Excel de Dirección) ===== */
+  const primaDef = {I:0.0054355, II:0.0113065, III:0.025984, IV:0.0465325, V:0.0758875};
   const claseList = ['I','II','III','IV','V'];
-  const ISR2026 = [
-    [0.01,0,1.92],
-    [746.05,14.32,6.40],
-    [6332.06,371.83,10.88],
-    [11128.02,893.63,16.00],
-    [12935.83,1182.88,17.92],
-    [15487.72,1639.32,21.36],
-    [31236.50,4005.46,23.52],
-    [49233.01,8237.45,30.00],
-    [93993.91,21665.72,32.00],
-    [125325.21,31691.85,34.00],
-    [375975.62,116912.87,35.00]
-  ];
-  function isrMensual(base){
-    if(!(base>0)) return 0;
-    let br = ISR2026[0];
-    for(let i=0;i<ISR2026.length;i++){ if(base>=ISR2026[i][0]) br = ISR2026[i]; }
-    return br[1] + (base - br[0])*br[2]/100;
-  }
-  const jorList = ['Diurna','Mixta','Nocturna'];
   const perList = ['Diaria','Semanal','Decenal','Catorcenal','Quincenal','28 días','Mensual'];
-  const estados = ['Aguascalientes','Baja California','Baja California Sur','Campeche','Chiapas','Chihuahua','Ciudad de México','Coahuila','Colima','Durango','Estado de México','Guanajuato','Guerrero','Hidalgo','Jalisco','Michoacán','Morelos','Nayarit','Nuevo León','Oaxaca','Puebla','Querétaro','Quintana Roo','San Luis Potosí','Sinaloa','Sonora','Tabasco','Tamaulipas','Tlaxcala','Veracruz','Yucatán','Zacatecas'];
+  const perDias = {'Diaria':1,'Semanal':7,'Decenal':10,'Catorcenal':14,'Quincenal':15,'28 días':28,'Mensual':30};
+  /* Tablas ISR 2026 — hoja TABLAS ISR del PRMCOM06: [LI, cuota fija, tasa] + subsidio [tope, monto] */
+  const ISR_T = {
+    1:  {t:[[0.01,0,0.0192],[27.79,0.53,0.064],[235.82,13.85,0.1088],[414.42,33.28,0.16],[481.74,44.05,0.1792],[576.77,61.08,0.2136],[1163.26,186.35,0.2352],[1833.45,343.98,0.30],[3500.36,844.05,0.32],[4667.14,1217.42,0.34],[14001.39,4391.07,0.35]], s:[378.05,17.62]},
+    7:  {t:[[0.01,0,0.0192],[194.49,3.73,0.064],[1650.65,96.93,0.1088],[2900.87,232.95,0.16],[3372.13,308.35,0.1792],[4037.36,427.56,0.2136],[8142.77,1304.48,0.2352],[12834.11,2407.88,0.30],[24502.43,5908.38,0.32],[32669.90,8521.97,0.34],[98009.68,30737.49,0.35]], s:[2646.34,123.34]},
+    10: {t:[[0.01,0,0.0192],[277.84,5.34,0.064],[2358.07,138.47,0.1088],[4144.10,332.79,0.16],[4817.33,440.51,0.1792],[5767.65,610.80,0.2136],[11632.52,1863.54,0.2352],[18334.44,3439.83,0.30],[35003.46,8440.54,0.32],[46671.28,12174.24,0.34],[140013.82,43910.70,0.35]], s:[3780.48,176.20]},
+    15: {t:[[0.01,0,0.0192],[416.75,8,0.064],[3537.10,207.71,0.1088],[6216.14,499.18,0.16],[7225.98,660.76,0.1792],[8651.48,916.20,0.2136],[17448.77,2795.31,0.2352],[27501.66,5159.75,0.30],[52505.19,12660.80,0.32],[70006.91,18261.36,0.34],[210020.73,65866.06,0.35]], s:[5670.72,264.30]},
+    30: {t:[[0.01,0,0.0192],[844.60,16.22,0.064],[7168.52,420.95,0.1088],[12598.03,1011.68,0.16],[14644.65,1339.14,0.1792],[17533.65,1856.84,0.2136],[35362.84,5665.16,0.2352],[55736.69,10457.09,0.30],[106410.51,25659.23,0.32],[141880.67,37009.69,0.34],[425642.00,133488.54,0.35]], s:[11492.66,535.65]}
+  };
+  function tablaISR(d){
+    if(ISR_T[d]) return ISR_T[d];
+    /* Catorcenal / 28 días: tabla OTRAS del Excel = tabla diaria escalada por días */
+    const b = ISR_T[1];
+    return { t: b.t.map(function(r){ return [r[0]*d, r[1]*d, r[2]]; }), s:[b.s[0]*d, b.s[1]*d] };
+  }
+  /* ISR + subsidio EXACTOS a la hoja RESUMEN ISR: devuelve {ret, subEntregado} */
+  function isrPeriodo(base, dias){
+    if(!(base>0)) return {ret:0, sub:0};
+    const T = tablaISR(dias);
+    let br = T.t[0];
+    for(let i=0;i<T.t.length;i++){ if(base>=T.t[i][0]) br = T.t[i]; }
+    const exced = Math.max(base-br[0],0);
+    const impuesto = br[1] + exced*br[2];
+    const subCorr = base<=T.s[0] ? T.s[1] : 0;
+    const K = Math.max(impuesto-subCorr,0);
+    const ret = K>0 ? K : 0;
+    const subEnt = ret===0 ? (subCorr-impuesto) : 0;
+    return {ret:ret, sub:subEnt};
+  }
+  /* CYV — hoja CYV: tasa patronal Cesantía y Vejez por veces UMA del SDI */
+  function cyvRate(v){
+    if(v>=4.01) return 0.07513;
+    if(v>=3.51) return 0.06613;
+    if(v>=3.01) return 0.06361;
+    if(v>=2.51) return 0.06026;
+    if(v>=2.01) return 0.05556;
+    if(v>=1.51) return 0.04851;
+    if(v>=1.01) return 0.03676;
+    return 0.0315;
+  }
+  /* ISN — hoja ISN ESTATAL (tasas 2026 de su Excel) */
+  const ISN = [['Aguascalientes',0.025],['Baja California',0.0425],['Baja California Sur',0.03],['Campeche',0.03],['Chiapas',0.03],['Chihuahua',0.04],['Ciudad de México',0.04],['Coahuila',0.03],['Colima',0.03],['Durango',0.03],['Estado de México',0.03],['Guanajuato',0.03],['Guerrero',0.03],['Hidalgo',0.03],['Jalisco',0.03],['Michoacán',0.03],['Morelos',0.03],['Nayarit',0.03],['Nuevo León',0.03],['Oaxaca',0.03],['Puebla',0.03],['Querétaro',0.03],['Quintana Roo',0.04],['San Luis Potosí',0.03],['Sinaloa',0.03],['Sonora',0.03],['Tabasco',0.035],['Tamaulipas',0.03],['Tlaxcala',0.03],['Veracruz',0.03],['Yucatán',0.0375],['Zacatecas',0.035]];
 
   function blank(){
-    return {puesto:'', descripcion:'', clase:'I', prima:String(primaDef.I), jornada:'Diurna', periodicidad:'Mensual', salario:'', num:'1'};
+    return {puesto:'', clase:'I', sd:'', fi:'1.0493', prevision:'653', fonacot:'0', infonavit:'0', pension:'0', otros:'0', num:'1'};
   }
   function canon(val, list, def){
     const v = String(val==null?'':val).trim();
-    for(let i=0;i<list.length;i++){ if(list[i].toLowerCase()===v.toLowerCase()) return list[i]; }
+    for(let i=0;i<list.length;i++){ if(String(list[i]).toLowerCase()===v.toLowerCase()) return list[i]; }
     return def;
   }
-  if(!Array.isArray(window.__cocRows) || window.__cocRows.length===0){
+  if(!Array.isArray(window.__cocRows) || window.__cocRows.length===0 || window.__cocRows[0].sd===undefined){
     window.__cocRows = [blank()];
   }
-
-  const params = [
-    ['r_uma','UMA diaria',113.14],
-    ['r_sm_general','Salario mínimo general diario 2026',315.04],
-    ['r_sm_frontera','Salario mínimo ZLFN diario 2026',440.87],
-    ['r_ceav','% Cesantía y Vejez patronal',3.15],
-    ['r_retiro','Retiro/SAR %',2],
-    ['r_infonavit','Infonavit %',5],
-    ['r_eymfija','IMSS EyM cuota fija %UMA',20.40],
-    ['r_eymexc','EyM excedente >3UMA %',1.10],
-    ['r_eympd','EyM prestaciones dinero %',0.70],
-    ['r_eymgmp','EyM gastos médicos pensionados %',1.05],
-    ['r_iv','Invalidez y vida %',1.75],
-    ['r_guard','Guarderías %',1.00],
-    ['r_isn','ISN %',3.00],
-    ['r_aguinaldo','Aguinaldo días',15],
-    ['r_vac','Vacaciones días',12],
-    ['r_primavac','Prima vacacional %',25],
-    ['r_honorario','% Honorario despacho',8],
-    ['r_iva','IVA %',16]
-  ];
-
-  const estOpts = estados.map(e=>'<option>'+esc(e)+'</option>').join('');
-  const parHtml = params.map(p=>'<label>'+esc(p[1])+'<input id="'+p[0]+'" type="number" step="0.01" value="'+p[2]+'"></label>').join('');
-
+  const isnOpts = ISN.map(function(e){ return '<option value="'+e[1]+'"'+(e[0]==='Oaxaca'?' selected':'')+'>'+esc(e[0])+' — '+(e[1]*100).toFixed(2)+'%</option>'; }).join('');
   c.innerHTML =
-    '<h1 class="pg">Cotizador de nómina</h1>'+
-    '<div class="pgsub">Cotizador interactivo multi-puesto con importación de Excel/CSV y propuesta en PDF.</div>'+
+    '<h1 class="pg">Cotizador de nómina · COT-PRM-002</h1>'+
+    '<div class="pgsub">Fórmulas idénticas a su PRM-COM-06 (Excel oficial 2026): ISR y subsidio por periodicidad, IMSS obrero-patronal desglosado, RCV, Infonavit, previsión social y excedente, ISN por entidad y comisión.</div>'+
     '<div class="card"><h3>Datos del cliente</h3><div class="body"><div class="frm">'+
       '<label>Cliente / razón social<input id="coc_cliente" style="min-width:240px"></label>'+
       '<label>Registro patronal<input id="coc_rp"></label>'+
-      '<label>Estado (ISN)<select id="coc_estado" style="min-width:180px">'+estOpts+'</select></label>'+
+      '<label>Actividad principal<input id="coc_actividad" placeholder="Para valorar el riesgo" style="min-width:220px"></label>'+
       '<label>Promotor<input id="coc_prom"></label>'+
-      '<label>Actividad principal (ref. REPSE)<input id="coc_actividad" placeholder="Ej. Comercio al por mayor…" style="min-width:240px"></label>'+
-      '<label>Zona salario mínimo<select id="coc_zona" style="min-width:200px"><option value="general">General</option><option value="frontera">Zona Libre Frontera Norte</option></select></label>'+
-      '<label>Clase de riesgo del patrón (Art. 73 LSS)<select id="coc_clase_patron" style="min-width:150px">'+claseList.map(function(k){ return '<option value="'+k+'"'+(k==='III'?' selected':'')+'>'+k+' — '+primaDef[k].toFixed(5)+'%</option>'; }).join('')+'</select></label>'+
-      '<label>Prima de riesgo del patrón (%)<input id="coc_prima_patron" type="number" step="0.00001" value="2.59840"></label>'+
-      '<label>Tipo de contrato con los trabajadores<select id="coc_tipocontrato" style="min-width:220px"><option>Por tiempo determinado</option><option>Por tiempo indeterminado</option><option>Por obra o tiempo determinado</option><option>Servicios especializados (REPSE)</option></select></label>'+
-      '<label>Periodicidad de pago<select id="coc_periodicidad" style="min-width:160px">'+perList.map(k=>'<option>'+esc(k)+'</option>').join('')+'</select></label>'+
-      '<label>Honorario por empleado (MXN)<input id="coc_honorario_emp" type="number" step="0.01" value="180"></label>'+
-      '<label style="flex-direction:row;align-items:center;gap:6px"><input id="coc_provisiones" type="checkbox" style="width:auto">Incluir provisiones prorrateadas (aguinaldo, prima vacacional, finiquito)</label>'+
+      '<label>Tipo de contrato<select id="coc_tipocontrato" style="min-width:210px"><option>Por tiempo indeterminado</option><option>Por tiempo determinado</option><option>Por obra o tiempo determinado</option><option>Servicios especializados (REPSE)</option></select></label>'+
+      '<label>Zona salario mínimo<select id="coc_zona" style="min-width:190px"><option value="general">General ($315.04)</option><option value="frontera">Frontera Norte ($440.87)</option></select></label>'+
     '</div></div></div>'+
-    '<div class="card"><h3>Puestos a cotizar</h3><div class="body">'+
+    '<div class="card"><h3>Parámetros del cálculo (celdas del Excel)</h3><div class="body"><div class="frm">'+
+      '<label>Ejercicio<input value="2026" disabled style="width:80px"></label>'+
+      '<label>SM 2026 (F2)<input id="p_sm" type="number" step="0.01" value="315.04" style="width:100px"></label>'+
+      '<label>UMA 2026 (F4)<input id="p_uma" type="number" step="0.01" value="117.31" style="width:100px"></label>'+
+      '<label>Factor de Int. (F5)<input id="p_fi" type="number" step="0.0001" value="1.0493" style="width:100px"></label>'+
+      '<label>Periodicidad de pago<select id="p_per" style="min-width:140px">'+perList.map(function(k){ return '<option'+(k==='Mensual'?' selected':'')+'>'+esc(k)+'</option>'; }).join('')+'</select></label>'+
+      '<label>Días del periodo (B5)<input id="p_dias" type="number" step="1" value="30" style="width:80px"></label>'+
+      '<label>Entidad · ISN (AA7)<select id="p_isn" style="min-width:220px">'+isnOpts+'</select></label>'+
+      '<label>Prima R.T. cliente (G6)<select id="p_clase" style="min-width:170px">'+claseList.map(function(k){ return '<option value="'+k+'"'+(k==='I'?' selected':'')+'>Clase '+k+' — '+(primaDef[k]*100).toFixed(5)+'%</option>'; }).join('')+'</select></label>'+
+      '<label>Comisión (AB7)<input id="p_com" type="number" step="0.001" value="5.5" style="width:80px"> <span style="font-size:11px">%</span></label>'+
+      '<label>IVA %<input id="p_iva" type="number" step="0.1" value="16" style="width:70px"></label>'+
+      '<label>Previsión social por defecto (R)<input id="p_prev" type="number" step="1" value="653" style="width:90px"></label>'+
+    '</div>'+
+    '<div style="font-size:11.5px;color:var(--muted);margin-top:6px">UMA 2025 $113.14 aplicó hasta el 31/01/2026; UMA 2026 $117.31 desde el 01/02/2026. Tope salarial 25 UMA (L5). SBC integrado con aguinaldo 15 y vacaciones 12 al 25% (1er año). Referencia CONASAMI 2026: no se puede pagar por debajo del mínimo.</div>'+
+    '</div></div>'+
+    '<div class="card"><h3>Trabajadores / puestos</h3><div class="body">'+
       '<div style="overflow-x:auto"><table id="coc_tbl"><thead><tr>'+
-        '<th>Puesto</th><th>Descripción de funciones</th><th>Clase</th><th class="num-r">Prima %</th>'+
-        '<th>Jornada</th><th>Periodicidad</th><th class="num-r">Salario mensual</th><th class="num-r">Nº trab.</th><th></th>'+
+        '<th>Nombre / Puesto</th><th>Clase</th><th class="num-r">S.D. (G)</th><th class="num-r">F.I. (H)</th>'+
+        '<th class="num-r">Previsión (R)</th><th class="num-r">FONACOT</th><th class="num-r">Infonavit</th><th class="num-r">Pensión alim.</th><th class="num-r">Otros desc.</th><th class="num-r">Nº</th><th></th>'+
       '</tr></thead><tbody id="coc_body"></tbody></table></div>'+
       '<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">'+
-        '<button class="btn2 ghost" id="coc_add">➕ Agregar puesto/trabajador</button>'+
-        '<button class="btn2 ghost" id="coc_tpl">⬇ Descargar plantilla</button>'+
+        '<button class="btn2 ghost" id="coc_add">➕ Agregar trabajador</button>'+
+        '<button class="btn2 ghost" id="coc_tpl">⬇ Plantilla</button>'+
         '<button class="btn2 ghost" id="coc_imp">📄 Importar Excel/CSV</button>'+
         '<input type="file" id="coc_file" accept=".xlsx,.xls,.csv" style="display:none">'+
         '<span id="coc_impmsg" style="align-self:center;font-size:12px"></span>'+
       '</div></div></div>'+
-    '<div class="card"><h3 id="coc_partog" style="cursor:pointer">Tasas y parámetros (editables) ▾</h3>'+
-      '<div class="body" id="coc_parbody"><div class="frm">'+parHtml+'</div>'+
-      '<div style="font-size:12px;color:var(--muted);margin-top:6px">Tasas estándar 2026 — verifíquelas/ajústelas. Se afinará con su COT-PRM-002.</div>'+
-      '<div style="font-size:12px;color:var(--muted);margin-top:4px">Referencia CONASAMI 2026 — no se puede pagar por debajo del mínimo general ni del mínimo profesional aplicable.</div>'+
-      '</div></div>'+
     '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px" class="no-print">'+
       '<button class="btn2" id="coc_calc">Calcular</button>'+
-      '<button class="btn2 ghost" id="coc_pdf">📄 Generar propuesta (PDF)</button>'+
+      '<button class="btn2 ghost" id="coc_pdf">📄 Propuesta (PDF)</button>'+
       '<button class="btn2 ghost" id="coc_save">Guardar cotización</button>'+
       '<span id="coc_msg" style="align-self:center;font-size:12px"></span>'+
     '</div>'+
     '<div id="coc_desglose"></div>';
 
   function rowHtml(r, idx){
-    const claseOpts = claseList.map(k=>'<option value="'+k+'"'+(r.clase===k?' selected':'')+'>'+k+' — '+primaDef[k].toFixed(5)+'%</option>').join('');
-    const jorOpts = jorList.map(k=>'<option'+(r.jornada===k?' selected':'')+'>'+esc(k)+'</option>').join('');
-    const perOpts = perList.map(k=>'<option'+(r.periodicidad===k?' selected':'')+'>'+esc(k)+'</option>').join('');
+    const claseOpts = claseList.map(function(k){ return '<option value="'+k+'"'+(r.clase===k?' selected':'')+'>'+k+'</option>'; }).join('');
+    function inp(cls,val,w,st){ return '<td><input class="'+cls+' num-r" type="number" step="'+(st||'0.01')+'" value="'+esc(val)+'" style="width:'+w+'px"></td>'; }
     return '<tr>'+
-      '<td><input class="ci_puesto" value="'+esc(r.puesto)+'" style="min-width:130px"></td>'+
-      '<td><input class="ci_desc" value="'+esc(r.descripcion)+'" style="min-width:160px"></td>'+
+      '<td><input class="ci_puesto" value="'+esc(r.puesto)+'" style="min-width:150px"></td>'+
       '<td><select class="ci_clase">'+claseOpts+'</select></td>'+
-      '<td><input class="ci_prima num-r" type="number" step="0.00001" value="'+esc(r.prima)+'" style="width:100px"></td>'+
-      '<td><select class="ci_jornada">'+jorOpts+'</select></td>'+
-      '<td><select class="ci_per">'+perOpts+'</select></td>'+
-      '<td><input class="ci_sal" type="number" step="0.01" value="'+esc(r.salario)+'" style="width:120px"></td>'+
-      '<td><input class="ci_num" type="number" step="1" value="'+esc(r.num)+'" style="width:70px"></td>'+
-      '<td><button class="mini ci_del" data-idx="'+idx+'" title="Quitar" style="background:var(--danger)">🗑</button></td>'+
+      inp('ci_sd',r.sd,95)+inp('ci_fi',r.fi,80,'0.0001')+inp('ci_prev',r.prevision,85)+
+      inp('ci_fon',r.fonacot,80)+inp('ci_inf',r.infonavit,80)+inp('ci_pen',r.pension,80)+inp('ci_otr',r.otros,80)+
+      '<td><input class="ci_num num-r" type="number" step="1" value="'+esc(r.num)+'" style="width:55px"></td>'+
+      '<td><button class="mini ci_del" data-idx="'+idx+'" style="background:var(--danger)">🗑</button></td>'+
     '</tr>';
   }
   function syncRows(){
-    const tb = g('coc_body');
-    if(!tb) return;
+    const tb = g('coc_body'); if(!tb) return;
     const trs = tb.getElementsByTagName('tr');
     const arr = [];
     for(let i=0;i<trs.length;i++){
       const tr = trs[i];
-      const q = cl => { const e = tr.getElementsByClassName(cl)[0]; return e ? e.value : ''; };
-      arr.push({
-        puesto:q('ci_puesto'), descripcion:q('ci_desc'), clase:q('ci_clase'),
-        prima:q('ci_prima'), jornada:q('ci_jornada'), periodicidad:q('ci_per'),
-        salario:q('ci_sal'), num:q('ci_num')
-      });
+      const q = function(cl){ const e = tr.getElementsByClassName(cl)[0]; return e ? e.value : ''; };
+      arr.push({puesto:q('ci_puesto'), clase:q('ci_clase'), sd:q('ci_sd'), fi:q('ci_fi'), prevision:q('ci_prev'), fonacot:q('ci_fon'), infonavit:q('ci_inf'), pension:q('ci_pen'), otros:q('ci_otr'), num:q('ci_num')});
     }
     window.__cocRows = arr;
   }
   function renderRows(){
     const tb = g('coc_body');
-    tb.innerHTML = window.__cocRows.map((r,i)=>rowHtml(r,i)).join('');
+    tb.innerHTML = window.__cocRows.map(function(r,i){ return rowHtml(r,i); }).join('');
     const dels = tb.getElementsByClassName('ci_del');
     for(let i=0;i<dels.length;i++){
       dels[i].onclick = function(){
         syncRows();
-        const idx = Number(this.getAttribute('data-idx'));
-        window.__cocRows.splice(idx,1);
+        window.__cocRows.splice(Number(this.getAttribute('data-idx')),1);
         if(window.__cocRows.length===0) window.__cocRows=[blank()];
         renderRows();
       };
     }
-    const cls = tb.getElementsByClassName('ci_clase');
-    for(let i=0;i<cls.length;i++){
-      cls[i].onchange = function(){
-        const tr = this.closest('tr');
-        const p = tr.getElementsByClassName('ci_prima')[0];
-        if(p && primaDef[this.value]!=null) p.value = primaDef[this.value].toFixed(5);
-      };
-    }
   }
   renderRows();
-
-  g('coc_clase_patron').onchange = function(){
-    const p = g('coc_prima_patron');
-    if(p && primaDef[this.value]!=null) p.value = primaDef[this.value].toFixed(5);
-  };
-
-  g('coc_partog').onclick = function(){
-    const b = g('coc_parbody');
-    const hidden = b.style.display==='none';
-    b.style.display = hidden ? '' : 'none';
-    this.textContent = 'Tasas y parámetros (editables) ' + (hidden ? '▾' : '▸');
-  };
-
-  g('coc_add').onclick = function(){ syncRows(); window.__cocRows.push(blank()); renderRows(); };
-
+  g('p_per').onchange = function(){ g('p_dias').value = perDias[this.value] || 30; };
+  g('coc_add').onclick = function(){ syncRows(); const b=blank(); b.prevision=String(g('p_prev').value||653); window.__cocRows.push(b); renderRows(); };
   g('coc_tpl').onclick = function(){
-    const header = ['puesto','descripcion','clase_riesgo','prima','jornada','periodicidad','salario_mensual','num_trabajadores'].join(',');
-    const ejemplo = ['Auxiliar administrativo','Apoyo general de oficina','I','0.54355','Diurna','Mensual','12000','1'].join(',');
-    const csv = header + NL2 + ejemplo + NL2;
-    const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+    const header = ['nombre_puesto','clase_riesgo','salario_diario','factor_integracion','prevision_social','fonacot','infonavit','pension_alimenticia','otros_descuentos','num_trabajadores'].join(',');
+    const ejemplo = ['Auxiliar administrativo','I','315.04','1.0493','653','0','0','0','0','1'].join(',');
+    const blob = new Blob([header+NL2+ejemplo+NL2], {type:'text/csv;charset=utf-8;'});
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url; a.download = 'plantilla_cotizador_nomina.csv';
+    a.href = url; a.download = 'plantilla_cotizador_COTPRM002.csv';
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
-
   g('coc_imp').onclick = function(){ g('coc_file').click(); };
   g('coc_file').onchange = function(ev){
     const impmsg = g('coc_impmsg');
@@ -1641,107 +1614,111 @@ async function viewCotizador(c){
           const low = {};
           Object.keys(o).forEach(function(k){ low[String(k).trim().toLowerCase()] = o[k]; });
           const pick = function(){ for(let i=0;i<arguments.length;i++){ const kk=arguments[i]; if(low[kk]!=null && String(low[kk]).trim()!=='') return low[kk]; } return ''; };
-          const clase = canon(pick('clase_riesgo','clase','clase de riesgo'), claseList, 'I');
-          let prima = pick('prima','prima_riesgo','prima de riesgo');
-          if(prima==='' || prima==null){ prima = primaDef[clase]!=null ? primaDef[clase] : ''; }
           return {
-            puesto: String(pick('puesto','puestos')||''),
-            descripcion: String(pick('descripcion','descripción','descripcion de funciones','funciones')||''),
-            clase: clase,
-            prima: String(prima),
-            jornada: canon(pick('jornada'), jorList, 'Diurna'),
-            periodicidad: canon(pick('periodicidad','periodo'), perList, 'Mensual'),
-            salario: String(pick('salario_mensual','salario','salario mensual','sueldo')||''),
-            num: String(pick('num_trabajadores','no_trabajadores','trabajadores','num','n')||'1')
+            puesto: String(pick('nombre_puesto','nombre','puesto','nombre del trabajador / puesto')||''),
+            clase: canon(pick('clase_riesgo','clase','clase de riesgo'), claseList, 'I'),
+            sd: String(pick('salario_diario','s.d','sd','salario diario')||''),
+            fi: String(pick('factor_integracion','f.i','fi')||'1.0493'),
+            prevision: String(pick('prevision_social','prevision','previsión social')||g('p_prev').value||'653'),
+            fonacot: String(pick('fonacot')||'0'),
+            infonavit: String(pick('infonavit')||'0'),
+            pension: String(pick('pension_alimenticia','pension','pensión alimenticia')||'0'),
+            otros: String(pick('otros_descuentos','otros')||'0'),
+            num: String(pick('num_trabajadores','num','nº','n')||'1')
           };
         });
         window.__cocRows = rows;
         renderRows();
         impmsg.style.color='var(--ok)'; impmsg.textContent='Importados '+rows.length+' registros.';
       }catch(err){
-        impmsg.style.color='var(--danger)'; impmsg.textContent='No se pudo leer el archivo. Verifique el formato.';
+        impmsg.style.color='var(--danger)'; impmsg.textContent='No se pudo leer el archivo.';
       }
       g('coc_file').value='';
     };
     reader.readAsArrayBuffer(f);
   };
 
-  function num(id){ const v = parseFloat(g(id).value); return isNaN(v) ? 0 : v; }
+  function nval(id){ const v = parseFloat(g(id).value); return isNaN(v) ? 0 : v; }
+  function r2(x){ return Math.round(x*100)/100; }
+  /* ===== Motor de cálculo — réplica celda a celda de la fila 8 de COTIZACION ===== */
+  function calcRow(r, P){
+    const G = parseFloat(r.sd)||0;
+    const H = parseFloat(r.fi)||P.fi;
+    const R = parseFloat(r.prevision)||0;
+    const T = parseFloat(r.fonacot)||0;
+    const U = parseFloat(r.infonavit)||0;
+    const V = parseFloat(r.pension)||0;
+    const W = parseFloat(r.otros)||0;
+    const d = P.dias;
+    const UMA = P.uma;
+    const primaTrab = primaDef[r.clase]!=null ? primaDef[r.clase] : P.prima;
+    const F = G*30;                                 /* F8 = G8*30  Ing. del periodo (base mensual) */
+    const I = G*H;                                  /* I8 = SDI */
+    const K = G*d;                                  /* K8 ingreso del periodo */
+    const isr = isrPeriodo(K, d);
+    const N = isr.ret;                              /* N8 retención ISR */
+    const L = isr.sub;                              /* L8 subsidio entregado */
+    const M = K+L;                                  /* M8 total percepción */
+    /* IMSS: AK..BZ */
+    const AK = (G*15)/365, AL = (G*12*0.25)/365;
+    const AN = G+AK+AL;                             /* SBC integrado 1er año */
+    const AP = Math.min(AN, 25*UMA);
+    const AR = Math.min(AN, 25*UMA);
+    const AT = Math.max(AP-3*UMA, 0);
+    const AU = UMA*0.204*d;                         /* cuota fija EyM */
+    const AV = r2(AT*0.011*d), AW = r2(AT*0.004*d); /* excedente 3 UMA pat/obr */
+    const AY = AP*0.007*d,  AZ = AP*0.0025*d;       /* prest. dinero */
+    const BB = AP*0.0105*d, BC = AP*0.00375*d;      /* gastos méd. pensionados */
+    const BE = r2(AP*primaTrab*d);                  /* riesgo de trabajo (prima clase) */
+    const BF = AR*0.0175*d, BG = AR*0.00625*d;      /* invalidez y vida */
+    const BI = AP*0.01*d;                           /* guarderías */
+    const BJ = AU+AV+AY+BB+BE+BF+BI;                /* suma patronal IMSS */
+    const BK = AW+AZ+BC+BG;                         /* suma obrera IMSS */
+    const BN = AR*0.02*d;                           /* retiro */
+    const BO = AR*cyvRate(I/UMA)*d;                 /* cesantía y vejez patronal (tabla CYV) */
+    const BP = AR*0.01125*d;                        /* CyV obrera */
+    const BR = r2(AP*0.05*d);                       /* Infonavit patronal 5% */
+    const BS = BN+BO+BR, BT = BP;
+    const BX = BS+BJ;                               /* cuota patronal total */
+    const BY = BT+BK;                               /* cuota obrera total */
+    const O = BY;                                   /* O8 cuota IMSS trabajador */
+    const P2 = N+O;                                 /* P8 total retenciones */
+    const Q = M-P2;                                 /* Q8 neto sueldos y salarios */
+    const S = Math.max(F-Q-R, 0);                   /* S8 excedente previsión */
+    const X = Q+R+S-T-U-V-W;                        /* X8 ingreso neto a percibir */
+    const Y = BX;                                   /* Y8 cuota IMSS patronal */
+    const Z = O+Y;                                  /* Z8 costo social */
+    const AA = (K+R)*P.isn;                         /* AA8 impuesto s/nómina */
+    const AB = F*P.com;                             /* AB8 comisión */
+    const AC = (L<N) ? ((N-L)+F+Z+AA+AB) : (F+Z+AA+AB); /* AC8 sub-total */
+    const AD = AC*P.iva;                            /* AD8 IVA */
+    const AE = AC+AD;                               /* AE8 importe a depositar */
+    return {G:G,I:I,K:K,L:L,M:M,N:N,O:O,P:P2,Q:Q,R:R,S:S,T:T,U:U,V:V,W:W,X:X,Y:Y,Z:Z,AA:AA,AB:AB,AC:AC,AD:AD,AE:AE,F:F,AN:AN};
+  }
   function calc(){
     syncRows();
-    const UMA = num('r_uma');
-    const ceav = num('r_ceav'), retiro = num('r_retiro'), infonavit = num('r_infonavit');
-    const eymfija = num('r_eymfija'), eymexc = num('r_eymexc'), eympd = num('r_eympd'), eymgmp = num('r_eymgmp');
-    const rIv = num('r_iv'), rGuard = num('r_guard'), rIsn = num('r_isn');
-    const agu = num('r_aguinaldo'), vac = num('r_vac'), primavac = num('r_primavac');
-    const rHonorario = num('r_honorario'), rIva = num('r_iva');
-    const d304 = 30.4;
-    const zona = (g('coc_zona') && g('coc_zona').value)==='frontera' ? 'Zona Libre Frontera Norte' : 'General';
-    const smAplicable = zona==='General' ? num('r_sm_general') : num('r_sm_frontera');
-    const det = [];
-    const warnings = [];
-    let subtotal = 0, cuotaTot = 0, isnTot = 0, numTot = 0;
+    const P = { sm:nval('p_sm'), uma:nval('p_uma'), fi:nval('p_fi'), dias:nval('p_dias')||30,
+      isn:parseFloat(g('p_isn').value)||0.03, prima:primaDef[g('p_clase').value]||primaDef.I,
+      com:nval('p_com')/100, iva:nval('p_iva')/100 };
+    const zona = (g('coc_zona') && g('coc_zona').value)==='frontera';
+    const smAplicable = zona ? 440.87 : P.sm;
+    const det = [], warnings = [];
+    const tot = {K:0,L:0,N:0,O:0,Q:0,R:0,S:0,X:0,Y:0,Z:0,AA:0,AB:0,AC:0,AD:0,AE:0,num:0};
     window.__cocRows.forEach(function(r){
-      const salMen = parseFloat(r.salario) || 0;
-      const nTrab = parseInt(r.num,10) || 0;
-      const prima = parseFloat(r.prima) || 0;
-      const salDia = salMen/30;
-      const FI = 1 + (agu/365) + ((primavac/100)*(vac/365));
-      let SBC = salDia*FI;
-      const SDI = SBC;
-      const cap = 25*UMA;
-      if(SBC>cap) SBC = cap;
-      const eymFijaC = (eymfija/100)*UMA*d304;
-      const eymExcC = SBC>3*UMA ? (eymexc/100)*(SBC-3*UMA)*d304 : 0;
-      const pdC = (eympd/100)*SBC*d304;
-      const gmpC = (eymgmp/100)*SBC*d304;
-      const ivC = (rIv/100)*SBC*d304;
-      const guardC = (rGuard/100)*SBC*d304;
-      const riesgoC = (prima/100)*SBC*d304;
-      const retiroC = (retiro/100)*SBC*d304;
-      const ceavC = (ceav/100)*SBC*d304;
-      const infC = (infonavit/100)*SBC*d304;
-      const cuotaUno = eymFijaC+eymExcC+pdC+gmpC+ivC+guardC+riesgoC+retiroC+ceavC+infC;
-      const isnUno = (rIsn/100)*salMen;
-      const costoUno = salMen + cuotaUno + isnUno;
-      const costoPuesto = costoUno*nTrab;
-      subtotal += costoPuesto;
-      cuotaTot += cuotaUno*nTrab;
-      isnTot += isnUno*nTrab;
-      numTot += nTrab;
-      const isrUno = isrMensual(salMen);
-      const belowMin = salMen>0 && smAplicable>0 && salDia < smAplicable;
-      if(belowMin){
-        warnings.push('⚠ Puesto '+(r.puesto||'—')+': salario diario '+mny(salDia)+' por debajo del mínimo CONASAMI aplicable ('+mny(smAplicable)+'). Ajustar — no se puede pagar por debajo del mínimo.');
+      const n = parseInt(r.num,10)||0;
+      if(n<=0) return;
+      const x = calcRow(r, P);
+      if(x.G>0 && x.G<smAplicable){
+        warnings.push('⚠ '+(r.puesto||'Trabajador')+': S.D. '+mny(x.G)+' por debajo del mínimo CONASAMI aplicable ('+mny(smAplicable)+'). No se puede pagar por debajo del mínimo.');
       }
-      det.push({puesto:r.puesto, num:nTrab, salario:salMen, sdi:SDI, cuota:cuotaUno*nTrab, isn:isnUno*nTrab, costo:costoPuesto, isr:isrUno, neto:salMen-isrUno, belowMin:belowMin});
+      det.push({r:r, x:x, n:n});
+      ['K','L','N','O','Q','R','S','X','Y','Z','AA','AB','AC','AD','AE'].forEach(function(k){ tot[k]+=x[k]*n; });
+      tot.num += n;
     });
-    const honorario = (rHonorario/100)*subtotal;
-    const base = subtotal + honorario;
-    const iva = (rIva/100)*base;
-    const total = base + iva;
-    window.__cocResult = {det:det, subtotal:subtotal, honorario:honorario, iva:iva, total:total, numTot:numTot, cuotaTot:cuotaTot, isnTot:isnTot, zona:zona, smAplicable:smAplicable, warnings:warnings};
+    window.__cocResult = {det:det, tot:tot, P:P, warnings:warnings, zona:zona?'Frontera Norte':'General', smAplicable:smAplicable,
+      entidad:(function(){ const s=g('p_isn'); return s.options[s.selectedIndex] ? s.options[s.selectedIndex].text : ''; })(),
+      periodicidad:g('p_per').value, clase:g('p_clase').value};
     renderDesglose();
-  }
-
-  function sline(l,v){ return '<div style="display:flex;justify-content:space-between;padding:5px 0">'+esc(l)+'<b>'+mny(v)+'</b></div>'; }
-  function desgloseTablaHtml(R){
-    const body = R.det.map(function(d){
-      const rowStyle = d.belowMin ? ' style="background:rgba(220,53,69,.14);color:var(--danger)"' : '';
-      return '<tr'+rowStyle+'><td>'+esc(d.puesto||'—')+'</td><td class="num-r">'+d.num+'</td>'+
-        '<td class="num-r">'+mny(d.salario)+'</td><td class="num-r">'+mny(d.sdi)+'</td>'+
-        '<td class="num-r">'+mny(d.cuota)+'</td><td class="num-r">'+mny(d.isn)+'</td>'+
-        '<td class="num-r">'+mny(d.costo)+'</td>'+
-        '<td class="num-r">'+mny(d.isr||0)+'</td><td class="num-r">'+mny(d.neto!=null?d.neto:d.salario)+'</td></tr>';
-    }).join('');
-    const totRow = '<tr style="font-weight:700;background:var(--cream)"><td>Totales</td><td class="num-r">'+R.numTot+'</td>'+
-      '<td></td><td></td><td class="num-r">'+mny(R.cuotaTot)+'</td><td class="num-r">'+mny(R.isnTot)+'</td><td class="num-r">'+mny(R.subtotal)+'</td><td></td><td></td></tr>';
-    return '<div style="overflow-x:auto"><table><thead><tr>'+
-      '<th>Puesto</th><th class="num-r">Nº</th><th class="num-r">Salario</th><th class="num-r">SDI</th>'+
-      '<th class="num-r">Cuota IMSS+Inf</th><th class="num-r">ISN</th><th class="num-r">Costo mensual</th>'+
-      '<th class="num-r">ISR retención (mensual)</th><th class="num-r">Neto aprox. trabajador</th>'+
-      '</tr></thead><tbody>'+body+totRow+'</tbody></table></div>'+
-      '<div style="font-size:11px;color:var(--muted);margin-top:6px">ISR conforme a tarifa mensual Art. 96 LISR vigente 2026 (Anexo 8 RMF). Retención del trabajador — referencia informativa; el costo patronal no incluye ISR del trabajador.</div>';
   }
   function warningsHtml(R){
     if(!R || !R.warnings || !R.warnings.length) return '';
@@ -1749,37 +1726,47 @@ async function viewCotizador(c){
       return '<div style="background:rgba(220,53,69,.12);border:1px solid var(--danger);color:var(--danger);border-radius:8px;padding:10px 12px;margin:8px 0;font-weight:700">'+esc(w)+'</div>';
     }).join('');
   }
+  function desgloseTablaHtml(R){
+    const cols = [['Ingreso periodo','K'],['Subsidio','L'],['Ret. ISR','N'],['IMSS trab.','O'],['Neto sueldos','Q'],['Previsión','R'],['Excedente','S'],['Ingreso neto','X'],['IMSS patronal','Y'],['Costo social','Z'],['ISN','AA'],['Comisión','AB'],['Sub-Total','AC'],['IVA','AD'],['A depositar','AE']];
+    const head = '<tr><th>Trabajador / Puesto</th><th>Clase</th><th class="num-r">S.D.</th><th class="num-r">Nº</th>'+cols.map(function(cc){ return '<th class="num-r">'+cc[0]+'</th>'; }).join('')+'</tr>';
+    const body = R.det.map(function(dd){
+      return '<tr><td>'+esc(dd.r.puesto||'—')+'</td><td>'+esc(dd.r.clase)+'</td><td class="num-r">'+mny(dd.x.G)+'</td><td class="num-r">'+dd.n+'</td>'+
+        cols.map(function(cc){ return '<td class="num-r">'+mny(dd.x[cc[1]]*dd.n)+'</td>'; }).join('')+'</tr>';
+    }).join('');
+    const totRow = '<tr style="font-weight:700;background:var(--cream)"><td>TOTALES</td><td></td><td></td><td class="num-r">'+R.tot.num+'</td>'+
+      cols.map(function(cc){ return '<td class="num-r">'+mny(R.tot[cc[1]])+'</td>'; }).join('')+'</tr>';
+    return '<div style="overflow-x:auto"><table style="font-size:12px"><thead>'+head+'</thead><tbody>'+body+totRow+'</tbody></table></div>'+
+      '<div style="font-size:11px;color:var(--muted);margin-top:6px">Modelo COT-PRM-002 · Periodicidad '+esc(R.periodicidad)+' ('+R.P.dias+' días) · '+esc(R.entidad)+' · Prima cliente clase '+esc(R.clase)+' · Comisión '+(R.P.com*100).toFixed(2)+'% · UMA '+mny(R.P.uma)+' · Tope 25 UMA.</div>';
+  }
+  function sline(l,v){ return '<div style="display:flex;justify-content:space-between;padding:5px 0">'+esc(l)+'<b>'+mny(v)+'</b></div>'; }
+  function resumenHtml(R){
+    return sline('Nómina del periodo (ingresos)', R.tot.K)+
+      sline('Previsión social', R.tot.R)+
+      sline('Excedente de previsión', R.tot.S)+
+      sline('Costo social (IMSS+RCV+Infonavit)', R.tot.Z)+
+      sline('Impuesto sobre nómina', R.tot.AA)+
+      sline('Comisión del despacho', R.tot.AB)+
+      sline('Sub-Total', R.tot.AC)+
+      sline('IVA', R.tot.AD)+
+      '<div style="display:flex;justify-content:space-between;padding:10px 0;border-top:2px solid var(--navy);font-weight:800;font-size:22px;margin-top:6px">Importe a depositar (cliente)<span style="color:var(--gold)">'+mny(R.tot.AE)+'</span></div>';
+  }
   function renderDesglose(){
     const R = window.__cocResult;
     const out = g('coc_desglose');
     if(!R){ out.innerHTML=''; return; }
-    out.innerHTML =
-      warningsHtml(R)+
-      '<div class="card"><h3>Desglose</h3><div class="body">'+
-        '<div style="font-size:12px;color:var(--muted);margin-bottom:6px">Zona salario mínimo: '+esc(R.zona||'General')+' — mínimo diario aplicable '+mny(R.smAplicable||0)+'</div>'+
-        desgloseTablaHtml(R)+'</div></div>'+
-      '<div class="card"><h3>Resumen</h3><div class="body">'+
-        sline('Subtotal costo', R.subtotal)+
-        sline('Honorario despacho', R.honorario)+
-        sline('IVA', R.iva)+
-        '<div style="display:flex;justify-content:space-between;padding:10px 0;border-top:2px solid var(--navy);font-weight:800;font-size:22px;margin-top:6px">Total mensual<span style="color:var(--gold)">'+mny(R.total)+'</span></div>'+
-      '</div></div>';
+    out.innerHTML = warningsHtml(R)+
+      '<div class="card"><h3>Desglose por trabajador (columnas del Excel)</h3><div class="body">'+desgloseTablaHtml(R)+'</div></div>'+
+      '<div class="card"><h3>Resumen</h3><div class="body">'+resumenHtml(R)+'</div></div>';
   }
-
   g('coc_calc').onclick = calc;
-
   g('coc_pdf').onclick = async function(){
     calc();
     const R = window.__cocResult;
     const cliente = (g('coc_cliente') && g('coc_cliente').value) || '';
     const rp = (g('coc_rp') && g('coc_rp').value) || '';
-    const estado = (g('coc_estado') && g('coc_estado').value) || '';
     const prom = (g('coc_prom') && g('coc_prom').value) || '';
     const actividad = (g('coc_actividad') && g('coc_actividad').value) || '';
-    const primaPatron = (g('coc_prima_patron') && g('coc_prima_patron').value) || '';
     const tipoContrato = (g('coc_tipocontrato') && g('coc_tipocontrato').value) || '';
-    const periodicidad = (g('coc_periodicidad') && g('coc_periodicidad').value) || '';
-    const zonaSel = (R && R.zona) || (((g('coc_zona') && g('coc_zona').value)==='frontera') ? 'Zona Libre Frontera Norte' : 'General');
     let n = 1;
     try{
       const res = await sb.from('solicitudes').select('id',{count:'exact',head:true}).eq('tipo','cotizacion');
@@ -1788,50 +1775,43 @@ async function viewCotizador(c){
     const folio = 'COT-PRM-' + String(n).padStart(4,'0');
     const fecha = new Date().toLocaleDateString('es-MX',{year:'numeric',month:'long',day:'numeric'});
     c.innerHTML =
-      '<div style="max-width:900px;margin:0 auto;padding:10px">'+
+      '<div style="max-width:1000px;margin:0 auto;padding:10px">'+
       '<div style="display:flex;gap:8px;margin-bottom:16px" class="no-print">'+
         '<button class="btn2" id="coc_print">🖨 Imprimir / Guardar PDF</button>'+
         '<button class="btn2 ghost" id="coc_volver">← Volver</button>'+
       '</div>'+
       '<div style="border-bottom:3px solid var(--navy);padding-bottom:12px;margin-bottom:18px">'+
         '<div style="font-size:22px;font-weight:800;color:var(--navy)">PR&amp;M Business Group</div>'+
-        '<div style="font-size:14px;color:var(--gold);font-weight:700">Cotización de nómina</div>'+
+        '<div style="font-size:14px;color:var(--gold);font-weight:700">Cotización de nómina · '+esc(folio)+'</div>'+
       '</div>'+
       '<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px;font-size:13px">'+
-        '<div><b>Folio:</b> '+esc(folio)+'<br><b>Fecha:</b> '+esc(fecha)+'</div>'+
-        '<div><b>Cliente:</b> '+esc(cliente||'—')+'<br><b>Registro patronal:</b> '+esc(rp||'—')+'<br><b>Estado:</b> '+esc(estado||'—')+'<br><b>Promotor:</b> '+esc(prom||'—')+'</div>'+
-        '<div><b>Actividad principal:</b> '+esc(actividad||'—')+'<br><b>Prima de riesgo del patrón:</b> '+esc(primaPatron?primaPatron+' %':'—')+'<br><b>Tipo de contrato:</b> '+esc(tipoContrato||'—')+'<br><b>Periodicidad de pago:</b> '+esc(periodicidad||'—')+'<br><b>Zona salario mínimo:</b> '+esc(zonaSel)+'</div>'+
+        '<div><b>Fecha:</b> '+esc(fecha)+'<br><b>Promotor:</b> '+esc(prom||'—')+'</div>'+
+        '<div><b>Cliente:</b> '+esc(cliente||'—')+'<br><b>Registro patronal:</b> '+esc(rp||'—')+'<br><b>Actividad:</b> '+esc(actividad||'—')+'</div>'+
+        '<div><b>Tipo de contrato:</b> '+esc(tipoContrato||'—')+'<br><b>Periodicidad:</b> '+esc(R.periodicidad)+'<br><b>Entidad (ISN):</b> '+esc(R.entidad)+'<br><b>Prima R.T.:</b> Clase '+esc(R.clase)+'</div>'+
       '</div>'+
       warningsHtml(R)+
-      '<div style="font-weight:700;color:var(--navy);margin-bottom:8px">Desglose de puestos</div>'+
       desgloseTablaHtml(R)+
-      '<div style="max-width:360px;margin-left:auto;margin-top:18px">'+
-        sline('Subtotal costo', R.subtotal)+
-        sline('Honorario despacho', R.honorario)+
-        sline('IVA', R.iva)+
-        '<div style="display:flex;justify-content:space-between;padding:10px 0;border-top:2px solid var(--navy);font-weight:800;font-size:20px">Total mensual<span style="color:var(--gold)">'+mny(R.total)+'</span></div>'+
-      '</div>'+
-      '<div style="margin-top:26px;font-size:11px;color:var(--muted);border-top:1px solid var(--line);padding-top:10px">Tasas estándar 2026 sujetas a verificación. Documento generado por PRM 360.</div>'+
+      '<div style="max-width:420px;margin-left:auto;margin-top:18px">'+resumenHtml(R)+'</div>'+
+      '<div style="margin-top:26px;font-size:11px;color:var(--muted);border-top:1px solid var(--line);padding-top:10px">Cotización conforme al modelo oficial COT-PRM-002 de PR&amp;M Business Group. Parámetros 2026: SM $315.04, UMA $117.31, tope 25 UMA, primas medias Art. 73 LSS, tarifas ISR/subsidio Anexo 8. Documento generado por PRM 360.</div>'+
       '</div>';
     g('coc_print').onclick = function(){ window.print(); };
     g('coc_volver').onclick = function(){ viewCotizador(c); };
   };
-
   g('coc_save').onclick = async function(){
     const msg = g('coc_msg');
     if(!window.__cocResult) calc();
     const R = window.__cocResult;
     const cliente = (g('coc_cliente') && g('coc_cliente').value) || 'Cliente';
-    const desc = cliente + ' - Total mensual ' + mny(R.total);
+    const desc = cliente + ' - A depositar ' + mny(R.tot.AE) + ' (' + R.tot.num + ' trab.)';
     msg.style.color='var(--muted)'; msg.textContent='Guardando…';
     g('coc_save').disabled = true;
     let ok = false, lastErr = null;
     const intentos = [{tipo:'cotizacion', descripcion:desc}, {descripcion:desc}];
     for(let i=0;i<intentos.length;i++){
       try{
-        const {error} = await sb.from('solicitudes').insert(intentos[i]);
-        if(!error){ ok = true; break; }
-        lastErr = error;
+        const res = await sb.from('solicitudes').insert(intentos[i]);
+        if(!res.error){ ok = true; break; }
+        lastErr = res.error;
       }catch(e){ lastErr = e; }
     }
     g('coc_save').disabled = false;
@@ -3420,7 +3400,7 @@ async function viewContraloria(c){
 /* ===== Calendario REPSE (ICSOE / SISUB) ===== */
 async function viewCalRepse(c, ftipo, fcuat){
   ftipo=ftipo||''; fcuat=fcuat||'';
-  let q=sb.from('repse_informativas').select('id,registro_patronal,tipo,cuatrimestre,anio,estatus,fecha_presentacion,acuse,notas')
+  let q=sb.from('repse_informativas').select('id,registro_patronal,tipo,cuatrimestre,anio,estatus,fecha_presentacion,acuse,acuse_path,notas')
     .order('anio').order('cuatrimestre').order('notas').limit(300);
   if(ftipo) q=q.eq('tipo',ftipo);
   if(fcuat) q=q.eq('cuatrimestre',Number(fcuat));
@@ -3430,16 +3410,20 @@ async function viewCalRepse(c, ftipo, fcuat){
   const porP=lista.filter(x=>x.estatus==='por_presentar').length;
   const venc=lista.filter(x=>x.estatus==='vencida_revisar').length;
   const pres=lista.filter(x=>x.estatus==='presentada').length;
+  const conAcuse=lista.filter(x=>x.acuse_path).length;
   const tagEst=e=> e==='presentada'?'on':(e==='vencida_revisar'?'off':'repse');
   const lblEst=e=> e==='vencida_revisar'?'vencida · revisar':(e==='por_presentar'?'por presentar':e);
   const rows=lista.map(x=>{
     const btn=x.estatus!=='presentada'?'<button class="mini rp-pres" data-id="'+x.id+'">Presentada</button>':'';
+    const acuseBtn = x.acuse_path
+      ? '<button class="mini rp-ver" data-path="'+esc(x.acuse_path)+'" style="background:var(--ok)">📎 Ver acuse</button>'
+      : '<button class="mini rp-sube" data-id="'+x.id+'">📎 Subir acuse</button>';
     return '<tr><td><b>'+esc(x.notas||'')+'</b></td><td>'+esc(x.registro_patronal||'')+'</td>'+
       '<td><span class="tag repse">'+esc(x.tipo||'')+'</span></td>'+
       '<td>C'+esc(x.cuatrimestre)+' · '+esc(x.anio)+'</td>'+
       '<td><span class="tag '+tagEst(x.estatus)+'">'+esc(lblEst(x.estatus||''))+'</span></td>'+
       '<td>'+esc(x.fecha_presentacion||'—')+'</td>'+
-      '<td><input class="rp-acuse" data-id="'+x.id+'" value="'+esc(x.acuse||'')+'" placeholder="Acuse" style="width:130px"></td>'+
+      '<td><input class="rp-acuse" data-id="'+x.id+'" value="'+esc(x.acuse||'')+'" placeholder="Folio acuse" style="width:110px"> '+acuseBtn+'</td>'+
       '<td>'+btn+'</td></tr>';
   }).join('');
   const selTipo='<label>Tipo<select id="rp_tipo"><option value="">Todos</option>'+
@@ -3448,15 +3432,17 @@ async function viewCalRepse(c, ftipo, fcuat){
   const selCuat='<label>Cuatrimestre<select id="rp_cuat"><option value="">Todos</option>'+
     [1,2,3].map(n=>'<option value="'+n+'"'+(String(fcuat)===String(n)?' selected':'')+'>C'+n+'</option>').join('')+'</select></label>';
   c.innerHTML='<h1 class="pg">Calendario REPSE (ICSOE / SISUB)</h1>'+
-    '<div class="pgsub">ICSOE (IMSS) y SISUB (Infonavit) cuatrimestrales por empresa REPSE — se siembran automáticamente.</div>'+
+    '<div class="pgsub">ICSOE (IMSS) y SISUB (Infonavit) cuatrimestrales por empresa REPSE. El acuse se sube aquí mismo y queda ligado al registro en el repositorio seguro (repse/).</div>'+
     '<div class="kpis">'+
       tile(porP,'Por presentar',porP>0?'#e67e22':'var(--ok)')+
       tile(venc,'Vencidas por revisar',venc>0?'#c0392b':'var(--ok)')+
       tile(pres,'Presentadas','var(--ok)')+
+      tile(conAcuse,'Con acuse archivado','var(--navy)')+
     '</div>'+
     '<div class="card"><div class="body"><div class="frm">'+selTipo+selCuat+'</div></div></div>'+
     '<div class="card"><table><thead><tr><th>Empresa</th><th>RFC</th><th>Tipo</th><th>Cuatrimestre</th><th>Estatus</th><th>Fecha presentación</th><th>Acuse</th><th></th></tr></thead><tbody>'+
-    (rows||'<tr><td colspan=8 class="empty">Sin informativas registradas</td></tr>')+'</tbody></table></div>';
+    (rows||'<tr><td colspan=8 class="empty">Sin informativas registradas</td></tr>')+'</tbody></table></div>'+
+    '<input type="file" id="rp_file" accept=".pdf,image/*" style="display:none">';
   const rerender=()=>viewCalRepse(c, document.getElementById('rp_tipo').value, document.getElementById('rp_cuat').value);
   document.getElementById('rp_tipo').onchange=rerender;
   document.getElementById('rp_cuat').onchange=rerender;
@@ -3466,9 +3452,28 @@ async function viewCalRepse(c, ftipo, fcuat){
   });
   c.querySelectorAll('button.rp-pres').forEach(b=>b.onclick=async()=>{
     b.disabled=true;
-    const {error:e}=await sb.from('repse_informativas').update({estatus:'presentada',fecha_presentacion:matHoy()}).eq('id',b.dataset.id);
+    const {error:e}=await sb.from('repse_informativas').update({estatus:'presentada',fecha_presentacion:matHoy(),presentada_en:new Date().toISOString()}).eq('id',b.dataset.id);
     if(e){ alert('Error: '+e.message); b.disabled=false; return; }
     rerender();
+  });
+  const fileInp=document.getElementById('rp_file');
+  let pendId=null;
+  c.querySelectorAll('button.rp-sube').forEach(b=>b.onclick=()=>{ pendId=b.dataset.id; fileInp.click(); });
+  fileInp.onchange=async(ev)=>{
+    const f=ev.target.files && ev.target.files[0];
+    if(!f || !pendId) return;
+    const path='repse/'+pendId+'_'+f.name;
+    const up=await sb.storage.from('expedientes').upload(path, f, {upsert:true});
+    if(up.error){ alert('No se pudo subir el acuse: '+up.error.message); fileInp.value=''; return; }
+    const {error:e}=await sb.from('repse_informativas').update({acuse_path:path, estatus:'presentada', fecha_presentacion:matHoy(), presentada_en:new Date().toISOString()}).eq('id',pendId);
+    if(e){ alert('Acuse subido pero no se pudo ligar: '+e.message); }
+    fileInp.value=''; pendId=null;
+    rerender();
+  };
+  c.querySelectorAll('button.rp-ver').forEach(b=>b.onclick=async()=>{
+    const r=await sb.storage.from('expedientes').createSignedUrl(b.dataset.path, 300);
+    if(r.data && r.data.signedUrl) window.open(r.data.signedUrl,'_blank');
+    else alert('No se pudo abrir el acuse.');
   });
 }
 
@@ -4281,3 +4286,362 @@ async function viewEfirmas(c){
     viewEfirmas(c);
   });
 }
+
+
+/* ===== v15 · Tablero NOMEN (Operaciones) ===== */
+async function viewTabNomen(c){
+  c.innerHTML='<div class="loader">Cargando tablero NOMEN…</div>';
+  const tc = await sb.from('nomen_timbrado_cliente').select('*').order('total_pagar',{ascending:false});
+  const cp = await sb.from('nomen_costo_pagadora').select('*').order('total_pagar',{ascending:false});
+  const tm = await sb.from('nomen_tendencia').select('*').order('mes');
+  const cli=tc.data||[], pag=cp.data||[], ten=tm.data||[];
+  let reg=0,timb=0,sin=0,pagar=0,social=0,patron=0,isn=0,isrr=0;
+  cli.forEach(function(x){ reg+=x.registros||0; timb+=x.timbrados||0; sin+=x.sin_timbrar||0; pagar+=Number(x.total_pagar)||0; social+=Number(x.costo_social)||0; patron+=Number(x.cuotas_patronales)||0; isn+=Number(x.isn)||0; isrr+=Number(x.isr_ret)||0; });
+  const pct = reg? (timb/reg*100) : 0;
+  const alertas=[
+    ['ALTA','% sin timbrar = '+(reg?(sin/reg*100).toFixed(1):'0')+'% (umbral 2%). '+sin.toLocaleString()+' registros sin timbrar.'],
+    ['ALTA', cli.filter(function(x){ return (x.sin_timbrar||0)>0; }).length+' clientes con nóminas SIN TIMBRAR.'],
+    ['MEDIA','Concentración: top 5 clientes = '+(pagar? (cli.slice(0,5).reduce(function(a,x){ return a+Number(x.total_pagar||0); },0)/pagar*100).toFixed(0):'0')+'% del total a pagar.'],
+    ['MEDIA','720 registros sin CLABE (riesgo de rechazo en dispersión) — corte 2026-06.'],
+    ['MEDIA','Faltantes fiscales: RFC 28, CURP 34 — corte 2026-06.']
+  ];
+  const alertHtml = alertas.map(function(a){
+    const col=a[0]==='ALTA'?'var(--danger)':'#e67e22';
+    return '<div style="border-left:4px solid '+col+';background:var(--cream);padding:8px 12px;margin:6px 0;border-radius:6px"><b style="color:'+col+'">'+a[0]+'</b> · '+esc(a[1])+'</div>';
+  }).join('');
+  function tbl(list, kcol, klabel, lim){
+    const rows=list.slice(0,lim).map(function(x){
+      const p=Number(x.pct_timbrado||0)*100;
+      const col=p>=90?'var(--ok)':(p>=60?'#e67e22':'var(--danger)');
+      return '<tr><td>'+esc(x[kcol]||'')+'</td><td class="num-r">'+(x.registros||0)+'</td><td class="num-r">'+(x.empleados||0)+'</td>'+
+        '<td class="num-r">'+(x.timbrados||0)+'</td><td class="num-r">'+(x.sin_timbrar||0)+'</td>'+
+        '<td class="num-r" style="color:'+col+';font-weight:700">'+p.toFixed(0)+'%</td>'+
+        '<td class="num-r">'+mny(x.total_pagar)+'</td><td class="num-r">'+mny(x.costo_social)+'</td><td class="num-r">'+mny(x.isn)+'</td></tr>';
+    }).join('');
+    return '<div style="overflow-x:auto"><table style="font-size:12.5px"><thead><tr><th>'+klabel+'</th><th class="num-r">Reg.</th><th class="num-r">Empl.</th><th class="num-r">Timbrados</th><th class="num-r">Sin timbrar</th><th class="num-r">%</th><th class="num-r">Total a pagar</th><th class="num-r">Costo social</th><th class="num-r">ISN</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+  }
+  const tenRows = ten.map(function(x){
+    const p=Number(x.pct_timbrado||0)*100;
+    return '<tr><td>'+esc(x.mes)+'</td><td class="num-r">'+(x.registros||0)+'</td><td class="num-r">'+(x.timbrados||0)+'</td><td class="num-r">'+(x.sin_timbrar||0)+'</td><td class="num-r">'+p.toFixed(0)+'%</td><td class="num-r">'+mny(x.total_pagar)+'</td><td class="num-r">'+mny(x.costo_social)+'</td><td class="num-r">'+mny(x.isn)+'</td></tr>';
+  }).join('');
+  c.innerHTML='<h1 class="pg">Tablero NOMEN · Control de nómina</h1>'+
+    '<div class="pgsub">Datos reales de su export NOMEN (PRM-NOM-001) · corte junio 2026 · se actualiza al pegar el nuevo export con el Importador</div>'+
+    '<div class="kpis">'+
+      tile(reg.toLocaleString(),'Registros de nómina','var(--navy)')+
+      tile(mny(pagar),'Total a pagar','var(--gold)')+
+      tile(mny(social),'Costo social','var(--navy)')+
+      tile(mny(patron),'Cuotas patronales','var(--navy)')+
+      tile(mny(isn),'ISN del periodo','var(--navy)')+
+      tile(mny(isrr),'ISR retenido','var(--navy)')+
+      tile(pct.toFixed(0)+'%','Timbrado',pct>=90?'var(--ok)':'var(--danger)')+
+      tile(cli.length,'Clientes','var(--navy)')+
+      tile(pag.length,'Pagadoras','var(--navy)')+
+    '</div>'+
+    '<div class="card"><h3>Alertas de la semana</h3><div class="body">'+alertHtml+'</div></div>'+
+    '<div class="card"><h3>Tendencia mensual 2026</h3><div class="body"><div style="overflow-x:auto"><table><thead><tr><th>Mes</th><th class="num-r">Registros</th><th class="num-r">Timbrados</th><th class="num-r">Sin timbrar</th><th class="num-r">%</th><th class="num-r">Total a pagar</th><th class="num-r">Costo social</th><th class="num-r">ISN</th></tr></thead><tbody>'+tenRows+'</tbody></table></div></div></div>'+
+    '<div class="card"><h3>Timbrado y costo por cliente ('+cli.length+')</h3><div class="body"><input id="nm_q" class="mini" placeholder="Buscar cliente…" style="min-width:260px;margin-bottom:8px"><div id="nm_cli">'+tbl(cli,'cliente','Cliente',200)+'</div></div></div>'+
+    '<div class="card"><h3>Costo por pagadora ('+pag.length+')</h3><div class="body">'+tbl(pag,'pagadora','Pagadora',200)+'</div></div>';
+  const q=document.getElementById('nm_q');
+  if(q) q.onkeyup=function(){
+    const t=q.value.trim().toLowerCase();
+    const f = t? cli.filter(function(x){ return String(x.cliente||'').toLowerCase().indexOf(t)>=0; }) : cli;
+    document.getElementById('nm_cli').innerHTML=tbl(f,'cliente','Cliente',200);
+  };
+}
+
+/* ===== v15 · Motor de conciliación (Contabilidad) ===== */
+async function viewConciliador(c){
+  const NL = String.fromCharCode(10);
+  c.innerHTML='<h1 class="pg">Motor de conciliación</h1>'+
+    '<div class="pgsub">Concilia el estado de cuenta bancario contra la dispersión/CFDI o contra pólizas CONTPAQi (Anexo 24). Acepta CSV o TXT tal cual se descargan.</div>'+
+    '<div class="card"><h3>1 · Cargar archivos</h3><div class="body">'+
+      '<div class="frm">'+
+      '<label>Estado de cuenta (CSV/TXT: fecha, referencia, concepto, cargo/abono)<input type="file" id="cz_banco" accept=".csv,.txt"></label>'+
+      '<label>Dispersión / CFDI / pólizas (CSV/TXT: referencia, beneficiario, importe)<input type="file" id="cz_disp" accept=".csv,.txt"></label>'+
+      '</div>'+
+      '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">'+
+      '<button class="btn2" id="cz_run">Conciliar</button>'+
+      '<button class="btn2 ghost" id="cz_demo">▶ Correr DEMO con datos de prueba</button>'+
+      '<span id="cz_msg" style="align-self:center;font-size:12px"></span></div>'+
+      '<div style="font-size:11.5px;color:var(--muted);margin-top:8px">Reglas: cruce exacto por referencia; si no hay referencia, cruce por importe con tolerancia de $0.01 y fecha ±3 días. Todo lo no cruzado se reporta en su lista.</div>'+
+    '</div></div>'+
+    '<div id="cz_out"></div>';
+  const g=id=>document.getElementById(id);
+  function parseFile(txt){
+    const lines = txt.split(NL).map(function(l){ return l.trim(); }).filter(function(l){ return l.length>0; });
+    if(!lines.length) return [];
+    const delim = lines[0].indexOf('|')>=0 ? '|' : (lines[0].indexOf(';')>=0 ? ';' : (lines[0].indexOf(String.fromCharCode(9))>=0 ? String.fromCharCode(9) : ','));
+    const rows = lines.map(function(l){ return l.split(delim).map(function(x){ return x.trim(); }); });
+    const first = rows[0].map(function(x){ return x.toLowerCase(); });
+    const hasHeader = first.some(function(x){ return x.indexOf('fecha')>=0 || x.indexOf('ref')>=0 || x.indexOf('importe')>=0 || x.indexOf('concepto')>=0 || x.indexOf('cargo')>=0 || x.indexOf('monto')>=0; });
+    let idx = {fecha:0, ref:1, conc:2, imp:3};
+    if(hasHeader){
+      first.forEach(function(h,i){
+        if(h.indexOf('fecha')>=0) idx.fecha=i;
+        else if(h.indexOf('ref')>=0 || h.indexOf('folio')>=0 || h.indexOf('uuid')>=0) idx.ref=i;
+        else if(h.indexOf('concep')>=0 || h.indexOf('benefi')>=0 || h.indexOf('nombre')>=0 || h.indexOf('descri')>=0) idx.conc=i;
+        else if(h.indexOf('importe')>=0 || h.indexOf('monto')>=0 || h.indexOf('cargo')>=0 || h.indexOf('abono')>=0 || h.indexOf('total')>=0) idx.imp=i;
+      });
+    }
+    const out=[];
+    rows.slice(hasHeader?1:0).forEach(function(r){
+      const impRaw = String(r[idx.imp]||'').split('$').join('').split(',').join('');
+      const imp = Math.abs(parseFloat(impRaw)||0);
+      if(imp<=0 && !(r[idx.ref])) return;
+      out.push({fecha:String(r[idx.fecha]||''), ref:String(r[idx.ref]||''), concepto:String(r[idx.conc]||''), importe:imp});
+    });
+    return out;
+  }
+  function dParse(s){ const t=Date.parse(s); return isNaN(t)? null : t; }
+  function conciliar(banco, disp){
+    const usados = {};
+    const conciliados=[], diferencias=[];
+    banco.forEach(function(b){
+      let match=null, mi=-1;
+      for(let i=0;i<disp.length;i++){
+        if(usados[i]) continue;
+        const dd=disp[i];
+        if(b.ref && dd.ref && b.ref===dd.ref){ match=dd; mi=i; break; }
+      }
+      if(!match){
+        for(let i=0;i<disp.length;i++){
+          if(usados[i]) continue;
+          const dd=disp[i];
+          if(Math.abs(dd.importe-b.importe)<=0.01){
+            const tb=dParse(b.fecha), td=dParse(dd.fecha);
+            if(tb==null || td==null || Math.abs(tb-td)<=3*86400000){ match=dd; mi=i; break; }
+          }
+        }
+      }
+      if(match){
+        usados[mi]=true;
+        const dif = b.importe-match.importe;
+        if(Math.abs(dif)<=0.01) conciliados.push({b:b,d:match});
+        else diferencias.push({b:b,d:match,dif:dif});
+      } else {
+        diferencias.push({b:b,d:null,dif:null});
+      }
+    });
+    const sinBanco = disp.filter(function(x,i){ return !usados[i]; });
+    return {ok:conciliados, dif:diferencias.filter(function(x){ return x.d; }), soloBanco:diferencias.filter(function(x){ return !x.d; }), soloDisp:sinBanco};
+  }
+  function render(res){
+    function fila(b,d,extra){
+      return '<tr><td>'+esc(b?b.fecha:(d?d.fecha:''))+'</td><td>'+esc(b?b.ref:(d?d.ref:''))+'</td><td>'+esc(b?b.concepto:(d?d.concepto:''))+'</td>'+
+        '<td class="num-r">'+(b?mny(b.importe):'—')+'</td><td class="num-r">'+(d?mny(d.importe):'—')+'</td><td class="num-r">'+(extra||'')+'</td></tr>';
+    }
+    const head='<thead><tr><th>Fecha</th><th>Referencia</th><th>Concepto / beneficiario</th><th class="num-r">Banco</th><th class="num-r">Dispersión/CFDI</th><th class="num-r">Diferencia</th></tr></thead>';
+    function bloque(titulo, color, filas){
+      return '<div class="card"><h3 style="color:'+color+'">'+titulo+'</h3><div class="body"><div style="overflow-x:auto"><table style="font-size:12.5px">'+head+'<tbody>'+(filas||'<tr><td colspan=6 class="empty">Ninguno</td></tr>')+'</tbody></table></div></div></div>';
+    }
+    g('cz_out').innerHTML=
+      '<div class="kpis">'+
+        tile(res.ok.length,'Conciliados','var(--ok)')+
+        tile(res.dif.length,'Con diferencia',res.dif.length?'var(--danger)':'var(--ok)')+
+        tile(res.soloBanco.length,'En banco sin CFDI/dispersión',res.soloBanco.length?'#e67e22':'var(--ok)')+
+        tile(res.soloDisp.length,'Dispersados sin cargo en banco',res.soloDisp.length?'#e67e22':'var(--ok)')+
+      '</div>'+
+      bloque('✓ Conciliados','var(--ok)', res.ok.map(function(x){ return fila(x.b,x.d,'—'); }).join(''))+
+      bloque('⚠ Con diferencia de importe','var(--danger)', res.dif.map(function(x){ return fila(x.b,x.d,'<b style="color:var(--danger)">'+mny(x.dif)+'</b>'); }).join(''))+
+      bloque('Cargos en banco sin soporte','#e67e22', res.soloBanco.map(function(x){ return fila(x.b,null,''); }).join(''))+
+      bloque('Dispersión/CFDI sin cargo bancario','#e67e22', res.soloDisp.map(function(x){ return fila(null,x,''); }).join(''));
+  }
+  let fBanco=null, fDisp=null;
+  g('cz_banco').onchange=function(e){ fBanco=e.target.files[0]||null; };
+  g('cz_disp').onchange=function(e){ fDisp=e.target.files[0]||null; };
+  g('cz_run').onclick=function(){
+    const msg=g('cz_msg');
+    if(!fBanco || !fDisp){ msg.style.color='var(--danger)'; msg.textContent='Cargue ambos archivos (o use la demo).'; return; }
+    msg.style.color='var(--muted)'; msg.textContent='Conciliando…';
+    const r1=new FileReader();
+    r1.onload=function(e1){
+      const banco=parseFile(String(e1.target.result));
+      const r2=new FileReader();
+      r2.onload=function(e2){
+        const disp=parseFile(String(e2.target.result));
+        render(conciliar(banco,disp));
+        msg.style.color='var(--ok)'; msg.textContent='✓ '+banco.length+' movimientos banco vs '+disp.length+' registros.';
+      };
+      r2.readAsText(fDisp);
+    };
+    r1.readAsText(fBanco);
+  };
+  g('cz_demo').onclick=function(){
+    const banco=[
+      {fecha:'2026-07-03',ref:'DSP-1001',concepto:'DISPERSION NOMINA S27 LOPEZ',importe:8450.00},
+      {fecha:'2026-07-03',ref:'DSP-1002',concepto:'DISPERSION NOMINA S27 MTZ',importe:6120.50},
+      {fecha:'2026-07-03',ref:'DSP-1003',concepto:'DISPERSION NOMINA S27 GARCIA',importe:7300.00},
+      {fecha:'2026-07-03',ref:'',concepto:'SPEI RAMIREZ SALDANA',importe:5980.25},
+      {fecha:'2026-07-04',ref:'DSP-1005',concepto:'DISPERSION NOMINA S27 TORRES',importe:9100.00},
+      {fecha:'2026-07-04',ref:'DSP-1006',concepto:'DISPERSION NOMINA S27 SANCHEZ',importe:4890.75},
+      {fecha:'2026-07-04',ref:'DSP-1007',concepto:'DISPERSION NOMINA S27 PEREA',importe:8800.00},
+      {fecha:'2026-07-05',ref:'',concepto:'COMISION BANCARIA',importe:348.00},
+      {fecha:'2026-07-05',ref:'',concepto:'SPEI SIN IDENTIFICAR',importe:2500.00},
+      {fecha:'2026-07-05',ref:'DSP-1010',concepto:'DISPERSION NOMINA S27 VALDEZ',importe:5210.30}
+    ];
+    const disp=[
+      {fecha:'2026-07-03',ref:'DSP-1001',concepto:'LOPEZ HERNANDEZ JUAN',importe:8450.00},
+      {fecha:'2026-07-03',ref:'DSP-1002',concepto:'MARTINEZ RIOS CARLA',importe:6120.50},
+      {fecha:'2026-07-03',ref:'DSP-1003',concepto:'GARCIA PEREZ LUIS',importe:7300.00},
+      {fecha:'2026-07-03',ref:'DSP-1004',concepto:'RAMIREZ SALDANA HUGO',importe:5980.25},
+      {fecha:'2026-07-04',ref:'DSP-1005',concepto:'TORRES MOLINA ANA',importe:9100.00},
+      {fecha:'2026-07-04',ref:'DSP-1006',concepto:'SANCHEZ LUNA PEDRO',importe:4890.75},
+      {fecha:'2026-07-04',ref:'DSP-1007',concepto:'PEREA DUARTE MARIO',importe:8750.00},
+      {fecha:'2026-07-04',ref:'DSP-1008',concepto:'NUNEZ CANTU ROSA',importe:6600.00},
+      {fecha:'2026-07-05',ref:'DSP-1010',concepto:'VALDEZ ORTIZ RAUL',importe:5210.30}
+    ];
+    render(conciliar(banco,disp));
+    g('cz_msg').style.color='var(--ok)';
+    g('cz_msg').textContent='✓ Demo: 10 movimientos banco vs 9 dispersiones (datos ficticios).';
+  };
+}
+
+/* ===== v15 · Adhesión digital al plan de previsión (firma + foto + INE) ===== */
+async function viewAdhesionDig(c){
+  c.innerHTML='<h1 class="pg">Adhesión digital · Plan de previsión social</h1>'+
+    '<div class="pgsub">El trabajador firma en pantalla; se adjunta su fotografía y su INE digitalizada. Todo queda en su expediente.</div>'+
+    '<div class="card"><h3>1 · Trabajador</h3><div class="body"><div class="frm">'+
+      '<label style="flex:1">Buscar trabajador<input id="ad_q" placeholder="Nombre, NSS o cliente…" style="min-width:240px"></label>'+
+      '<button class="btn2" id="ad_go" style="align-self:flex-end">Buscar</button>'+
+      '<label>o captura directa<input id="ad_nombre" placeholder="Nombre completo" style="min-width:220px"></label>'+
+      '<label>Empresa / cliente<input id="ad_emp" style="min-width:180px"></label>'+
+    '</div><div id="ad_res" style="margin-top:8px"></div></div></div>'+
+    '<div class="card"><h3>2 · Firma del trabajador</h3><div class="body">'+
+      '<canvas id="ad_canvas" width="560" height="180" style="border:2px dashed var(--line);border-radius:8px;background:#fff;touch-action:none;max-width:100%"></canvas>'+
+      '<div style="margin-top:6px"><button class="mini" id="ad_clear">Borrar firma</button></div>'+
+    '</div></div>'+
+    '<div class="card"><h3>3 · Evidencias</h3><div class="body"><div class="frm">'+
+      '<label>Fotografía del trabajador (cámara)<input type="file" id="ad_foto" accept="image/*" capture="environment"></label>'+
+      '<label>INE digitalizada (frente o ambos lados)<input type="file" id="ad_ine" accept="image/*,.pdf"></label>'+
+    '</div></div></div>'+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">'+
+      '<button class="btn2" id="ad_save">✍ Registrar adhesión firmada</button>'+
+      '<span id="ad_msg" style="align-self:center;font-size:12px"></span>'+
+    '</div>'+
+    '<div id="ad_list"></div>';
+  const g=id=>document.getElementById(id);
+  let selId=null;
+  const cv=g('ad_canvas'), ctx=cv.getContext('2d');
+  ctx.lineWidth=2.2; ctx.lineCap='round'; ctx.strokeStyle='#1a2a44';
+  let drawing=false, hasInk=false;
+  function pos(e){
+    const r=cv.getBoundingClientRect();
+    const t=(e.touches && e.touches[0]) ? e.touches[0] : e;
+    return {x:(t.clientX-r.left)*(cv.width/r.width), y:(t.clientY-r.top)*(cv.height/r.height)};
+  }
+  function start(e){ drawing=true; const p=pos(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); e.preventDefault(); }
+  function move(e){ if(!drawing) return; const p=pos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); hasInk=true; e.preventDefault(); }
+  function end(){ drawing=false; }
+  cv.addEventListener('mousedown',start); cv.addEventListener('mousemove',move); window.addEventListener('mouseup',end);
+  cv.addEventListener('touchstart',start,{passive:false}); cv.addEventListener('touchmove',move,{passive:false}); cv.addEventListener('touchend',end);
+  g('ad_clear').onclick=function(){ ctx.clearRect(0,0,cv.width,cv.height); hasInk=false; };
+  g('ad_go').onclick=async function(){
+    const res=g('ad_res'); res.innerHTML='<div class="loader">Buscando…</div>';
+    const r=await sb.rpc('trabajadores_ext_lista',{p_q:g('ad_q').value.trim()});
+    const list=(r.data||[]).slice(0,10);
+    if(!list.length){ res.innerHTML='<div class="empty">Sin resultados — puede capturar el nombre directo.</div>'; return; }
+    res.innerHTML='<table><tbody>'+list.map(function(t){
+      return '<tr class="clk" data-id="'+esc(t.id)+'" data-n="'+esc(t.nombre||'')+'" data-e="'+esc(t.cliente_nombre||'')+'"><td>'+esc(t.nombre||'')+'</td><td>'+esc(t.cliente_nombre||'')+'</td><td>'+esc(t.nss||'')+'</td></tr>';
+    }).join('')+'</tbody></table>';
+    res.querySelectorAll('tr.clk').forEach(function(tr){
+      tr.onclick=function(){
+        selId=tr.getAttribute('data-id');
+        g('ad_nombre').value=tr.getAttribute('data-n');
+        g('ad_emp').value=tr.getAttribute('data-e');
+        res.innerHTML='<div style="color:var(--ok);font-weight:700">✓ Seleccionado: '+esc(tr.getAttribute('data-n'))+'</div>';
+      };
+    });
+  };
+  async function subir(file, path){
+    const up=await sb.storage.from('expedientes').upload(path, file, {upsert:true});
+    if(up.error) throw up.error;
+    return path;
+  }
+  g('ad_save').onclick=async function(){
+    const msg=g('ad_msg');
+    const nombre=g('ad_nombre').value.trim();
+    if(!nombre){ msg.style.color='var(--danger)'; msg.textContent='Falta el nombre del trabajador.'; return; }
+    if(!hasInk){ msg.style.color='var(--danger)'; msg.textContent='Falta la firma en pantalla.'; return; }
+    msg.style.color='var(--muted)'; msg.textContent='Guardando…';
+    this.disabled=true;
+    try{
+      const stamp=Date.now();
+      const base='adhesiones/'+(selId||'directo')+'_'+stamp;
+      const firmaData=cv.toDataURL('image/png');
+      let fotoPath=null, inePath=null;
+      const fFoto=g('ad_foto').files[0], fIne=g('ad_ine').files[0];
+      if(fFoto) fotoPath=await subir(fFoto, base+'_foto_'+fFoto.name);
+      if(fIne) inePath=await subir(fIne, base+'_ine_'+fIne.name);
+      const ins=await sb.from('adhesiones').insert({trabajador_id:selId?Number(selId):null, nombre:nombre, empresa:g('ad_emp').value.trim()||null, firma_data:firmaData, foto_path:fotoPath, ine_path:inePath, metodo:'consola: firma en pantalla + foto + INE'});
+      if(ins.error) throw ins.error;
+      msg.style.color='var(--ok)'; msg.textContent='✓ Adhesión registrada con firma'+(fotoPath?' + foto':'')+(inePath?' + INE':'')+'.';
+      ctx.clearRect(0,0,cv.width,cv.height); hasInk=false;
+      cargarLista();
+    }catch(e){ msg.style.color='var(--danger)'; msg.textContent='Error: '+(e.message||e); }
+    this.disabled=false;
+  };
+  async function cargarLista(){
+    const r=await sb.from('adhesiones').select('nombre,empresa,firmado_en,foto_path,ine_path,estatus').order('firmado_en',{ascending:false}).limit(100);
+    const list=r.data||[];
+    g('ad_list').innerHTML='<div class="card"><h3>Adhesiones digitales registradas ('+list.length+')</h3><div class="body"><div style="overflow-x:auto"><table><thead><tr><th>Trabajador</th><th>Empresa</th><th>Fecha</th><th>Foto</th><th>INE</th><th>Estatus</th></tr></thead><tbody>'+
+      (list.map(function(x){
+        return '<tr><td>'+esc(x.nombre||'')+'</td><td>'+esc(x.empresa||'')+'</td><td>'+esc(String(x.firmado_en||'').slice(0,16).split('T').join(' '))+'</td>'+
+          '<td>'+(x.foto_path?'📷':'—')+'</td><td>'+(x.ine_path?'🪪':'—')+'</td><td><span class="tag on">'+esc(x.estatus||'firmada')+'</span></td></tr>';
+      }).join('')||'<tr><td colspan=6 class="empty">Aún sin adhesiones digitales — la primera se registra arriba</td></tr>')+
+      '</tbody></table></div></div></div>';
+  }
+  cargarLista();
+}
+
+/* ===== v15 · Pipeline comercial (PRM-COM-05) ===== */
+async function viewPipelineCom(c){
+  const ETAPAS=['1. Prospecto','2. Contactado','3. Reunión agendada','4. Propuesta enviada','5. Negociación','6. Cerrado ganado','7. Cerrado perdido'];
+  const r=await sb.from('pipeline_comercial').select('*').order('valor_ponderado',{ascending:false});
+  const list=r.data||[];
+  const activos=list.filter(function(x){ return String(x.etapa||'').indexOf('Cerrado')<0; });
+  const valTot=activos.reduce(function(a,x){ return a+Number(x.valor_estimado||0); },0);
+  const valPond=activos.reduce(function(a,x){ return a+Number(x.valor_ponderado||0); },0);
+  const sinSeg=activos.filter(function(x){ return Number(x.dias_sin_seguimiento||0)>7; }).length;
+  const rows=list.map(function(x){
+    const cerrado=String(x.etapa||'').indexOf('Cerrado')>=0;
+    const alerta=Number(x.dias_sin_seguimiento||0)>7 && !cerrado;
+    return '<tr'+(alerta?' style="background:rgba(220,53,69,.08)"':'')+'><td><b>'+esc(x.prospecto||'')+'</b><br><span style="font-size:11px;color:var(--muted)">'+esc(x.contacto||'')+'</span></td>'+
+      '<td>'+esc(x.servicio||'')+'</td><td><span class="tag '+(cerrado?'off':'repse')+'">'+esc(x.etapa||'')+'</span></td>'+
+      '<td class="num-r">'+((Number(x.probabilidad||0))*100).toFixed(0)+'%</td>'+
+      '<td class="num-r">'+mny(x.valor_estimado)+'</td><td class="num-r">'+mny(x.valor_ponderado)+'</td>'+
+      '<td>'+esc(x.proxima_accion||'')+'</td><td>'+esc(x.proximo_contacto||'')+'</td>'+
+      '<td class="num-r"'+(alerta?' style="color:var(--danger);font-weight:700"':'')+'>'+(x.dias_sin_seguimiento!=null?x.dias_sin_seguimiento:'—')+'</td></tr>';
+  }).join('');
+  c.innerHTML='<h1 class="pg">Pipeline de prospectos · PRM-COM-05</h1>'+
+    '<div class="pgsub">Seguimiento comercial con valor ponderado por probabilidad y cadencia de contacto.</div>'+
+    '<div class="kpis">'+
+      tile(activos.length,'Prospectos activos','var(--navy)')+
+      tile(mny(valTot),'Valor estimado anual','var(--gold)')+
+      tile(mny(valPond),'Valor ponderado','var(--navy)')+
+      tile(sinSeg,'Sin seguimiento >7 días',sinSeg?'var(--danger)':'var(--ok)')+
+    '</div>'+
+    '<div class="card"><h3>Nuevo prospecto</h3><div class="body"><div class="frm">'+
+      '<label>Empresa / prospecto<input id="pc_emp" style="min-width:200px"></label>'+
+      '<label>Contacto<input id="pc_con"></label>'+
+      '<label>Servicio de interés<input id="pc_srv"></label>'+
+      '<label>Etapa<select id="pc_eta">'+ETAPAS.map(function(e){ return '<option>'+esc(e)+'</option>'; }).join('')+'</select></label>'+
+      '<label>Probabilidad %<input id="pc_prob" type="number" step="5" value="25" style="width:80px"></label>'+
+      '<label>Valor estimado anual<input id="pc_val" type="number" step="1000" style="width:120px"></label>'+
+      '<label>Próxima acción<input id="pc_acc" style="min-width:180px"></label>'+
+      '<label>Próximo contacto<input id="pc_fec" type="date"></label>'+
+    '</div><div style="margin-top:8px"><button class="btn2" id="pc_add">➕ Agregar</button> <span id="pc_msg" style="font-size:12px;margin-left:8px"></span></div></div></div>'+
+    '<div class="card"><h3>Pipeline ('+list.length+')</h3><div class="body"><div style="overflow-x:auto"><table style="font-size:12.5px"><thead><tr><th>Prospecto</th><th>Servicio</th><th>Etapa</th><th class="num-r">Prob.</th><th class="num-r">Valor est.</th><th class="num-r">Ponderado</th><th>Próxima acción</th><th>Próx. contacto</th><th class="num-r">Días sin seg.</th></tr></thead><tbody>'+
+    (rows||'<tr><td colspan=9 class="empty">Sin prospectos — agregue el primero arriba</td></tr>')+'</tbody></table></div></div></div>';
+  const g=id=>document.getElementById(id);
+  g('pc_add').onclick=async function(){
+    const msg=g('pc_msg');
+    const emp=g('pc_emp').value.trim();
+    if(!emp){ msg.style.color='var(--danger)'; msg.textContent='Falta el nombre del prospecto.'; return; }
+    const prob=(parseFloat(g('pc_prob').value)||0)/100;
+    const val=parseFloat(g('pc_val').value)||0;
+    const ins=await sb.from('pipeline_comercial').insert({prospecto:emp, contacto:g('pc_con').value.trim()||null, servicio:g('pc_srv').value.trim()||null, etapa:g('pc_eta').value, probabilidad:prob, valor_estimado:val, valor_ponderado:val*prob, proxima_accion:g('pc_acc').value.trim()||null, proximo_contacto:g('pc_fec').value||null, dias_sin_seguimiento:0});
+    if(ins.error){ msg.style.color='var(--danger)'; msg.textContent='Error: '+ins.error.message; return; }
+    viewPipelineCom(c);
+  };
+}
+
