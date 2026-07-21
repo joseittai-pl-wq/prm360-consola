@@ -154,9 +154,9 @@ const MERGE_AREAS = [
   ['Vinculación', [ ['Tablero Vinculación','tabvinc','n'],['Clientes','clientescombo','p'],['Ficha VIN-05 (perfil cliente)','vin05','p'],['Trabajadores · IMSS','trabajadorescombo','p'],['Adhesión digital (firma)','adhesiondig','p'],['Movimientos afiliatorios','movafil','p'],['Onboarding / KYC','onboarding','n'],['Validación + KYC (CSF/32-D/69)','kyc','p'],['Checklist de documentos','checklistdocs','p'],['Control de entregables','entregables','p'] ]],
   ['Operaciones', [ ['Tablero Operaciones','tabop','n'],['Trámites','tramitescombo','p'],['Facturación','facturacion','p'],['Control de timbrado FAC-01','factimbrado','p'],['Constructor de concepto FAC-02','constructorfac','p'],['Tablero NOMEN','tablonomen','p'],['Layout de dispersión','layoutdisp','p'],['Expediente de Materialidad','materialidad','p'],['Checklists de materialidad','matchecklists','p'],['Conciliación disp. ↔ CFDI','__soon_concilia','p'],['Descargas SAT / CFDI','descargas','n'],['Calendario de vencimientos','calendario','n'] ]],
   ['Jurídico', [ ['Tablero Jurídico','tabjur','n'],['Corporativo','corporativocombo','p'],['Bitácora de firmas','bitacorafirmas','p'],['Vigencias / Renovaciones','renovaciones','p'],['Gobierno y Padrones','padrones','n'],['Padrones de proveedores 2026','padronprov','p'],['Empresa 360 (radiografía)','empresa360','p'],['Licitaciones y contratos','licitaciones','n'],['Plantillas de contratos','biblioplantillas','p'],['Juicios / defensa fiscal','juicios','p'],['Documentales (púb. y priv.)','documentales','n'],['Documentales públicas (MDP)','mdp','p'],['Compliance jurídico','compliance','n'] ]],
-  ['Fiscal', [ ['Tablero Fiscal','tabfisc','n'],['Cumplimiento','cumplimientocombo','p'],['Agenda 360 (vencimientos)','agenda360','p'],['Calendario fiscal','calfiscal','p'],['Calendario REPSE (ICSOE/SISUB)','calrepse','p'],['Previsión social','previsioncombo','p'],['NOM-035','nom035','p'],['Cuestionario NOM-035','nom035cuest','n'],['e.firmas (control)','efirmasv','n'] ]],
-  ['Contabilidad', [ ['Tablero Contable','tabcont','n'],['Contabilidad / Pólizas','contabilidad','n'],['Captura de servicios','captura','p'],['Descarga XML / CFDI','descargas','n'],['Bancos','bancoscombo','p'],['Motor de conciliación','conciliador','p'] ]],
-  ['Tesorería', [ ['Tablero Tesorería','tabtes','n'],['Cobranza','cobranza','n'],['Cuentas por pagar','cxp','p'],['Bancos y flujo','flujo','p'],['Cuentas','cuentas','p'],['Pagos','pagos','p'],['Calendario fiscal','calfiscal','p'] ]],
+  ['Fiscal', [ ['Tablero Fiscal','tabfisc','n'],['Cumplimiento','cumplimientocombo','p'],['Agenda 360 (vencimientos)','agenda360','p'],['Calendario fiscal','calfiscal','p'],['Calendario REPSE (ICSOE/SISUB)','calrepse','p'],['Cuotas IMSS (SUA)','cuotasimss','p'],['Previsión social','previsioncombo','p'],['NOM-035','nom035','p'],['Cuestionario NOM-035','nom035cuest','n'],['e.firmas (control)','efirmasv','n'] ]],
+  ['Contabilidad', [ ['Tablero Contable','tabcont','n'],['Contabilidad / Pólizas','contabilidad','n'],['Balanzas por empresa','balanzas','p'],['Conciliación bancaria','concbanco','p'],['Captura de servicios','captura','p'],['Descarga XML / CFDI','descargas','n'],['Bancos','bancoscombo','p'],['Motor de conciliación','conciliador','p'] ]],
+  ['Tesorería', [ ['Tablero Tesorería','tabtes','n'],['Cobranza','cobranza','n'],['Cuentas por pagar','cxp','p'],['Bancos y flujo','flujo','p'],['Conciliación bancaria','concbanco','p'],['Cuentas','cuentas','p'],['Pagos','pagos','p'],['Calendario fiscal','calfiscal','p'] ]],
   ['Administración', [ ['Tablero Administración','tabadm','n'],['Empresas del grupo','empresascombo','p'],['Base Maestra (actividades SAT)','basemaestra','p'],['Gastos y costeo','gastoscombo','p'],['Costeo por cliente','costeo','n'],['Importador de reportes','importador','n'],['Accesos y vinculación','accesos','n'],['Contraloría','contraloria','p'],['Organigrama y matrices','biblioorg','p'],['Directorio','directorio','n'],['Sucursales','sucursalesv','n'],['Personal interno','equipo','n'],['Organigrama y funciones','organigramafn','n'],['Reportes','reportes','p'] ]],
   ['Tableros', [ ['Tablero General','tabgen','n'],['Comercial','tabcom','n'],['Vinculación','tabvinc','n'],['Operaciones','tabop','n'],['NOMEN','tablonomen','n'],['Jurídico','tabjur','n'],['Fiscal','tabfisc','n'],['Contabilidad','tabcont','n'],['Tesorería','tabtes','n'],['Administración','tabadm','n'] ]]
 ];
@@ -236,6 +236,9 @@ async function view(v, rol, label){
   const c=$('#content'); c.innerHTML='<div class="loader">Cargando…</div>';
   try{
     if(v==='cotizador')    return await viewCotizador(c);
+    if(v==='balanzas')     return await viewBalanzas(c);
+    if(v==='concbanco')    return await viewConcBanco(c);
+    if(v==='cuotasimss')   return await viewCuotasImss(c);
     if(v==='agenda360')    return await viewAgenda360(c);
     if(v==='empresa360')   return await viewEmpresa360(c);
     if(v==='vin05')        return await viewVin05(c);
@@ -4801,18 +4804,41 @@ async function viewPipelineCom(c){
 }
 
 
-/* ===== v16 · Generador de layout de dispersión bancaria ===== */
+/* ===== v25 · Layouts por banco + Balanzas ===== */
 async function viewLayoutDisp(c){
   const NL = String.fromCharCode(10);
+  /* Formatos EXACTOS extraídos de los archivos oficiales de cada banco (ZIP Layouts 20-jul-2026) */
   const FORMATOS = {
-    muestra: {label:'Formato PR&M (muestra base)', header:['cuenta_clabe','importe','beneficiario','rfc','concepto','referencia'], sep:','}
+    muestra:  {label:'Genérico PR&M (muestra base)', cargo:false,
+      build:function(rows,P){ const L=[['cuenta_clabe','importe','beneficiario','rfc','concepto','referencia'].join(',')];
+        rows.forEach(function(r,i){ L.push([r.clabe,r.imp.toFixed(2),r.benef,r.rfc,P.conc,P.pref+'-'+String(i+1).padStart(3,'0')].join(',')); }); return L; }},
+    bbva:     {label:'BBVA · Nómina (botón P04)', cargo:false,
+      build:function(rows,P){ const L=[['CUENTA / TDP','IMPORTE','NOMBRE'].join(',')];
+        rows.forEach(function(r){ L.push([r.clabe,r.imp.toFixed(2),r.benef].join(',')); }); return L; }},
+    banorte:  {label:'Banorte · Pagos interbancarios (BEM)', cargo:true,
+      build:function(rows,P){ const L=[['Oper','Clave ID','Cuenta Origen','Cuenta/CLABE destino','Importe','Referencia','Descripción','RFC Ordenante','IVA','Fecha aplicación'].join(',')];
+        rows.forEach(function(r,i){ L.push(['04','',P.cargo,r.clabe,r.imp.toFixed(2),P.pref+String(i+1).padStart(3,'0'),P.conc,r.rfc,'0.00',P.fecha].join(',')); }); return L; }},
+    santander:{label:'Santander · Interbancaria TOL (sin comprobante)', cargo:true,
+      build:function(rows,P){ const L=[['CUENTA DE CARGO','CUENTA DE ABONO','BANCO RECEPTOR','BENEFICIARIO','SUCURSAL','IMPORTE','PLAZA BANXICO','CONCEPTO','REFERENCIA ORDENANTE','FORMA DE APLICACION','FECHA DE APLICACION'].join(',')];
+        rows.forEach(function(r,i){ L.push([P.cargo,r.clabe,r.banco||'',r.benef,'',r.imp.toFixed(2),'',P.conc,P.pref+String(i+1).padStart(3,'0'),'2',P.fecha].join(',')); }); return L; }},
+    hsbc:     {label:'HSBC · Pago a terceros', cargo:true,
+      build:function(rows,P){ const L=[['Número de pago','Cuenta de cargo','Cuenta beneficiaria','Monto de pago','Moneda de pago','Referencia','Nombre del beneficiario','Comprobante fiscal'].join(',')];
+        let tot=0;
+        rows.forEach(function(r,i){ L.push([String(i+1),P.cargo,r.clabe,r.imp.toFixed(2),'1',P.conc,r.benef,'0'].join(',')); tot+=r.imp; });
+        L.push(['1',String(rows.length),P.pref].join(','));
+        return L; }},
+    banregio: {label:'Banregio · Transferencias masivas', cargo:false,
+      build:function(rows,P){ const L=[['Secuencia','Tipo','Cuenta_Destino','Importe','IVA','Descripcion','Ref_Numerica','Referencia'].join(',')];
+        rows.forEach(function(r,i){ L.push([String(i+1),'T',r.clabe,r.imp.toFixed(2),'0.00',P.conc,String(i+1),P.pref+String(i+1).padStart(3,'0')].join(',')); }); return L; }}
   };
   c.innerHTML='<h1 class="pg">Layout de dispersión bancaria</h1>'+
-    '<div class="pgsub">Genera el archivo de dispersión listo para subir al portal del banco, a partir de la nómina (Excel/CSV del NOMEN o captura). Cada banco tiene su formato: hoy está cargado el formato base de su muestra; al enviarme el ejemplo de cada banco que usan, agrego su formato exacto aquí.</div>'+
+    '<div class="pgsub">Genera el archivo de dispersión con el formato EXACTO de cada banco (extraído de sus layouts oficiales): BBVA nómina, Banorte interbancario, Santander TOL, HSBC pago a terceros, Banregio masivas y el genérico PR&M. Kuspit y Peibo quedan pendientes de su layout de carga (los archivos enviados eran reportes).</div>'+
     '<div class="card"><h3>1 · Parámetros</h3><div class="body"><div class="frm">'+
-      '<label>Formato / banco<select id="ld_fmt">'+Object.keys(FORMATOS).map(function(k){ return '<option value="'+k+'">'+esc(FORMATOS[k].label)+'</option>'; }).join('')+'</select></label>'+
-      '<label>Concepto<input id="ld_conc" value="Nomina" style="min-width:220px"></label>'+
-      '<label>Prefijo de referencia<input id="ld_ref" value="260001" style="width:110px"></label>'+
+      '<label>Banco / formato<select id="ld_fmt">'+Object.keys(FORMATOS).map(function(k){ return '<option value="'+k+'">'+esc(FORMATOS[k].label)+'</option>'; }).join('')+'</select></label>'+
+      '<label>Cuenta de cargo / origen<input id="ld_cargo" placeholder="Cuenta de la pagadora" style="min-width:180px"></label>'+
+      '<label>Concepto<input id="ld_conc" value="Nomina" style="min-width:180px"></label>'+
+      '<label>Prefijo referencia<input id="ld_ref" value="260001" style="width:100px"></label>'+
+      '<label>Fecha de aplicación<input id="ld_fecha" type="date"></label>'+
     '</div></div></div>'+
     '<div class="card"><h3>2 · Nómina a dispersar</h3><div class="body">'+
       '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">'+
@@ -4820,8 +4846,8 @@ async function viewLayoutDisp(c){
       '<button class="btn2 ghost" id="ld_add">➕ Fila manual</button>'+
       '<input type="file" id="ld_file" accept=".xlsx,.xls,.csv" style="display:none">'+
       '<span id="ld_impmsg" style="align-self:center;font-size:12px"></span></div>'+
-      '<div style="overflow-x:auto"><table><thead><tr><th>CLABE (18 dígitos)</th><th>Beneficiario</th><th>RFC</th><th class="num-r">Importe</th><th></th></tr></thead><tbody id="ld_body"></tbody></table></div>'+
-      '<div style="font-size:11.5px;color:var(--muted);margin-top:6px">Columnas que reconoce al importar: clabe / cuenta_clabe, beneficiario / nombre, rfc, importe / neto / monto.</div>'+
+      '<div style="overflow-x:auto"><table><thead><tr><th>CLABE / cuenta (18 díg.)</th><th>Beneficiario</th><th>RFC</th><th>Banco receptor</th><th class="num-r">Importe</th><th></th></tr></thead><tbody id="ld_body"></tbody></table></div>'+
+      '<div style="font-size:11.5px;color:var(--muted);margin-top:6px">Columnas que reconoce al importar: clabe/cuenta, beneficiario/nombre, rfc, banco, importe/neto. Regla de cuatro ojos: coteje el total contra el NOMEN antes de subir al portal. Valide la PRIMERA carga de cada banco en su portal antes del envío real.</div>'+
     '</div></div>'+
     '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">'+
       '<button class="btn2" id="ld_gen">⬇ Generar layout</button>'+
@@ -4829,13 +4855,14 @@ async function viewLayoutDisp(c){
     '</div>'+
     '<div id="ld_out"></div>';
   const g=id=>document.getElementById(id);
-  if(!Array.isArray(window.__ldRows)) window.__ldRows=[{clabe:'',benef:'',rfc:'',imp:''}];
+  if(!Array.isArray(window.__ldRows) || (window.__ldRows[0] && window.__ldRows[0].banco===undefined)) window.__ldRows=[{clabe:'',benef:'',rfc:'',banco:'',imp:''}];
   function rowHtml(r,i){
     return '<tr>'+
-      '<td><input class="ld_clabe" value="'+esc(r.clabe)+'" maxlength="18" style="min-width:180px"></td>'+
-      '<td><input class="ld_benef" value="'+esc(r.benef)+'" style="min-width:180px"></td>'+
-      '<td><input class="ld_rfc" value="'+esc(r.rfc)+'" style="width:130px"></td>'+
-      '<td><input class="ld_imp num-r" type="number" step="0.01" value="'+esc(r.imp)+'" style="width:110px"></td>'+
+      '<td><input class="ld_clabe" value="'+esc(r.clabe)+'" maxlength="18" style="min-width:170px"></td>'+
+      '<td><input class="ld_benef" value="'+esc(r.benef)+'" style="min-width:170px"></td>'+
+      '<td><input class="ld_rfc" value="'+esc(r.rfc)+'" style="width:120px"></td>'+
+      '<td><input class="ld_banco" value="'+esc(r.banco||'')+'" style="width:110px"></td>'+
+      '<td><input class="ld_imp num-r" type="number" step="0.01" value="'+esc(r.imp)+'" style="width:105px"></td>'+
       '<td><button class="mini ld_del" data-idx="'+i+'" style="background:var(--danger)">🗑</button></td></tr>';
   }
   function sync(){
@@ -4843,7 +4870,7 @@ async function viewLayoutDisp(c){
     const arr=[];
     for(let i=0;i<trs.length;i++){
       const q=function(cl){ const e=trs[i].getElementsByClassName(cl)[0]; return e?e.value:''; };
-      arr.push({clabe:q('ld_clabe'),benef:q('ld_benef'),rfc:q('ld_rfc'),imp:q('ld_imp')});
+      arr.push({clabe:q('ld_clabe'),benef:q('ld_benef'),rfc:q('ld_rfc'),banco:q('ld_banco'),imp:q('ld_imp')});
     }
     window.__ldRows=arr;
   }
@@ -4851,11 +4878,11 @@ async function viewLayoutDisp(c){
     g('ld_body').innerHTML=window.__ldRows.map(rowHtml).join('');
     const dels=g('ld_body').getElementsByClassName('ld_del');
     for(let i=0;i<dels.length;i++){
-      dels[i].onclick=function(){ sync(); window.__ldRows.splice(Number(this.getAttribute('data-idx')),1); if(!window.__ldRows.length) window.__ldRows=[{clabe:'',benef:'',rfc:'',imp:''}]; render(); };
+      dels[i].onclick=function(){ sync(); window.__ldRows.splice(Number(this.getAttribute('data-idx')),1); if(!window.__ldRows.length) window.__ldRows=[{clabe:'',benef:'',rfc:'',banco:'',imp:''}]; render(); };
     }
   }
   render();
-  g('ld_add').onclick=function(){ sync(); window.__ldRows.push({clabe:'',benef:'',rfc:'',imp:''}); render(); };
+  g('ld_add').onclick=function(){ sync(); window.__ldRows.push({clabe:'',benef:'',rfc:'',banco:'',imp:''}); render(); };
   g('ld_imp').onclick=function(){ g('ld_file').click(); };
   g('ld_file').onchange=function(ev){
     const f=ev.target.files && ev.target.files[0];
@@ -4869,7 +4896,7 @@ async function viewLayoutDisp(c){
           const low={};
           Object.keys(o).forEach(function(k){ low[String(k).trim().toLowerCase()]=o[k]; });
           const pick=function(){ for(let i=0;i<arguments.length;i++){ const v=low[arguments[i]]; if(v!=null && String(v).trim()!=='') return String(v).trim(); } return ''; };
-          return {clabe:pick('clabe','cuenta_clabe','cuenta clabe','cuenta'), benef:pick('beneficiario','nombre','trabajador','nombre completo'), rfc:pick('rfc'), imp:pick('importe','neto','monto','neto a depositar','importe a depositar')};
+          return {clabe:pick('clabe','cuenta_clabe','cuenta clabe','cuenta','cuenta / tdp'), benef:pick('beneficiario','nombre','trabajador'), rfc:pick('rfc'), banco:pick('banco','banco receptor'), imp:pick('importe','neto','monto','neto a depositar')};
         }).filter(function(r){ return r.clabe||r.benef||r.imp; });
         if(rows.length){ window.__ldRows=rows; render(); g('ld_impmsg').style.color='var(--ok)'; g('ld_impmsg').textContent='Importados '+rows.length+' registros.'; }
         else { g('ld_impmsg').style.color='var(--danger)'; g('ld_impmsg').textContent='No se encontraron columnas reconocibles.'; }
@@ -4882,43 +4909,294 @@ async function viewLayoutDisp(c){
   g('ld_gen').onclick=function(){
     sync();
     const msg=g('ld_msg');
-    const fmt=FORMATOS[g('ld_fmt').value];
-    const conc=g('ld_conc').value.trim()||'Nomina';
-    const pref=g('ld_ref').value.trim()||'260001';
-    const errores=[], lineas=[fmt.header.join(fmt.sep)];
-    let total=0, n=0;
+    const key=g('ld_fmt').value, fmt=FORMATOS[key];
+    const P={cargo:g('ld_cargo').value.trim(), conc:g('ld_conc').value.trim()||'Nomina', pref:g('ld_ref').value.trim()||'260001', fecha:g('ld_fecha').value||''};
+    const errores=[]; const datos=[];
+    if(fmt.cargo && !P.cargo) errores.push('Este banco requiere la cuenta de cargo/origen (parámetros).');
     window.__ldRows.forEach(function(r,i){
       const clabe=soloDigitos(String(r.clabe||''));
       const imp=parseFloat(r.imp)||0;
       if(!clabe && !r.benef && !imp) return;
-      if(clabe.length!==18) errores.push('Fila '+(i+1)+' ('+(r.benef||'sin nombre')+'): CLABE inválida — debe tener 18 dígitos.');
+      if(clabe.length<10) errores.push('Fila '+(i+1)+' ('+(r.benef||'sin nombre')+'): cuenta/CLABE inválida.');
       if(imp<=0) errores.push('Fila '+(i+1)+' ('+(r.benef||'sin nombre')+'): importe inválido.');
-      n++;
-      const ref=pref+'-'+String(n).padStart(3,'0');
-      lineas.push([clabe, imp.toFixed(2), String(r.benef||'').trim(), String(r.rfc||'').trim().toUpperCase(), conc, ref].join(fmt.sep));
-      total+=imp;
+      datos.push({clabe:clabe, benef:String(r.benef||'').trim(), rfc:String(r.rfc||'').trim().toUpperCase(), banco:String(r.banco||'').trim(), imp:imp});
     });
-    if(n===0){ msg.style.color='var(--danger)'; msg.textContent='No hay filas con datos.'; return; }
-    const errHtml=errores.length? '<div style="background:rgba(220,53,69,.12);border:1px solid var(--danger);color:var(--danger);border-radius:8px;padding:10px 12px;margin:8px 0"><b>'+errores.length+' errores a corregir antes de subir al banco:</b><br>'+errores.map(esc).join('<br>')+'</div>' : '';
+    if(!datos.length){ msg.style.color='var(--danger)'; msg.textContent='No hay filas con datos.'; return; }
+    const total=datos.reduce(function(a,x){ return a+x.imp; },0);
+    const errHtml=errores.length? '<div style="background:rgba(220,53,69,.12);border:1px solid var(--danger);color:var(--danger);border-radius:8px;padding:10px 12px;margin:8px 0"><b>'+errores.length+' errores a corregir:</b><br>'+errores.map(esc).join('<br>')+'</div>' : '';
     g('ld_out').innerHTML=errHtml+
-      '<div class="card"><h3>Resumen del layout</h3><div class="body">'+
-      '<div class="kpis">'+tile(n,'Beneficiarios','var(--navy)')+tile(mny(total),'Total a dispersar','var(--gold)')+tile(errores.length,'Errores',errores.length?'var(--danger)':'var(--ok)')+'</div>'+
-      '<div style="font-size:12px;color:var(--muted)">El archivo se descargó con el formato seleccionado. Regla de control: verifique que el total coincida con el resumen del NOMEN antes de subirlo al portal bancario (regla de cuatro ojos).</div>'+
-      '</div></div>';
+      '<div class="card"><h3>Resumen · '+esc(fmt.label)+'</h3><div class="body"><div class="kpis">'+
+      tile(datos.length,'Beneficiarios','var(--navy)')+tile(mny(total),'Total a dispersar','var(--gold)')+tile(errores.length,'Errores',errores.length?'var(--danger)':'var(--ok)')+
+      '</div></div></div>';
     if(!errores.length){
+      const lineas=fmt.build(datos,P);
       const blob=new Blob([lineas.join(NL)+NL],{type:'text/csv;charset=utf-8;'});
       const url=URL.createObjectURL(blob);
       const a=document.createElement('a');
-      a.href=url; a.download='layout_dispersion_'+pref+'.csv';
+      a.href=url; a.download='layout_'+key+'_'+P.pref+'.csv';
       document.body.appendChild(a); a.click(); document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      msg.style.color='var(--ok)'; msg.textContent='✓ Layout generado: '+n+' beneficiarios, '+mny(total)+'.';
-    } else {
-      msg.style.color='var(--danger)'; msg.textContent='Corrija los errores para poder descargar.';
-    }
+      msg.style.color='var(--ok)'; msg.textContent='✓ Layout '+fmt.label+' generado: '+datos.length+' pagos, '+mny(total)+'.';
+    } else { msg.style.color='var(--danger)'; msg.textContent='Corrija los errores para descargar.'; }
   };
 }
 
+/* ===== v25 · Balanzas por empresa (CONTPAQi · 51 empresas · ene-may 2026) ===== */
+async function viewBalanzas(c){
+  c.innerHTML='<div class="loader">Cargando balanzas…</div>';
+  let B=null;
+  try{ const r=await fetch('balanzas.json'); B=await r.json(); }
+  catch(e){ c.innerHTML='<div class="empty">No se encontró balanzas.json — súbalo al repositorio junto con app.js.</div>'; return; }
+  const emps=Object.keys(B).sort();
+  const MESES={'01':'Enero','02':'Febrero','03':'Marzo','04':'Abril','05':'Mayo','06':'Junio','07':'Julio'};
+  let nBal=0; const ranking=[];
+  emps.forEach(function(e){
+    const meses=Object.keys(B[e]).sort();
+    nBal+=meses.length;
+    const last=meses[meses.length-1];
+    ranking.push({e:e, mes:last, u:B[e][last].u, i:B[e][last].i, meses:meses.length});
+  });
+  ranking.sort(function(a,b){ return a.u-b.u; });
+  const perdida=ranking.filter(function(x){ return x.u<0; }).length;
+  const sinMayo=emps.filter(function(e){ return !B[e]['05']; }).length;
+  const rkRows=ranking.map(function(x){
+    return '<tr class="clk" data-e="'+esc(x.e)+'"><td><b>'+esc(x.e)+'</b></td><td>'+MESES[x.mes]+'</td>'+
+      '<td class="num-r">'+mny(x.i)+'</td>'+
+      '<td class="num-r" style="font-weight:700;color:'+(x.u<0?'var(--danger)':'var(--ok)')+'">'+mny(x.u)+'</td>'+
+      '<td class="num-r">'+x.meses+'/5</td></tr>';
+  }).join('');
+  c.innerHTML='<h1 class="pg">Balanzas por empresa</h1>'+
+    '<div class="pgsub">Resúmenes de las balanzas de comprobación CONTPAQi que nos envió (enero–mayo 2026). Cifras a nivel cuentas de mayor. Clic en una empresa para su detalle mensual.</div>'+
+    '<div class="kpis">'+
+      tile(emps.length,'Empresas con balanza','var(--navy)')+
+      tile(nBal,'Balanzas cargadas','var(--teal)')+
+      tile(perdida,'Con pérdida (último mes)',perdida?'var(--danger)':'var(--ok)')+
+      tile(sinMayo,'Sin balanza de mayo',sinMayo?'#e67e22':'var(--ok)')+
+    '</div>'+
+    '<div class="card"><div class="body"><input id="bz_q" class="mini" placeholder="Buscar empresa…" style="min-width:260px"></div>'+
+    '<div style="overflow-x:auto"><table style="font-size:12.5px"><thead><tr><th>Empresa</th><th>Último mes</th><th class="num-r">Ingresos acum.</th><th class="num-r">Utilidad/Pérdida</th><th class="num-r">Meses</th></tr></thead><tbody id="bz_body">'+rkRows+'</tbody></table></div></div>'+
+    '<div id="bz_det"></div>';
+  function wire(){
+    c.querySelectorAll('#bz_body tr.clk').forEach(function(tr){
+      tr.onclick=function(){
+        const e=tr.getAttribute('data-e');
+        const meses=Object.keys(B[e]).sort();
+        const rows=meses.map(function(m){
+          const x=B[e][m];
+          return '<tr><td><b>'+MESES[m]+'</b></td><td class="num-r">'+mny(x.a)+'</td><td class="num-r">'+mny(x.p)+'</td><td class="num-r">'+mny(x.c)+'</td>'+
+            '<td class="num-r">'+mny(x.i)+'</td><td class="num-r">'+mny(x.g)+'</td>'+
+            '<td class="num-r" style="font-weight:700;color:'+(x.u<0?'var(--danger)':'var(--ok)')+'">'+mny(x.u)+'</td></tr>';
+        }).join('');
+        const falt=['01','02','03','04','05'].filter(function(m){ return !B[e][m]; }).map(function(m){ return MESES[m]; });
+        document.getElementById('bz_det').innerHTML='<div class="card"><h3>'+esc(e)+' · detalle mensual</h3><div class="body">'+
+          (falt.length?('<div style="background:var(--cream);border-left:4px solid #e67e22;padding:8px 12px;border-radius:6px;margin-bottom:8px;font-size:12.5px">Faltan balanzas de: <b>'+falt.join(', ')+'</b></div>'):'')+
+          '<div style="overflow-x:auto"><table style="font-size:12.5px"><thead><tr><th>Mes</th><th class="num-r">Activo</th><th class="num-r">Pasivo</th><th class="num-r">Capital</th><th class="num-r">Ingresos (acum.)</th><th class="num-r">Costos y gastos</th><th class="num-r">Utilidad</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
+          '<div style="font-size:11px;color:var(--muted);margin-top:8px">Cifras acumuladas al cierre de cada mes según la balanza CONTPAQi. Utilidad = ingresos − costos/gastos (rubros 4 − 5/6/7).</div>'+
+          '</div></div>';
+        document.getElementById('bz_det').scrollIntoView({behavior:'smooth',block:'start'});
+      };
+    });
+  }
+  wire();
+  document.getElementById('bz_q').onkeyup=function(){
+    const t=this.value.trim().toLowerCase();
+    const f=t? ranking.filter(function(x){ return x.e.toLowerCase().indexOf(t)>=0; }) : ranking;
+    document.getElementById('bz_body').innerHTML=f.map(function(x){
+      return '<tr class="clk" data-e="'+esc(x.e)+'"><td><b>'+esc(x.e)+'</b></td><td>'+MESES[x.mes]+'</td><td class="num-r">'+mny(x.i)+'</td><td class="num-r" style="font-weight:700;color:'+(x.u<0?'var(--danger)':'var(--ok)')+'">'+mny(x.u)+'</td><td class="num-r">'+x.meses+'/5</td></tr>';
+    }).join('');
+    wire();
+  };
+}
+
+/* ===== v26 · Conciliación bancaria real (estados de cuenta vs. balanza) ===== */
+async function viewConcBanco(c){
+  c.innerHTML='<div class="loader">Cargando estados de cuenta y balanzas…</div>';
+  let D=null;
+  try{ const r=await fetch('conciliacion_bancaria.json'); D=await r.json(); }
+  catch(e){ c.innerHTML='<div class="empty">No se encontró conciliacion_bancaria.json — súbalo al repositorio junto con app.js.</div>'; return; }
+  const MESES={'01':'Enero','02':'Febrero','03':'Marzo','04':'Abril','05':'Mayo','06':'Junio'};
+  const mesesCubiertos = D.meses||['01','02','03','04'];
+  const emp = D.empresas||{};
+  const nombres = Object.keys(emp).sort();
+  const UMBRAL = 50; // diferencia en pesos a partir de la cual se marca en rojo
+
+  function ultimoMes(e){
+    const ms = Object.keys(emp[e]).sort();
+    return ms.length? ms[ms.length-1] : null;
+  }
+  function cuentasDe(e){
+    // todas las cuentas (banco) vistas en cualquier mes, para no perder ninguna en el resumen
+    const set={};
+    Object.keys(emp[e]).forEach(function(m){
+      Object.keys(emp[e][m]).forEach(function(b){ set[b]=1; });
+    });
+    return Object.keys(set);
+  }
+
+  const resumen = nombres.map(function(e){
+    const um = ultimoMes(e);
+    const bancos = cuentasDe(e);
+    let saldoTotal = 0, conDif = 0, sinMatch = 0, conMatch = 0;
+    Object.keys(emp[e]).forEach(function(m){
+      Object.keys(emp[e][m]).forEach(function(b){
+        const x = emp[e][m][b];
+        if(x.balanza_cuenta){
+          conMatch++;
+          if(x.diferencia!==null && x.diferencia!==undefined && Math.abs(x.diferencia)>UMBRAL) conDif++;
+        } else sinMatch++;
+      });
+    });
+    if(um) Object.keys(emp[e][um]).forEach(function(b){ const x=emp[e][um][b]; saldoTotal += (x.saldo_final||0); });
+    return {e:e, um:um, bancos:bancos.length, saldoTotal:saldoTotal, conDif:conDif, sinMatch:sinMatch, conMatch:conMatch};
+  }).sort(function(a,b){ return b.conDif-a.conDif; });
+
+  const totalCuentasMes = resumen.reduce(function(a,x){ return a+x.conDif+x.sinMatch+x.conMatch; },0);
+  const totalConDif = resumen.reduce(function(a,x){ return a+x.conDif; },0);
+  const totalSinMatch = resumen.reduce(function(a,x){ return a+x.sinMatch; },0);
+  const totalConMatch = resumen.reduce(function(a,x){ return a+x.conMatch; },0);
+
+  function fila(x){
+    return '<tr class="clk" data-e="'+esc(x.e)+'"><td><b>'+esc(x.e)+'</b></td>'+
+      '<td>'+(x.um?MESES[x.um]:'—')+'</td>'+
+      '<td class="num-r">'+mny(x.saldoTotal)+'</td>'+
+      '<td class="num-r">'+x.bancos+'</td>'+
+      '<td class="num-r">'+(x.conDif?('<b style="color:var(--danger)">'+x.conDif+'</b>'):'0')+'</td>'+
+      '<td class="num-r">'+(x.sinMatch?('<span style="color:#e67e22">'+x.sinMatch+'</span>'):'0')+'</td></tr>';
+  }
+
+  const pend = D.pendientes_lectura||[];
+
+  c.innerHTML='<h1 class="pg">Conciliación bancaria</h1>'+
+    '<div class="pgsub">Cruce real, cuenta por cuenta, entre los estados de cuenta bancarios (PDF originales de cada banco) y las cuentas de banco de la balanza de comprobación de cada empresa · '+mesesCubiertos.map(function(m){return MESES[m];}).join('–')+' 2026. No es una estimación: cada cifra viene directo del PDF del banco o del renglón de la balanza.</div>'+
+    '<div class="kpis">'+
+      tile(nombres.length,'Empresas con estado de cuenta','var(--navy)')+
+      tile(totalConMatch+totalConDif,'Cuentas-mes cruzadas contra balanza','var(--teal)')+
+      tile(totalConDif,'Con diferencia > $'+UMBRAL,totalConDif?'var(--danger)':'var(--ok)')+
+      tile(totalSinMatch,'Sin cuenta correspondiente en balanza','#e67e22')+
+    '</div>'+
+    (pend.length?('<div class="card no-print"><div class="body" style="font-size:12.5px;color:var(--muted)">⚠ '+pend.length+' estado(s) de cuenta no se pudieron leer como texto (posiblemente escaneados) y no están incluidos en este cruce: '+pend.map(function(p){ return esc(p.empresa+' · '+p.banco+' · '+MESES[p.mes]); }).join(', ')+'.</div></div>'):'')+
+    '<div class="card"><div class="body"><input id="cb_q" class="mini" placeholder="Buscar empresa…" style="min-width:260px"></div>'+
+    '<div style="overflow-x:auto"><table style="font-size:12.5px"><thead><tr><th>Empresa</th><th>Último mes con datos</th><th class="num-r">Saldo bancario total</th><th class="num-r">Cuentas</th><th class="num-r">Con diferencia</th><th class="num-r">Sin balanza</th></tr></thead><tbody id="cb_body">'+resumen.map(fila).join('')+'</tbody></table></div></div>'+
+    '<div id="cb_det"></div>';
+
+  function detalle(e){
+    const meses = Object.keys(emp[e]).sort();
+    const rows = [];
+    meses.forEach(function(m){
+      Object.keys(emp[e][m]).sort().forEach(function(b){
+        const x = emp[e][m][b];
+        const dif = x.diferencia;
+        const difTxt = (dif===null||dif===undefined) ? '<span style="color:var(--muted)">sin balanza</span>' :
+          '<b style="color:'+(Math.abs(dif)>UMBRAL?'var(--danger)':'var(--ok)')+'">'+mny(dif)+'</b>';
+        rows.push('<tr><td>'+MESES[m]+'</td><td><b>'+esc(b)+'</b></td><td style="font-size:11px;color:var(--muted)">'+esc(x.cuenta||'')+(x.moneda==='USD'?' (USD)':'')+'</td>'+
+          '<td class="num-r">'+mny(x.saldo_inicial)+'</td>'+
+          '<td class="num-r">'+mny(x.saldo_final)+'</td>'+
+          '<td class="num-r">'+(x.balanza_saldo!==undefined?mny(x.balanza_saldo):'—')+'</td>'+
+          '<td class="num-r">'+difTxt+'</td>'+
+          '<td style="font-size:11px;color:var(--muted)">'+esc(x.balanza_nombre||'sin cuenta correspondiente en la balanza')+'</td></tr>');
+      });
+    });
+    document.getElementById('cb_det').innerHTML='<div class="card"><h3>'+esc(e)+' · detalle por banco y mes</h3><div class="body">'+
+      '<div style="overflow-x:auto"><table style="font-size:12px"><thead><tr><th>Mes</th><th>Banco</th><th>Cuenta</th><th class="num-r">Saldo inicial</th><th class="num-r">Saldo final (banco)</th><th class="num-r">Saldo balanza</th><th class="num-r">Diferencia</th><th>Cuenta en balanza</th></tr></thead><tbody>'+rows.join('')+'</tbody></table></div>'+
+      '<div style="font-size:11px;color:var(--muted);margin-top:8px">Diferencia = saldo final según el banco − saldo actual de la cuenta en la balanza de comprobación. "Sin balanza" significa que esa cuenta bancaria no está desglosada en la balanza de esa empresa para ese mes (no que falte dinero).</div>'+
+      '</div></div>';
+    document.getElementById('cb_det').scrollIntoView({behavior:'smooth',block:'start'});
+  }
+  function wire(){
+    c.querySelectorAll('#cb_body tr.clk').forEach(function(tr){
+      tr.onclick=function(){ detalle(tr.getAttribute('data-e')); };
+    });
+  }
+  wire();
+  document.getElementById('cb_q').onkeyup=function(){
+    const t=this.value.trim().toLowerCase();
+    const f = t? resumen.filter(function(x){ return x.e.toLowerCase().indexOf(t)>=0; }) : resumen;
+    document.getElementById('cb_body').innerHTML=f.map(fila).join('');
+    wire();
+  };
+}
+
+/* ===== v27 · Cuotas IMSS (SUA) — cédulas reales de liquidación ===== */
+async function viewCuotasImss(c){
+  c.innerHTML='<div class="loader">Cargando cédulas de liquidación SUA…</div>';
+  let D=null;
+  try{ const r=await fetch('cuotas_imss.json'); D=await r.json(); }
+  catch(e){ c.innerHTML='<div class="empty">No se encontró cuotas_imss.json — súbalo al repositorio junto con app.js.</div>'; return; }
+  const MESES={'01':'Enero','02':'Febrero','03':'Marzo','04':'Abril','05':'Mayo','06':'Junio','07':'Julio'};
+  const emp = D.empresas||{};
+  const nombres = Object.keys(emp).sort();
+
+  const resumen = nombres.map(function(e){
+    const meses = Object.keys(emp[e]).sort();
+    let total=0, nCed=0, nExt=0, ultimoMes=null, ultimaFecha=null;
+    meses.forEach(function(m){
+      emp[e][m].forEach(function(cd){
+        total += cd.total_pagar||0; nCed++;
+        if(cd.extemporaneo) nExt++;
+        ultimoMes = m;
+      });
+    });
+    return {e:e, total:total, nCed:nCed, nExt:nExt, meses:meses.length, ultimoMes:ultimoMes};
+  }).sort(function(a,b){ return b.nExt-a.nExt || b.total-a.total; });
+
+  const totalGeneral = resumen.reduce(function(a,x){ return a+x.total; },0);
+  const totalCedulas = resumen.reduce(function(a,x){ return a+x.nCed; },0);
+  const totalExt = resumen.reduce(function(a,x){ return a+x.nExt; },0);
+  const pctExt = totalCedulas? Math.round(totalExt/totalCedulas*100) : 0;
+
+  function fila(x){
+    return '<tr class="clk" data-e="'+esc(x.e)+'"><td><b>'+esc(x.e)+'</b></td>'+
+      '<td class="num-r">'+mny(x.total)+'</td>'+
+      '<td class="num-r">'+x.nCed+'</td>'+
+      '<td class="num-r">'+(x.nExt?('<b style="color:var(--danger)">'+x.nExt+'</b>'):'0')+'</td>'+
+      '<td class="num-r">'+x.meses+'</td>'+
+      '<td>'+(x.ultimoMes?MESES[x.ultimoMes]:'—')+'</td></tr>';
+  }
+
+  c.innerHTML='<h1 class="pg">Cuotas IMSS (SUA)</h1>'+
+    '<div class="pgsub">Datos reales tomados de los Resúmenes de Liquidación oficiales del Sistema Único de Autodeterminación (SUA) del IMSS — folio, registro patronal, fecha de pago y si fue oportuna o extemporánea, por empresa y centro de trabajo · '+D.meses.map(function(m){return MESES[m];}).join('–')+' 2026.</div>'+
+    '<div class="kpis">'+
+      tile(nombres.length,'Empresas con cédulas','var(--navy)')+
+      tile(totalCedulas,'Cédulas de liquidación','var(--teal)')+
+      tile(mny(totalGeneral),'Total pagado al IMSS','var(--navy)')+
+      tile(totalExt+' ('+pctExt+'%)','Extemporáneas',totalExt?'var(--danger)':'var(--ok)')+
+    '</div>'+
+    '<div class="card"><div class="body"><input id="ci_q" class="mini" placeholder="Buscar empresa…" style="min-width:260px"></div>'+
+    '<div style="overflow-x:auto"><table style="font-size:12.5px"><thead><tr><th>Empresa</th><th class="num-r">Total pagado</th><th class="num-r">Cédulas</th><th class="num-r">Extemporáneas</th><th class="num-r">Meses cubiertos</th><th>Último mes</th></tr></thead><tbody id="ci_body">'+resumen.map(fila).join('')+'</tbody></table></div></div>'+
+    '<div id="ci_det"></div>';
+
+  function detalle(e){
+    const meses = Object.keys(emp[e]).sort();
+    const rows = [];
+    meses.forEach(function(m){
+      emp[e][m].slice().sort(function(a,b){ return (a.fecha_pago||'').localeCompare(b.fecha_pago||''); }).forEach(function(cd){
+        rows.push('<tr><td>'+MESES[m]+'</td><td>'+esc(cd.centro||'')+'</td><td style="font-size:11px;color:var(--muted)">'+esc(cd.registro_patronal||'')+'</td>'+
+          '<td>'+esc(cd.folio_sua||'')+'</td>'+
+          '<td>'+(cd.extemporaneo?'<span class="tag off">Extemporánea</span>':'<span class="tag on">Oportuna</span>')+'</td>'+
+          '<td>'+esc(cd.fecha_pago||'')+'</td>'+
+          '<td class="num-r">'+mny(cd.total_pagar)+'</td></tr>');
+      });
+    });
+    const totalEmp = meses.reduce(function(a,m){ return a+emp[e][m].reduce(function(a2,cd){ return a2+(cd.total_pagar||0); },0); },0);
+    document.getElementById('ci_det').innerHTML='<div class="card"><h3>'+esc(e)+' · cédulas de liquidación</h3><div class="body">'+
+      '<div style="overflow-x:auto"><table style="font-size:12px"><thead><tr><th>Mes</th><th>Centro de trabajo</th><th>Registro patronal</th><th>Folio SUA</th><th>Estatus</th><th>Fecha de pago</th><th class="num-r">Total pagado</th></tr></thead><tbody>'+rows.join('')+'</tbody></table></div>'+
+      '<div style="font-size:11.5px;color:var(--muted);margin-top:8px">Total pagado en el periodo: <b>'+mny(totalEmp)+'</b>. Datos tomados directamente del Resumen de Liquidación oficial de cada cédula (SUA IMSS), sin estimaciones.</div>'+
+      '</div></div>';
+    document.getElementById('ci_det').scrollIntoView({behavior:'smooth',block:'start'});
+  }
+  function wire(){
+    c.querySelectorAll('#ci_body tr.clk').forEach(function(tr){
+      tr.onclick=function(){ detalle(tr.getAttribute('data-e')); };
+    });
+  }
+  wire();
+  document.getElementById('ci_q').onkeyup=function(){
+    const t=this.value.trim().toLowerCase();
+    const f = t? resumen.filter(function(x){ return x.e.toLowerCase().indexOf(t)>=0; }) : resumen;
+    document.getElementById('ci_body').innerHTML=f.map(fila).join('');
+    wire();
+  };
+}
 
 /* ===== v17 · Padrones de proveedores de gobierno 2026 ===== */
 async function viewPadronProv(c){
