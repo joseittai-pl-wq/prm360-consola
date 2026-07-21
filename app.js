@@ -149,11 +149,11 @@ function renderPendiente(){
 }
 
 const MERGE_AREAS = [
-  ['Dirección', [ ['Tablero General','tabgen','n'],['Rentabilidad','rentabilidad','n'],['Responsables por frente','responsables','n'],['Frentes · semáforos','frentes','n'] ]],
+  ['Dirección', [ ['Tablero General','tabgen','n'],['Rentabilidad','rentabilidad','n'],['Responsables por frente','responsables','n'],['Empresa 360 (radiografía)','empresa360','n'],['Frentes · semáforos','frentes','n'] ]],
   ['Comercial', [ ['Tablero Comercial','tabcom','n'],['Cotizador de nómina','cotizador','p'],['Pipeline de prospectos','pipelinecom','p'],['Solicitud (PDF / editable)','solicitudpdf','p'],['Solicitud de Cotización (web)','solicitudweb','p'],['Checklist de documentos','checklistdocs','p'],['Presentaciones comerciales','bibliopresenta','p'],['Tablero de clientes','clientes','p'],['Boletín','boletin','p'] ]],
   ['Vinculación', [ ['Tablero Vinculación','tabvinc','n'],['Clientes','clientescombo','p'],['Ficha VIN-05 (perfil cliente)','vin05','p'],['Trabajadores · IMSS','trabajadorescombo','p'],['Adhesión digital (firma)','adhesiondig','p'],['Movimientos afiliatorios','movafil','p'],['Onboarding / KYC','onboarding','n'],['Validación + KYC (CSF/32-D/69)','kyc','p'],['Checklist de documentos','checklistdocs','p'],['Control de entregables','entregables','p'] ]],
   ['Operaciones', [ ['Tablero Operaciones','tabop','n'],['Trámites','tramitescombo','p'],['Facturación','facturacion','p'],['Control de timbrado FAC-01','factimbrado','p'],['Constructor de concepto FAC-02','constructorfac','p'],['Tablero NOMEN','tablonomen','p'],['Layout de dispersión','layoutdisp','p'],['Expediente de Materialidad','materialidad','p'],['Checklists de materialidad','matchecklists','p'],['Conciliación disp. ↔ CFDI','__soon_concilia','p'],['Descargas SAT / CFDI','descargas','n'],['Calendario de vencimientos','calendario','n'] ]],
-  ['Jurídico', [ ['Tablero Jurídico','tabjur','n'],['Corporativo','corporativocombo','p'],['Bitácora de firmas','bitacorafirmas','p'],['Vigencias / Renovaciones','renovaciones','p'],['Gobierno y Padrones','padrones','n'],['Padrones de proveedores 2026','padronprov','p'],['Licitaciones y contratos','licitaciones','n'],['Plantillas de contratos','biblioplantillas','p'],['Juicios / defensa fiscal','juicios','p'],['Documentales (púb. y priv.)','documentales','n'],['Documentales públicas (MDP)','mdp','p'],['Compliance jurídico','compliance','n'] ]],
+  ['Jurídico', [ ['Tablero Jurídico','tabjur','n'],['Corporativo','corporativocombo','p'],['Bitácora de firmas','bitacorafirmas','p'],['Vigencias / Renovaciones','renovaciones','p'],['Gobierno y Padrones','padrones','n'],['Padrones de proveedores 2026','padronprov','p'],['Empresa 360 (radiografía)','empresa360','p'],['Licitaciones y contratos','licitaciones','n'],['Plantillas de contratos','biblioplantillas','p'],['Juicios / defensa fiscal','juicios','p'],['Documentales (púb. y priv.)','documentales','n'],['Documentales públicas (MDP)','mdp','p'],['Compliance jurídico','compliance','n'] ]],
   ['Fiscal', [ ['Tablero Fiscal','tabfisc','n'],['Cumplimiento','cumplimientocombo','p'],['Calendario fiscal','calfiscal','p'],['Calendario REPSE (ICSOE/SISUB)','calrepse','p'],['Previsión social','previsioncombo','p'],['NOM-035','nom035','p'],['Cuestionario NOM-035','nom035cuest','n'],['e.firmas (control)','efirmasv','n'] ]],
   ['Contabilidad', [ ['Tablero Contable','tabcont','n'],['Contabilidad / Pólizas','contabilidad','n'],['Captura de servicios','captura','p'],['Descarga XML / CFDI','descargas','n'],['Bancos','bancoscombo','p'],['Motor de conciliación','conciliador','p'] ]],
   ['Tesorería', [ ['Tablero Tesorería','tabtes','n'],['Cobranza','cobranza','n'],['Cuentas por pagar','cxp','p'],['Bancos y flujo','flujo','p'],['Cuentas','cuentas','p'],['Pagos','pagos','p'],['Calendario fiscal','calfiscal','p'] ]],
@@ -236,6 +236,7 @@ async function view(v, rol, label){
   const c=$('#content'); c.innerHTML='<div class="loader">Cargando…</div>';
   try{
     if(v==='cotizador')    return await viewCotizador(c);
+    if(v==='empresa360')   return await viewEmpresa360(c);
     if(v==='vin05')        return await viewVin05(c);
     if(v==='mdp')          return await viewMdp(c);
     if(v==='responsables') return await viewResponsables(c);
@@ -5592,5 +5593,134 @@ async function vin05Form(c, id){
   };
   const pr=g('v5_print');
   if(pr) pr.onclick=function(){ window.print(); };
+}
+
+/* ===== v23 · Empresa 360 · Radiografía integral (pre-auditoría de control interno) ===== */
+function e360norm(s){
+  let t=String(s||'').toUpperCase();
+  const rep=[['Á','A'],['É','E'],['Í','I'],['Ó','O'],['Ú','U'],['Ü','U'],['Ñ','N']];
+  rep.forEach(function(p){ t=t.split(p[0]).join(p[1]); });
+  let out='';
+  for(let i=0;i<t.length;i++){ const ch=t.charAt(i); if((ch>='A'&&ch<='Z')||(ch>='0'&&ch<='9')) out+=ch; }
+  ['SADECV','SDERLDECV','SCDERLDECV','SAPIDECV','SDERL','SADECAPITALVARIABLE','SC','IPD'].forEach(function(suf){
+    if(out.length>suf.length+3 && out.slice(-suf.length)===suf) out=out.slice(0,-suf.length);
+  });
+  return out;
+}
+async function viewEmpresa360(c){
+  c.innerHTML='<h1 class="pg">Empresa 360 · Radiografía integral</h1><div class="pgsub">Cargando todas las fuentes…</div><div class="loader">Cruzando padrones, MDP, e.firmas, REPSE y actividad SAT…</div>';
+  const [rPad,rMdp,rEf,rRep,rPe]=await Promise.all([
+    sb.from('padron_prov_pendientes').select('empresa,prioridad,estatus').limit(400),
+    sb.from('mdp_control').select('empresa,rfc,acto,estatus').limit(500),
+    sb.from('efirmas').select('empresa,estatus,vencimiento').limit(200),
+    sb.from('repse_informativas').select('notas,estatus').limit(400),
+    sb.from('padron_empresas').select('empresa,nivel,padron_estatus,repse_estatus').limit(100)
+  ]);
+  let BM=[];
+  try{ const r=await fetch('base_maestra.json'); BM=await r.json(); }catch(e){}
+  const E={};
+  function ent(nombre){
+    const k=e360norm(nombre);
+    if(!k) return null;
+    if(!E[k]) E[k]={nombre:nombre, rfc:'', padC:0, padA:0, padM:0, padR:0, mdpV:0, mdpP:0, mdpX:0, ef:'', efVence:'', repPor:0, repPre:0, repVen:0, nivel:'', actividad:'', estatusSat:''};
+    return E[k];
+  }
+  (rMdp.data||[]).forEach(function(x){
+    const e=ent(x.empresa); if(!e) return;
+    if(x.rfc && !e.rfc) e.rfc=x.rfc;
+    if(x.estatus==='vigente') e.mdpV++; else if(x.estatus==='vencida') e.mdpX++; else e.mdpP++;
+  });
+  (rPad.data||[]).forEach(function(x){
+    const e=ent(x.empresa); if(!e) return;
+    if(x.estatus==='Resuelto'){ e.padR++; return; }
+    if(x.prioridad==='CRÍTICA') e.padC++; else if(x.prioridad==='ALTA') e.padA++; else e.padM++;
+  });
+  (rEf.data||[]).forEach(function(x){
+    const e=ent(x.empresa); if(!e) return;
+    e.ef=x.estatus||''; e.efVence=x.vencimiento||'';
+  });
+  (rRep.data||[]).forEach(function(x){
+    const e=ent(x.notas); if(!e) return;
+    if(x.estatus==='presentada') e.repPre++; else if(x.estatus==='vencida_revisar') e.repVen++; else e.repPor++;
+  });
+  (rPe.data||[]).forEach(function(x){
+    const e=ent(x.empresa); if(!e) return;
+    e.nivel=x.nivel||'';
+  });
+  BM.forEach(function(x){
+    const e=ent(x.razon); if(!e) return;
+    e.actividad=x.actividad||''; e.estatusSat=x.estatus||'';
+    if(x.rfc && !e.rfc) e.rfc=x.rfc;
+  });
+  const lista=Object.keys(E).map(function(k){
+    const e=E[k];
+    /* Salud 0-100: MDP 40 pts · padrones 30 · e.firma 15 · REPSE 15 */
+    const mdpTot=e.mdpV+e.mdpP+e.mdpX;
+    const sMdp=mdpTot? (e.mdpV/mdpTot)*40 : 0;
+    const abiertos=e.padC*3+e.padA*2+e.padM;
+    const sPad=Math.max(0, 30-abiertos*2.5);
+    const sEf=e.ef==='inactiva'?0:(e.ef?15:8);
+    const repTot=e.repPor+e.repPre+e.repVen;
+    const sRep=repTot? (e.repPre/repTot)*15 : 8;
+    e.salud=Math.round(sMdp+sPad+sEf+sRep);
+    return e;
+  }).sort(function(a,b){ return a.salud-b.salud; });
+  const prom=lista.length? Math.round(lista.reduce(function(a,x){ return a+x.salud; },0)/lista.length):0;
+  const rojas=lista.filter(function(x){ return x.salud<40; }).length;
+  const verdes=lista.filter(function(x){ return x.salud>=70; }).length;
+  function colS(s){ return s>=70?'var(--ok)':(s>=40?'#e67e22':'var(--danger)'); }
+  function fila(e,i){
+    return '<tr class="clk" data-i="'+i+'"><td><b>'+esc(e.nombre)+'</b><br><span style="font-size:11px;color:var(--muted)">'+esc(e.rfc||'')+(e.nivel?(' · Nivel '+esc(e.nivel)):'')+'</span></td>'+
+      '<td style="text-align:center"><b style="color:'+colS(e.salud)+';font-size:16px">'+e.salud+'</b></td>'+
+      '<td class="num-r">'+(e.padC?('<b style="color:var(--danger)">'+e.padC+'</b>'):'0')+' / '+(e.padA?('<b style="color:#e67e22">'+e.padA+'</b>'):'0')+'</td>'+
+      '<td class="num-r">'+e.mdpV+'/'+(e.mdpV+e.mdpP+e.mdpX)+'</td>'+
+      '<td>'+(e.ef==='inactiva'?'<span class="tag off">inactiva</span>':(e.ef?'<span class="tag on">'+esc(e.ef)+'</span>':'—'))+'</td>'+
+      '<td class="num-r">'+(e.repPor+e.repVen?('<b style="color:#e67e22">'+(e.repPor+e.repVen)+'</b>'):'0')+'</td>'+
+      '<td>'+(e.estatusSat?('<span class="tag '+(e.estatusSat==='activa'?'on':'off')+'">'+esc(e.estatusSat)+'</span>'):'—')+'</td></tr>';
+  }
+  c.innerHTML='<h1 class="pg">Empresa 360 · Radiografía integral</h1>'+
+    '<div class="pgsub">Cruce automático de padrones de gobierno, documentales MDP, e.firmas, informativas REPSE y actividad SAT — base de la auditoría de control interno. Ordenadas de mayor a menor riesgo. Clic en una empresa para su detalle.</div>'+
+    '<div class="kpis">'+
+      tile(lista.length,'Empresas radiografiadas','var(--navy)')+
+      tile(prom,'Salud promedio (0-100)',colS(prom))+
+      tile(rojas,'En rojo (<40)',rojas?'var(--danger)':'var(--ok)')+
+      tile(verdes,'En verde (≥70)','var(--ok)')+
+    '</div>'+
+    '<div class="card"><div class="body"><input id="e3_q" class="mini" placeholder="Buscar empresa o RFC…" style="min-width:280px"></div>'+
+    '<div style="overflow-x:auto"><table style="font-size:12px" id="e3_tbl"><thead><tr><th>Empresa</th><th style="text-align:center">Salud</th><th class="num-r">Padrones crít./altos</th><th class="num-r">MDP vigentes</th><th>e.firma</th><th class="num-r">REPSE pend.</th><th>SAT</th></tr></thead><tbody id="e3_body">'+
+    lista.map(fila).join('')+'</tbody></table></div></div>'+
+    '<div id="e3_det"></div>';
+  function wire(){
+    c.querySelectorAll('#e3_body tr.clk').forEach(function(tr){
+      tr.onclick=function(){
+        const e=lista[Number(tr.getAttribute('data-i'))];
+        const mdpTot=e.mdpV+e.mdpP+e.mdpX;
+        document.getElementById('e3_det').innerHTML=
+          '<div class="card"><h3>'+esc(e.nombre)+' · Salud '+e.salud+'/100</h3><div class="body">'+
+          '<div class="kpis">'+
+            tile(e.padC,'Padrones críticos',e.padC?'var(--danger)':'var(--ok)')+
+            tile(e.padA,'Padrones altos',e.padA?'#e67e22':'var(--ok)')+
+            tile(e.padM,'Padrones medios','var(--muted)')+
+            tile(e.padR,'Resueltos','var(--ok)')+
+            tile(e.mdpV+'/'+mdpTot,'Documentales MDP vigentes',e.mdpV===mdpTot&&mdpTot>0?'var(--ok)':'#e67e22')+
+            tile(e.mdpX,'MDP vencidas',e.mdpX?'var(--danger)':'var(--ok)')+
+            tile(e.repPre,'ICSOE/SISUB presentadas','var(--ok)')+
+            tile(e.repPor+e.repVen,'REPSE pendientes',(e.repPor+e.repVen)?'#e67e22':'var(--ok)')+
+          '</div>'+
+          (e.actividad?('<div style="font-size:12.5px;margin-top:8px"><b>Actividad económica (SAT):</b> '+esc(e.actividad)+'</div>'):'')+
+          (e.ef==='inactiva'?'<div style="background:rgba(220,53,69,.12);border:1px solid var(--danger);color:var(--danger);border-radius:8px;padding:9px 12px;margin-top:8px;font-weight:700">⚠ e.firma INACTIVA — bloquea ComprasMX, CDMX, Puebla y NL; reactivar es prioridad crítica.</div>':'')+
+          '<div style="font-size:11.5px;color:var(--muted);margin-top:10px">Trabaje los pendientes en: Jurídico → Padrones de proveedores 2026 · Documentales públicas (MDP) · Fiscal → Calendario REPSE y e.firmas.</div>'+
+          '</div></div>';
+        document.getElementById('e3_det').scrollIntoView({behavior:'smooth',block:'start'});
+      };
+    });
+  }
+  wire();
+  document.getElementById('e3_q').onkeyup=function(){
+    const t=this.value.trim().toLowerCase();
+    const f=t? lista.filter(function(e){ return (e.nombre+' '+e.rfc).toLowerCase().indexOf(t)>=0; }) : lista;
+    document.getElementById('e3_body').innerHTML=f.map(function(e){ return fila(e, lista.indexOf(e)); }).join('');
+    wire();
+  };
 }
 
