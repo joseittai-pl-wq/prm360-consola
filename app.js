@@ -149,12 +149,12 @@ function renderPendiente(){
 }
 
 const MERGE_AREAS = [
-  ['Dirección', [ ['Tablero General','tabgen','n'],['Rentabilidad','rentabilidad','n'],['Responsables por frente','responsables','n'],['Empresa 360 (radiografía)','empresa360','n'],['Frentes · semáforos','frentes','n'] ]],
+  ['Dirección', [ ['Tablero General','tabgen','n'],['Rentabilidad','rentabilidad','n'],['Responsables por frente','responsables','n'],['Empresa 360 (radiografía)','empresa360','n'],['Agenda 360 (vencimientos)','agenda360','n'],['Frentes · semáforos','frentes','n'] ]],
   ['Comercial', [ ['Tablero Comercial','tabcom','n'],['Cotizador de nómina','cotizador','p'],['Pipeline de prospectos','pipelinecom','p'],['Solicitud (PDF / editable)','solicitudpdf','p'],['Solicitud de Cotización (web)','solicitudweb','p'],['Checklist de documentos','checklistdocs','p'],['Presentaciones comerciales','bibliopresenta','p'],['Tablero de clientes','clientes','p'],['Boletín','boletin','p'] ]],
   ['Vinculación', [ ['Tablero Vinculación','tabvinc','n'],['Clientes','clientescombo','p'],['Ficha VIN-05 (perfil cliente)','vin05','p'],['Trabajadores · IMSS','trabajadorescombo','p'],['Adhesión digital (firma)','adhesiondig','p'],['Movimientos afiliatorios','movafil','p'],['Onboarding / KYC','onboarding','n'],['Validación + KYC (CSF/32-D/69)','kyc','p'],['Checklist de documentos','checklistdocs','p'],['Control de entregables','entregables','p'] ]],
   ['Operaciones', [ ['Tablero Operaciones','tabop','n'],['Trámites','tramitescombo','p'],['Facturación','facturacion','p'],['Control de timbrado FAC-01','factimbrado','p'],['Constructor de concepto FAC-02','constructorfac','p'],['Tablero NOMEN','tablonomen','p'],['Layout de dispersión','layoutdisp','p'],['Expediente de Materialidad','materialidad','p'],['Checklists de materialidad','matchecklists','p'],['Conciliación disp. ↔ CFDI','__soon_concilia','p'],['Descargas SAT / CFDI','descargas','n'],['Calendario de vencimientos','calendario','n'] ]],
   ['Jurídico', [ ['Tablero Jurídico','tabjur','n'],['Corporativo','corporativocombo','p'],['Bitácora de firmas','bitacorafirmas','p'],['Vigencias / Renovaciones','renovaciones','p'],['Gobierno y Padrones','padrones','n'],['Padrones de proveedores 2026','padronprov','p'],['Empresa 360 (radiografía)','empresa360','p'],['Licitaciones y contratos','licitaciones','n'],['Plantillas de contratos','biblioplantillas','p'],['Juicios / defensa fiscal','juicios','p'],['Documentales (púb. y priv.)','documentales','n'],['Documentales públicas (MDP)','mdp','p'],['Compliance jurídico','compliance','n'] ]],
-  ['Fiscal', [ ['Tablero Fiscal','tabfisc','n'],['Cumplimiento','cumplimientocombo','p'],['Calendario fiscal','calfiscal','p'],['Calendario REPSE (ICSOE/SISUB)','calrepse','p'],['Previsión social','previsioncombo','p'],['NOM-035','nom035','p'],['Cuestionario NOM-035','nom035cuest','n'],['e.firmas (control)','efirmasv','n'] ]],
+  ['Fiscal', [ ['Tablero Fiscal','tabfisc','n'],['Cumplimiento','cumplimientocombo','p'],['Agenda 360 (vencimientos)','agenda360','p'],['Calendario fiscal','calfiscal','p'],['Calendario REPSE (ICSOE/SISUB)','calrepse','p'],['Previsión social','previsioncombo','p'],['NOM-035','nom035','p'],['Cuestionario NOM-035','nom035cuest','n'],['e.firmas (control)','efirmasv','n'] ]],
   ['Contabilidad', [ ['Tablero Contable','tabcont','n'],['Contabilidad / Pólizas','contabilidad','n'],['Captura de servicios','captura','p'],['Descarga XML / CFDI','descargas','n'],['Bancos','bancoscombo','p'],['Motor de conciliación','conciliador','p'] ]],
   ['Tesorería', [ ['Tablero Tesorería','tabtes','n'],['Cobranza','cobranza','n'],['Cuentas por pagar','cxp','p'],['Bancos y flujo','flujo','p'],['Cuentas','cuentas','p'],['Pagos','pagos','p'],['Calendario fiscal','calfiscal','p'] ]],
   ['Administración', [ ['Tablero Administración','tabadm','n'],['Empresas del grupo','empresascombo','p'],['Base Maestra (actividades SAT)','basemaestra','p'],['Gastos y costeo','gastoscombo','p'],['Costeo por cliente','costeo','n'],['Importador de reportes','importador','n'],['Accesos y vinculación','accesos','n'],['Contraloría','contraloria','p'],['Organigrama y matrices','biblioorg','p'],['Directorio','directorio','n'],['Sucursales','sucursalesv','n'],['Personal interno','equipo','n'],['Organigrama y funciones','organigramafn','n'],['Reportes','reportes','p'] ]],
@@ -236,6 +236,7 @@ async function view(v, rol, label){
   const c=$('#content'); c.innerHTML='<div class="loader">Cargando…</div>';
   try{
     if(v==='cotizador')    return await viewCotizador(c);
+    if(v==='agenda360')    return await viewAgenda360(c);
     if(v==='empresa360')   return await viewEmpresa360(c);
     if(v==='vin05')        return await viewVin05(c);
     if(v==='mdp')          return await viewMdp(c);
@@ -5722,5 +5723,99 @@ async function viewEmpresa360(c){
     document.getElementById('e3_body').innerHTML=f.map(function(e){ return fila(e, lista.indexOf(e)); }).join('');
     wire();
   };
+}
+
+/* ===== v24 · Agenda 360 · Todos los vencimientos en una línea de tiempo ===== */
+async function viewAgenda360(c){
+  c.innerHTML='<h1 class="pg">Agenda 360 · Vencimientos y rutinas</h1><div class="loader">Reuniendo calendario fiscal, REPSE, renovaciones y e.firmas…</div>';
+  const [rCal,rRep,rRen,rEf]=await Promise.all([
+    sb.from('calendario_fiscal').select('fecha,obligacion,aplica_a,tipo,estatus').order('fecha').limit(100),
+    sb.from('repse_informativas').select('tipo,cuatrimestre,anio,estatus').limit(400),
+    sb.from('renovaciones').select('empresa,tipo_autorizacion,entidad,vigencia,estatus').limit(150),
+    sb.from('efirmas').select('empresa,estatus,vencimiento').limit(150)
+  ]);
+  const hoy=new Date(); hoy.setHours(0,0,0,0);
+  const items=[];
+  function add(fecha,cat,titulo,detalle,modulo){
+    const d=new Date(fecha+'T00:00:00');
+    if(isNaN(d.getTime())) return;
+    items.push({d:d, cat:cat, titulo:titulo, detalle:detalle||'', modulo:modulo||''});
+  }
+  (rCal.data||[]).forEach(function(x){
+    if(x.estatus==='cumplida') return;
+    add(x.fecha,'Fiscal',x.obligacion||'Obligación fiscal',(x.aplica_a||'')+(x.tipo?(' · '+x.tipo):''),'Fiscal → Calendario fiscal');
+  });
+  /* ICSOE/SISUB pendientes agregadas por cuatrimestre (vencen el día 17 del mes posterior al cierre) */
+  const dueC={1:'-05-17',2:'-09-17',3:'-01-17'};
+  const agg={};
+  (rRep.data||[]).forEach(function(x){
+    if(x.estatus==='presentada') return;
+    const k=x.tipo+'|C'+x.cuatrimestre+'|'+x.anio;
+    agg[k]=(agg[k]||0)+1;
+  });
+  Object.keys(agg).forEach(function(k){
+    const p=k.split('|');
+    const cu=Number(p[1].slice(1));
+    const anio=cu===3? String(Number(p[2])+1) : p[2];
+    add(anio+dueC[cu],'REPSE',p[0]+' '+p[1]+'-'+p[2],agg[k]+' empresas por presentar','Fiscal → Calendario REPSE');
+  });
+  (rRen.data||[]).forEach(function(x){
+    if(x.estatus==='renovada' || !x.vigencia) return;
+    add(x.vigencia,'Renovación',(x.tipo_autorizacion||'Renovación')+' · '+(x.empresa||''),(x.entidad||''),'Jurídico → Vigencias / Renovaciones');
+  });
+  (rEf.data||[]).forEach(function(x){
+    if(!x.vencimiento || x.estatus==='inactiva') return;
+    add(x.vencimiento,'e.firma','Vence e.firma · '+(x.empresa||''),'Renovar antes del vencimiento (SAT ID o cita)','Fiscal → e.firmas');
+  });
+  /* Rutinas fijas de las próximas 5 semanas */
+  for(let i=0;i<35;i++){
+    const d=new Date(hoy.getTime()+i*86400000);
+    const iso=d.toISOString().slice(0,10);
+    if(d.getDay()===1) add(iso,'Rutina','Alerta semanal de lunes','Revisión de vencimientos y semáforos (tarea programada)','Automática');
+    if(d.getDay()===5) add(iso,'Rutina','Viernes de carga bancaria','Cargar movimientos y conciliar pagos vs banco','Contabilidad → Bancos');
+    if(d.getDate()===1) add(iso,'Rutina','Boletín mensual PR&M Perspectivas','Borrador automático + envío por Outlook','Comercial → Boletín');
+  }
+  items.sort(function(a,b){ return a.d-b.d; });
+  const CATS=['Fiscal','REPSE','Renovación','e.firma','Rutina'];
+  const colC={'Fiscal':'var(--navy)','REPSE':'var(--teal)','Renovación':'#e67e22','e.firma':'var(--danger)','Rutina':'var(--muted)'};
+  function dias(d){ return Math.round((d-hoy)/86400000); }
+  function bloque(titulo,color,arr,fcat){
+    const f=fcat? arr.filter(function(x){ return x.cat===fcat; }) : arr;
+    if(!f.length) return '';
+    const rows=f.map(function(x){
+      const dd=dias(x.d);
+      const et=dd<0?('<b style="color:var(--danger)">'+(-dd)+' días vencido</b>'):(dd===0?'<b style="color:#e67e22">HOY</b>':('en '+dd+' días'));
+      return '<tr><td style="white-space:nowrap">'+x.d.toISOString().slice(0,10)+'</td>'+
+        '<td><span class="tag" style="background:'+colC[x.cat]+';color:#fff">'+x.cat+'</span></td>'+
+        '<td><b>'+esc(x.titulo)+'</b>'+(x.detalle?('<br><span style="font-size:11px;color:var(--muted)">'+esc(x.detalle)+'</span>'):'')+'</td>'+
+        '<td style="font-size:12px">'+et+'</td><td style="font-size:11px;color:var(--muted)">'+esc(x.modulo)+'</td></tr>';
+    }).join('');
+    return '<div class="card"><h3 style="color:'+color+'">'+titulo+' ('+f.length+')</h3><div class="body"><div style="overflow-x:auto"><table style="font-size:12.5px"><thead><tr><th>Fecha</th><th>Tipo</th><th>Qué vence / qué toca</th><th>Plazo</th><th>Dónde se atiende</th></tr></thead><tbody>'+rows+'</tbody></table></div></div></div>';
+  }
+  const venc=items.filter(function(x){ return dias(x.d)<0 && x.cat!=='Rutina'; });
+  const sem=items.filter(function(x){ const dd=dias(x.d); return dd>=0&&dd<=7; });
+  const mes=items.filter(function(x){ const dd=dias(x.d); return dd>7&&dd<=30; });
+  const desp=items.filter(function(x){ const dd=dias(x.d); return dd>30&&dd<=120 && x.cat!=='Rutina'; });
+  function render(fcat){
+    document.getElementById('ag_out').innerHTML=
+      bloque('⚠ Vencidos','var(--danger)',venc,fcat)+
+      bloque('Esta semana','#e67e22',sem,fcat)+
+      bloque('Próximos 30 días','var(--navy)',mes,fcat)+
+      bloque('Siguientes 120 días','var(--muted)',desp,fcat)||'<div class="empty">Nada con ese filtro</div>';
+  }
+  c.innerHTML='<h1 class="pg">Agenda 360 · Vencimientos y rutinas</h1>'+
+    '<div class="pgsub">Una sola línea de tiempo: calendario fiscal, informativas ICSOE/SISUB, renovaciones de padrones, e.firmas y las rutinas fijas del despacho (lunes de alertas, viernes de bancos, boletín del día 1).</div>'+
+    '<div class="kpis">'+
+      tile(venc.length,'Vencidos',venc.length?'var(--danger)':'var(--ok)')+
+      tile(sem.length,'Esta semana',sem.length?'#e67e22':'var(--ok)')+
+      tile(mes.length,'Próximos 30 días','var(--navy)')+
+      tile(desp.length,'Siguientes 120 días','var(--muted)')+
+    '</div>'+
+    '<div class="card no-print"><div class="body"><div class="frm"><label>Filtrar por tipo<select id="ag_cat"><option value="">Todos</option>'+CATS.map(function(k){ return '<option>'+k+'</option>'; }).join('')+'</select></label>'+
+    '<button class="btn2 ghost" id="ag_print" style="align-self:flex-end">🖨 Imprimir agenda</button></div></div></div>'+
+    '<div id="ag_out"></div>';
+  render('');
+  document.getElementById('ag_cat').onchange=function(){ render(this.value); };
+  document.getElementById('ag_print').onclick=function(){ window.print(); };
 }
 
