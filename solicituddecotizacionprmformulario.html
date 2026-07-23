@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PR&amp;M · Solicitud de Cotización</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#14303D;--navy2:#22485A;--gold:#A8843C;--goldsoft:#F2ECDD;--paper:#F4F2EC;--card:#FFF;
+  --line:#D7DDD9;--ok:#2E7D5B;--oksoft:#E7F0EA;--amb:#B07C1F;--red:#A3372E;--redsoft:#FDECEA;
+  --ink:#1A1A1A;--gris:#5C615E;--lgris:#8A938F;--soft:#EEF1EF;
+  --display:"Fraunces",Georgia,serif;--body:"Inter",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);line-height:1.55}
+.wrap{max-width:860px;margin:0 auto;padding:0 16px 90px}
+.hero{background:var(--navy);color:#fff;border-radius:0 0 20px 20px;padding:28px 24px 24px;position:relative;overflow:hidden}
+.hero .bar{width:46px;height:4px;background:var(--gold);border-radius:3px;margin-bottom:12px}
+.hero .brand{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);font-weight:700}
+.hero h1{font-family:var(--display);font-weight:600;font-size:clamp(22px,5vw,32px);line-height:1.1;margin:6px 0 6px}
+.hero p{color:#C9D3D2;font-size:14.5px;max-width:60ch;margin:0}
+.prog{position:sticky;top:0;z-index:5;background:var(--paper);padding:12px 0 8px}
+.prog .track{height:8px;background:#E4E7E2;border-radius:6px;overflow:hidden}
+.prog .fill{height:100%;width:0;background:var(--gold);border-radius:6px;transition:width .4s ease}
+.prog .lbl{font-size:11.5px;color:var(--gris);margin-top:5px;font-weight:600}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 1px 0 rgba(20,48,61,.03)}
+.step{display:flex;align-items:center;gap:11px;margin-bottom:2px}
+.step .n{flex:none;width:30px;height:30px;border-radius:50%;background:var(--navy);color:#fff;font-family:var(--display);font-weight:600;font-size:15px;display:flex;align-items:center;justify-content:center}
+.step h2{font-family:var(--display);font-weight:600;font-size:19px;margin:0;color:var(--navy);flex:1}
+.mod{flex:none;font-size:11px;font-weight:700;color:var(--lgris);background:var(--soft);border-radius:9px;padding:4px 10px}
+.mod.done{color:#1f5d44;background:var(--oksoft)}
+.sub{font-size:13px;color:var(--gris);margin:4px 0 14px 41px}
+@media(max-width:520px){.sub{margin-left:0}}
+.field{margin-bottom:13px}
+.field label{display:block;font-size:13px;font-weight:600;color:var(--navy2);margin-bottom:6px}
+.field input,.field textarea,.field select{width:100%;padding:11px 13px;border:1px solid var(--line);border-radius:10px;background:#fff;font-family:inherit;font-size:14.5px;color:var(--ink)}
+.field textarea{min-height:64px;resize:vertical}
+.field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(168,132,60,.16)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
+@media(max-width:560px){.row2,.row3{grid-template-columns:1fr}}
+.chips{display:flex;flex-wrap:wrap;gap:9px}
+.chip{border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:9px 13px;font-family:inherit;font-size:13.5px;font-weight:600;color:var(--navy2);cursor:pointer;text-align:left;transition:.12s}
+.chip:hover{border-color:#b9c2bc}
+.chip.on{border-color:var(--gold);background:var(--goldsoft);color:var(--navy);box-shadow:0 0 0 3px rgba(168,132,60,.12)}
+.chip .em{display:block;font-size:11px;font-weight:500;color:var(--gris);margin-top:2px}
+.tcards{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-bottom:8px}
+@media(max-width:560px){.tcards{grid-template-columns:1fr}}
+.tcard{border:1.5px solid var(--line);background:#fff;border-radius:13px;padding:13px;text-align:center;cursor:pointer;transition:.12s}
+.tcard.on{border-color:var(--gold);background:var(--goldsoft)}
+.tcard .ico{font-size:22px}.tcard .tt{font-weight:700;color:var(--navy);font-size:14px;margin-top:4px}.tcard .dd{font-size:11px;color:var(--gris);margin-top:3px;line-height:1.35}
+.blk{border-left:3px solid var(--gold);background:#FBF7EF;border-radius:0 12px 12px 0;padding:14px 15px;margin-top:12px}
+.gt{font-size:13.5px;font-weight:700;color:var(--navy)}
+.ex{font-size:12px;color:var(--gris);margin:5px 0 0;line-height:1.5}
+.tag{display:inline-block;background:var(--goldsoft);color:var(--gold);font-size:9.5px;font-weight:700;border-radius:7px;padding:2px 8px;margin-left:6px;letter-spacing:.05em;vertical-align:middle}
+.tag.ok{background:var(--oksoft);color:#1f5d44}
+.hidden{display:none!important}
+.reveal{border-left:3px solid var(--gold);background:#FBF7EF;border-radius:0 10px 10px 0;padding:11px 13px;margin-top:10px}
+.inline{display:flex;gap:9px;align-items:stretch}.inline input{flex:1}
+.btn{background:var(--navy);color:#fff;border:none;border-radius:10px;padding:10px 15px;font-family:inherit;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap}
+.btn.ghost{background:#fff;color:var(--navy);border:1.5px solid var(--navy)}
+.btn.dash{background:#fff;color:var(--navy);border:1.5px dashed var(--gold)}
+.btn.done{background:var(--oksoft);color:#1f5d44;border:1px solid #bfe0cd}
+.mini{font-size:11.5px;color:var(--navy2);font-weight:600;margin:0 0 4px}
+.crow{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:10px;position:relative}
+.crow .num{position:absolute;top:-9px;left:12px;background:var(--navy);color:#fff;font-size:10.5px;font-weight:700;border-radius:7px;padding:2px 8px}
+.crow .del{position:absolute;top:8px;right:10px;color:var(--red);font-size:12px;font-weight:700;cursor:pointer;background:none;border:none}
+.grid3{display:grid;grid-template-columns:.8fr .8fr .7fr;gap:9px;margin-top:9px}
+@media(max-width:560px){.grid3{grid-template-columns:1fr}}
+.dd-list{border:1px solid var(--gold);border-radius:10px;margin-top:5px;background:#fff;box-shadow:0 8px 22px rgba(20,48,61,.12);overflow:hidden;position:relative;z-index:6}
+.dd-list .it{padding:8px 11px;font-size:12.5px;border-bottom:1px solid #EEF1EF;display:flex;justify-content:space-between;gap:8px;cursor:pointer}
+.dd-list .it:last-child{border-bottom:0}.dd-list .it:hover{background:var(--goldsoft)}
+.dd-list .it .ck{color:var(--navy);font-weight:700;white-space:nowrap}
+.src{font-size:11px;color:var(--lgris);margin-top:7px;font-style:italic}.src a{color:var(--gold);font-weight:600}
+.total{display:flex;justify-content:space-between;align-items:center;margin-top:12px;background:var(--navy);color:#fff;border-radius:11px;padding:12px 15px}
+.total .lb{font-size:12.5px;color:#C9D3D2}.total .vl{font-family:var(--display);font-weight:600;font-size:20px}
+.tagi{display:inline-block;background:var(--soft);color:var(--navy2);font-size:11px;font-weight:600;border-radius:8px;padding:3px 9px;margin-top:8px}
+.pct{display:flex;gap:8px;margin-top:9px;flex-wrap:wrap;align-items:center}
+.chk{display:flex;align-items:flex-start;gap:9px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13px;cursor:pointer;margin-top:10px}
+.chk .bx{width:16px;height:16px;border:1.6px solid var(--navy);border-radius:4px;flex:none;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff}
+.chk.on .bx{background:var(--navy)}
+.chk.on .bx:after{content:"✓"}
+/* calendar */
+.cal{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:10px;max-width:330px}
+.cal .presets{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.cal .presets .p{border:1.5px solid var(--line);background:#fff;border-radius:11px;padding:5px 10px;font-size:12px;font-weight:600;color:var(--navy2);cursor:pointer}
+.cal .presets .p.on{border-color:var(--gold);background:var(--goldsoft);color:var(--navy)}
+.calhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.calhead .mo{font-family:var(--display);font-weight:600;color:var(--navy);font-size:14px}
+.calhead .nav{color:var(--navy2);font-weight:700;cursor:pointer;padding:2px 8px;border-radius:6px}
+.calhead .nav:hover{background:var(--soft)}
+.cg{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cg .dow{font-size:10px;color:var(--lgris);text-align:center;font-weight:700;padding:2px 0}
+.cg .d{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:12.5px;border-radius:8px;cursor:pointer}
+.cg .d.mut{color:#CBD3CE;cursor:default}
+.cg .d.rng{background:var(--goldsoft)}
+.cg .d.e1,.cg .d.e2,.cg .d.sel{background:var(--gold);color:#fff;font-weight:700}
+.calsel{display:flex;gap:11px;margin-top:10px}.calsel .f{flex:1}
+.calsel .f .l{font-size:11.5px;color:var(--navy2);font-weight:600;margin-bottom:3px}
+.calsel .f .v{border:1px solid var(--line);border-radius:9px;padding:7px 10px;font-size:13px;background:#fff}
+.hint{font-size:11px;color:var(--lgris);font-style:italic;margin-top:6px}
+/* meter */
+.meter{display:flex;align-items:center;gap:13px;background:var(--navy);color:#fff;border-radius:13px;padding:13px 16px;margin:6px 0 12px}
+.meter .tt{font-family:var(--display);font-weight:600;font-size:15px}
+.meter .ss{font-size:11.5px;color:#C9D3D2;margin-top:2px;line-height:1.45}
+/* subtema */
+.sc{border:1px solid var(--line);border-radius:14px;padding:15px;margin-top:13px;background:#fff}
+.sch{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.sch .bn{flex:none;width:24px;height:24px;border-radius:7px;background:var(--goldsoft);color:var(--navy);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;font-family:var(--display)}
+.sch h3{font-family:var(--display);font-weight:600;font-size:16px;margin:0;color:var(--navy)}
+.cprog{margin-left:auto;display:inline-flex;align-items:center;gap:5px;font-size:10px;color:var(--lgris);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.cprog i{width:9px;height:9px;border-radius:50%;background:#DEE3DF}.cprog i.on{background:var(--ok)}
+.estado{display:flex;align-items:center;gap:9px;background:var(--oksoft);border:1px solid #bfe0cd;border-radius:10px;padding:9px 12px;font-size:12.5px;color:#1f5d44;margin-bottom:9px}
+.aporta{display:flex;align-items:center;gap:8px;margin:9px 0;font-size:12.5px;flex-wrap:wrap}
+.seg{display:inline-flex;border:1.5px solid var(--line);border-radius:10px;overflow:hidden}
+.seg span{padding:5px 11px;font-size:12px;font-weight:700;color:var(--navy2);cursor:pointer}
+.seg span.on{background:var(--navy);color:#fff}
+.evb{border:1px solid var(--line);border-radius:12px;padding:13px;margin-top:8px;background:#FBFAF7}
+.sugg{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 8px}
+.sugg .s{background:#fff;border:1px dashed var(--gold);border-radius:9px;padding:4px 9px;font-size:11px;color:var(--navy2);font-weight:600}
+.sugg .s.star{background:var(--goldsoft);border-style:solid}
+.adjlist{margin-top:8px;font-size:12px;color:#1f5d44}.adjlist div{margin-top:3px}
+.adjrow{display:flex;align-items:center;gap:6px;margin-top:4px;background:var(--oksoft);border:1px solid #bfe0cd;border-radius:8px;padding:5px 9px;color:#1f5d44;font-weight:600}
+.adjx{margin-left:auto;cursor:pointer;color:#A3372E;font-weight:700;font-size:12px;padding:0 4px}
+.caps{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:8px}
+@media(max-width:560px){.caps{grid-template-columns:repeat(3,1fr)}}
+.cap{border:1.5px dashed var(--gold);border-radius:10px;aspect-ratio:.85;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#fff;color:var(--navy2);font-size:10.5px;font-weight:600;text-align:center;gap:3px;cursor:pointer}
+.cap.side{border-style:solid;background:var(--goldsoft)}
+.cap.done{background:var(--oksoft);border:1.5px solid var(--ok);color:#1f5d44}
+.cap .ic{font-size:18px}
+.aviso{border:1px solid #bfe0cd;background:var(--oksoft);border-radius:11px;padding:12px 14px;margin-top:10px}
+.aviso .h{font-size:12.5px;font-weight:700;color:#1f5d44}
+.aviso .b{font-size:11.5px;color:#2b5a45;margin-top:4px;line-height:1.5}
+.sign{display:flex;gap:9px;flex-wrap:wrap}
+.sopt{flex:1;min-width:200px;border:1.5px solid var(--line);border-radius:12px;padding:12px;cursor:pointer}
+.sopt.on{border-color:var(--gold);background:var(--goldsoft)}
+.sopt .t{font-weight:700;color:var(--navy);font-size:14px}.sopt .d{font-size:11.5px;color:var(--gris);margin-top:3px}
+.info{font-size:11.5px;color:var(--gris);background:var(--soft);border-radius:9px;padding:9px 12px;margin-top:10px;line-height:1.5}
+.priv{font-size:10.5px;color:var(--lgris);border-top:1px dashed var(--line);margin-top:14px;padding-top:9px}
+/* rubro 5 */
+.h3b{font-family:var(--display);font-weight:600;font-size:15px;color:var(--navy);margin:16px 0 9px;display:flex;align-items:center;gap:8px}
+.h3b .b{width:22px;height:22px;border-radius:6px;background:var(--goldsoft);color:var(--navy);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;font-family:var(--display)}
+.evalc{background:var(--navy);color:#fff;border-radius:14px;padding:16px 18px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.subs{display:flex;gap:14px;margin-left:auto;flex-wrap:wrap}
+.sub1{text-align:center}.sub1 .lb{font-size:10px;color:#C9D3D2;margin-top:3px;font-weight:600}
+.timeline{display:flex;margin-top:4px}
+.tn{flex:1;text-align:center;position:relative}
+.tn:not(:last-child):after{content:"";position:absolute;top:13px;left:50%;width:100%;height:2px;background:var(--gold)}
+.tn .dot{width:26px;height:26px;border-radius:50%;background:var(--gold);color:#fff;display:flex;align-items:center;justify-content:center;margin:0 auto;position:relative;z-index:2;font-size:12px}
+.tn .dot.pend{background:#DEE3DF;color:var(--gris)}
+.tn .l{font-size:11.5px;font-weight:700;color:var(--navy);margin-top:6px}.tn .d{font-size:10.5px;color:var(--gris);margin-top:2px}
+.road{margin-top:6px}
+.rstep{display:flex;gap:12px;position:relative;padding-bottom:14px}
+.rstep:not(:last-child):before{content:"";position:absolute;left:13px;top:26px;bottom:0;width:2px;background:var(--gold);opacity:.45}
+.rstep .rb{flex:none;width:28px;height:28px;border-radius:50%;background:var(--navy);color:#fff;font-family:var(--display);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;z-index:2}
+.rstep.sug .rb{background:var(--goldsoft);color:var(--gold);border:1.5px dashed var(--gold)}
+.rstep .rt{font-size:13.5px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.rstep .rd{font-size:12px;color:var(--gris);margin-top:2px;line-height:1.5}
+.rday{font-size:10.5px;font-weight:700;color:var(--gold);background:var(--goldsoft);border-radius:8px;padding:2px 8px}
+.stag{font-size:9.5px;font-weight:700;color:#1f5d44;background:var(--oksoft);border-radius:7px;padding:2px 7px;letter-spacing:.04em}
+.pend .r{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);font-size:13px}
+.pend .r:last-child{border-bottom:0}.pend .r b{color:var(--navy)}.pend .r .s{font-size:11.5px;color:var(--gris);display:block}
+.emit{background:var(--goldsoft);border:1px solid var(--gold);border-radius:14px;padding:16px;margin-top:8px;text-align:center}
+.genbtn{background:var(--navy);color:#fff;border:none;font-weight:700;font-size:15px;border-radius:12px;padding:13px 26px;cursor:pointer;font-family:inherit}
+.result{background:#fff;border:1px solid #bfe0cd;border-radius:12px;padding:14px;margin-top:13px;text-align:left}
+.folio{font-family:var(--display);font-weight:700;color:var(--navy);font-size:17px}
+.acts{display:flex;gap:9px;flex-wrap:wrap;margin-top:11px}
+.foot{text-align:center;color:var(--lgris);font-size:11px;margin-top:10px}
+@media print{.hero,.prog,.priv,.foot,#genZone .emit>.chk,#genZone .genbtn{display:none!important}body{background:#fff}}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<div class="hero">
+  <div class="bar"></div>
+  <div class="brand">PR&amp;M Business Group · PRM-VIN-01</div>
+  <h1>Solicitud de Cotización</h1>
+  <p>Un solo formato: se captura una vez y arma tu cotización, el concepto del CFDI, tu materialidad y tu contrato — con fecha cierta.</p>
+</div>
+
+<div class="wrap">
+  <div class="prog"><div class="track"><div class="fill" id="progFill"></div></div><div class="lbl" id="progLbl">0% · empieza por el Rubro 1</div></div>
+
+  <!-- ================= RUBRO 1 ================= -->
+  <div class="card" id="c1">
+    <div class="step"><div class="n">1</div><h2>Datos del contribuyente</h2><span class="mod" id="mod1">Pendiente</span></div>
+    <div class="sub">Para emitir tu cotización y tus comprobantes exactamente a tu nombre. Es indispensable.</div>
+
+    <div class="field"><label>¿Ya eres cliente de PR&amp;M?</label>
+      <div class="chips" data-single id="gate">
+        <button type="button" class="chip" data-v="nuevo">Es la primera vez<span class="em">Capturo mis datos</span></button>
+        <button type="button" class="chip" data-v="recurrente">Ya soy cliente<span class="em">Solo mi RFC o clave</span></button>
+      </div>
+    </div>
+
+    <div id="g_nuevo" class="hidden">
+      <div class="field"><label>Nombre o razón social</label><input id="rs" placeholder="Mi Empresa, S.A. de C.V."></div>
+      <div class="row2">
+        <div class="field"><label>RFC</label><input id="rfc" placeholder="XAXX010101000"></div>
+        <div class="field"><label>Código postal fiscal</label><input id="cp" placeholder="5 dígitos"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Régimen fiscal</label>
+          <select id="regimen" onchange="renderUsoCfdi()">
+            <option value="">Elige o revisa tu constancia</option>
+            <option value="moral">601 · Personas Morales (empresa)</option>
+            <option value="fisica">612 · Actividad empresarial y profesional (persona física)</option>
+            <option value="fisica">626 · Régimen Simplificado de Confianza (RESICO)</option>
+            <option value="fisica">606 · Arrendamiento</option>
+            <option value="moral">603 · Personas Morales sin fines de lucro</option>
+          </select>
+        </div>
+        <div class="field"><label>Actividad / giro</label><input id="giro" placeholder="Actividad principal"></div>
+      </div>
+      <div class="field"><label>Uso del CFDI <span class="tag ok">SEGÚN TU RÉGIMEN</span></label>
+        <select id="usoCfdi"><option value="">Elige tu régimen primero</option></select>
+        <div class="hint">Fuente oficial: catálogo c_UsoCFDI · Anexo 20 de la RMF (SAT).</div>
+      </div>
+      <div class="field"><label>Domicilio fiscal</label><input id="domCalle" placeholder="Calle y número — como en tu constancia"></div>
+      <div class="row2"><div class="field"><label>Colonia</label><input id="domCol"></div><div class="field"><label>Municipio / Estado</label><input id="domMun"></div></div>
+
+      <div class="reveal">
+        <div class="gt">👤 Datos de contacto</div>
+        <div class="ex">Muchas veces quien atiende la operación no es quien aparece en la constancia.</div>
+        <button type="button" class="btn ghost" style="margin:10px 0" onclick="usarContrib()">↩ Usar los mismos datos del contribuyente</button>
+        <div class="field"><label>Nombre de contacto</label><input id="contNom" placeholder="Nombre de la persona"></div>
+        <div class="row2"><div class="field"><label>Puesto</label><input id="contPue" placeholder="Administración, Compras…"></div><div class="field"><label>Correo de contacto</label><input id="contMail" placeholder="contacto@empresa.com"></div></div>
+      </div>
+    </div>
+
+    <div id="g_rec" class="hidden">
+      <div class="field"><label>Tu RFC o clave de cliente</label><input id="rfcRec" placeholder="XAXX010101000 / MI-CLAVE"></div>
+      <div class="reveal">
+        <div class="gt">👤 Datos de contacto <span class="tag ok">DE TU EXPEDIENTE</span></div>
+        <div class="ex">Prellenado con tu expediente — edítalo solo si cambió quién atiende.</div>
+        <div class="row2" style="margin-top:8px"><div class="field"><label>Nombre de contacto</label><input id="contNomR" placeholder="Nombre"></div><div class="field"><label>Correo de contacto</label><input id="contMailR" placeholder="correo"></div></div>
+      </div>
+    </div>
+    <div class="priv">🔒 Aviso de privacidad — tus datos se tratan conforme a la LFPDPPP, solo para tu cotización y expediente.</div>
+  </div>
+
+  <!-- ================= RUBRO 2 ================= -->
+  <div class="card" id="c2">
+    <div class="step"><div class="n">2</div><h2>La operación</h2><span class="mod" id="mod2">Pendiente</span></div>
+    <div class="sub">Qué es, cuánto, cuándo y cómo se paga.</div>
+
+    <div class="meter"><svg width="52" height="52" viewBox="0 0 60 60"><circle cx="30" cy="30" r="25" fill="none" stroke="#2b4a56" stroke-width="6"/><circle id="ring2" cx="30" cy="30" r="25" fill="none" stroke="var(--gold)" stroke-width="6" stroke-linecap="round" stroke-dasharray="157.1" stroke-dashoffset="157.1" transform="rotate(-90 30 30)"/><text id="pct2" x="30" y="35" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">0%</text></svg>
+      <div><div class="tt">Tu detalle de la operación</div><div class="ss">Entre más describes tu operación, más firme tu deducción y tu cotización.</div></div></div>
+
+    <label style="font-size:13px;font-weight:600;color:var(--navy2)">Tipo de operación</label>
+    <div class="tcards" id="tipoCards">
+      <div class="tcard" data-tipo="servicio"><div class="ico">🛠️</div><div class="tt">Un servicio</div><div class="dd">Mantenimiento, asesoría, instalación…</div></div>
+      <div class="tcard" data-tipo="producto"><div class="ico">📦</div><div class="tt">Un producto</div><div class="dd">Mercancía, materiales, equipo…</div></div>
+      <div class="tcard" data-tipo="personal"><div class="ico">👷</div><div class="tt">Personal especializado</div><div class="dd">Vía REPSE</div></div>
+    </div>
+
+    <div class="chk" id="pasadoTog" onclick="togglePasado()"><span class="bx"></span><span><b>La operación ya se realizó</b> — quiero documentarla (modo tiempo pasado). <span class="ex" style="margin:0">Ajusta la evidencia y desactiva la firma con fecha cierta hacia atrás.</span></span></div>
+
+    <div class="field" style="margin-top:12px"><label>Descríbelo con tus palabras</label><textarea id="descripcion" placeholder="p. ej. mantenimiento preventivo a maquinaria CNC"></textarea></div>
+
+    <div class="blk">
+      <div class="gt">🧾 Concepto para el CFDI <span class="tag">CONSTRUCTOR DE CONCEPTO</span></div>
+      <div class="ex">Puedes añadir varios conceptos en un mismo CFDI. Cada renglón lleva su clave SAT, unidad y precio.</div>
+      <div class="tagi" id="usoInfo">Uso del CFDI: — <span style="color:var(--lgris)">(de Datos del contribuyente, editable)</span></div>
+      <div id="conceptos"></div>
+      <div class="src">Fuente: c_ClaveProdServ y c_ClaveUnidad — Anexo 20 RMF (SAT). <a href="http://omawww.sat.gob.mx/tramitesyservicios/Paginas/anexo_20.htm" target="_blank" rel="noopener">Catálogo oficial ↗</a> · el catálogo completo se consulta en la Consola.</div>
+      <div style="display:flex;gap:9px;margin-top:11px;flex-wrap:wrap">
+        <button type="button" class="btn dash" onclick="addConcepto()">+ Añadir concepto</button>
+        <button type="button" class="btn dash" onclick="dupConcepto()">⧉ Duplicar concepto</button>
+      </div>
+      <div class="total"><span class="lb">Importe total (se calcula solo)</span><span class="vl" id="totalOp">$0.00</span></div>
+    </div>
+
+    <div id="fleteBox" class="reveal hidden">
+      <div class="blk">
+        <div class="gt">🚚 Flete / traslado de la mercancía <span class="tag">SOLO PRODUCTO</span></div>
+        <div class="ex">Quién cubre y realiza el traslado del bien — respalda la entrega y su registro contable.</div>
+        <div class="chips" data-single id="flete" style="margin-top:8px">
+          <button type="button" class="chip" data-v="Proveedor">A cargo del proveedor</button>
+          <button type="button" class="chip" data-v="Tercero">A cargo de un tercero</button>
+          <button type="button" class="chip" data-v="Propia">Por cuenta propia (yo, el solicitante)</button>
+          <button type="button" class="chip" data-v="Otro">Otro</button>
+        </div>
+        <div id="fleteOtro" class="field hidden" style="margin-top:9px;margin-bottom:0"><label>¿Quién realiza (o realizará) el flete?</label><input id="fleteOtroTxt" placeholder="nombre del transportista o responsable del traslado"></div>
+      </div>
+    </div>
+
+    <div class="field" style="margin-top:14px"><label>¿Comparaste con otras cotizaciones?</label>
+      <div class="chips" data-single id="cotejo">
+        <button type="button" class="chip" data-v="si">Sí, tengo otras<span class="em">Fortalecen tu expediente</span></button>
+        <button type="button" class="chip" data-v="no">Esta es la única</button>
+      </div>
+      <div id="cotejoBox" class="reveal hidden">
+        <div class="gt">📎 Cotizaciones de referencia <span class="tag ok">SE INTEGRAN AL ENTREGABLE</span></div>
+        <div id="cotejoRows"></div>
+        <button type="button" class="btn dash" style="margin-top:9px" onclick="addCotejo()">+ Agregar otra cotización</button>
+      </div>
+    </div>
+
+    <div class="field"><label>Estado actual de la operación</label>
+      <div class="chips" data-single id="estado">
+        <button type="button" class="chip" data-v="porini">Por iniciar<span class="em" id="estIniLbl">0%</span></button>
+        <button type="button" class="chip" data-v="proceso">En proceso</button>
+        <button type="button" class="chip" data-v="term">Terminado</button>
+      </div>
+      <div id="pctBox" class="pct hidden"><span style="font-size:12px;color:var(--gris)">Avance:</span>
+        <button type="button" class="chip" data-pct="25">25%</button><button type="button" class="chip" data-pct="50">50%</button><button type="button" class="chip" data-pct="75">75%</button><button type="button" class="chip" data-pct="90">Casi 100%</button></div>
+      <div class="chk hidden" id="antic" onclick="this.classList.toggle('on')"><span class="bx"></span><span>Se factura de forma anticipada (antes de ejecutar)</span></div>
+    </div>
+
+    <div class="field"><label>Periodo de ejecución</label>
+      <div class="chips" data-single id="periodo">
+        <button type="button" class="chip" data-v="unica">Una sola fecha</button>
+        <button type="button" class="chip" data-v="rango">Un periodo</button>
+        <button type="button" class="chip" data-v="continuo">Continuo</button>
+      </div>
+      <div id="calBox" class="hidden"></div>
+    </div>
+
+    <div class="field"><label>¿Cómo se paga?</label>
+      <div class="chips" data-single id="pago">
+        <button type="button" class="chip" data-v="Transferencia">Transferencia</button><button type="button" class="chip" data-v="Cheque">Cheque</button><button type="button" class="chip" data-v="Tarjeta">Tarjeta</button><button type="button" class="chip" data-v="Efectivo">Efectivo</button>
+      </div>
+    </div>
+    <div class="priv">🔒 Descripción específica e importe: art. 29-A CFF · pagos &gt; $2,000 solo por medios electrónicos: art. 27 LISR.</div>
+  </div>
+
+  <!-- ================= RUBRO 3 ================= -->
+  <div class="card" id="c3">
+    <div class="step"><div class="n">3</div><h2>Materialidad de la operación</h2><span class="mod" id="mod3">Pendiente</span></div>
+    <div class="sub">La prueba de que la operación existe de verdad. Es lo que más pesa en una revisión.</div>
+
+    <div class="meter"><svg width="52" height="52" viewBox="0 0 60 60"><circle cx="30" cy="30" r="25" fill="none" stroke="#2b4a56" stroke-width="6"/><circle id="ring3" cx="30" cy="30" r="25" fill="none" stroke="var(--gold)" stroke-width="6" stroke-linecap="round" stroke-dasharray="157.1" stroke-dashoffset="157.1" transform="rotate(-90 30 30)"/><text id="pct3" x="30" y="35" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">0%</text></svg>
+      <div><div class="tt">Tu compromiso de materialidad</div><div class="ss">Se llena con lo que completas y adjuntas. La factura, por sí sola, no basta.</div></div></div>
+
+    <!-- Subtema 1 -->
+    <div class="sc"><div class="sch"><div class="bn">1</div><h3>Asociación ingreso–costo</h3></div>
+      <div class="field"><label>¿Cómo te ayuda esto en tu negocio?</label><div class="chips" data-single data-m id="ind">
+        <button type="button" class="chip" data-v="Para vender">Para poder vender lo que vendo</button><button type="button" class="chip" data-v="Cumplir pedido">Para cumplir un pedido</button><button type="button" class="chip" data-v="Producir">Para producir o fabricar</button><button type="button" class="chip" data-v="Operar">Para operar día a día</button><button type="button" class="chip" data-v="Obligación">Cumplir una obligación</button></div></div>
+      <div class="row2"><div class="field" style="margin-bottom:0"><label>¿Qué esperas obtener?</label><div class="chips" data-single data-m id="ben"><button type="button" class="chip" data-v="Ventas">Aumentar/mantener ventas</button><button type="button" class="chip" data-v="Contrato">Cumplir un contrato ganado</button><button type="button" class="chip" data-v="Ahorro">Reducir un costo mayor</button></div></div>
+      <div class="field" style="margin-bottom:0"><label>¿De dónde sale el recurso?</label><div class="chips" data-single data-m id="ori"><button type="button" class="chip" data-v="Ventas">De mis ventas</button><button type="button" class="chip" data-v="Préstamo">Préstamo</button><button type="button" class="chip" data-v="Otra">Otra</button></div></div></div>
+    </div>
+    <!-- Subtema 2 -->
+    <div class="sc"><div class="sch"><div class="bn">2</div><h3>Razón de negocios</h3></div>
+      <div class="field"><label id="razonLbl">¿Cuál es la razón de negocio que te lleva a contratar este servicio?</label><textarea id="razon" data-m placeholder="El beneficio que buscas, más allá del fiscal (art. 5-A CFF)"></textarea></div>
+    </div>
+    <!-- Subtema 3 -->
+    <div class="sc"><div class="sch"><div class="bn">3</div><h3>Evidencia documental</h3></div>
+      <div class="estado" id="estDoc">🟢 Adjunta la evidencia según el estado de tu operación.</div>
+      <div class="row2"><div class="field"><label>¿Quién recibe o supervisa? <button type="button" class="btn ghost" style="padding:4px 9px;font-size:11px" onclick="usarContactoMat()">↩ Usar contacto</button></label><input id="mRecibe" data-m placeholder="nombre y puesto"></div>
+      <div class="field"><label>¿Cómo se valida?</label><input id="mComo" data-m placeholder="firma de acta / revisión"></div></div>
+      <div class="evb"><div class="gt">📄 Evidencia documental <span class="tag ok" id="docAdapt">SE ADAPTA AL TIPO</span></div>
+        <div class="ex" id="docSug">Elige el tipo de operación en el Rubro 2.</div>
+        <div class="sugg" id="docChips"></div>
+        <div class="ex" style="font-style:italic;color:var(--lgris)">Índice del expediente: contrato → personal → ejecución → entregable+acta → fotos → correspondencia.</div>
+        <button type="button" class="btn" onclick="adj('docList')">Adjuntar documentos</button>
+        <div class="adjlist" id="docList"></div>
+      </div>
+    </div>
+    <!-- Subtema 4 -->
+    <div class="sc"><div class="sch"><div class="bn">4</div><h3>Evidencia fotográfica</h3></div>
+      <div class="evb"><div class="gt">📷 Evidencia fotográfica <span class="tag ok">SE ADAPTA AL TIPO</span></div>
+        <div class="sugg" id="fotoChips"></div>
+        <button type="button" class="btn" onclick="adj('fotoList')">Adjuntar fotos</button>
+        <div class="adjlist" id="fotoList"></div>
+        <div class="chk on" id="geo" onclick="this.classList.toggle('on')"><span class="bx"></span><span>📍 Guardar <b>fecha y ubicación</b> automáticamente en cada foto (refuerza la prueba)</span></div>
+      </div>
+    </div>
+    <div class="priv">🔒 La factura no basta (criterios TFJA) · presunción de inexistencia art. 69-B CFF · datos personales: LFPDPPP.</div>
+  </div>
+
+  <!-- ================= RUBRO 4 ================= -->
+  <div class="card" id="c4">
+    <div class="step"><div class="n">4</div><h2>Contrato de la operación</h2><span class="mod" id="mod4">Pendiente</span></div>
+    <div class="sub">Quién firma, con qué lo acredita y cómo lo firma — para que tu contrato nazca con fecha cierta.</div>
+
+    <div class="field"><label>¿Quién firmará el contrato por tu empresa?</label>
+      <div class="inline"><input id="firmaNom" placeholder="nombre completo del firmante"><button type="button" class="btn" onclick="adj('idList')">📎 Identificación oficial</button></div>
+      <div class="adjlist" id="idList"></div><div class="hint">INE, pasaporte o cédula (PDF o foto).</div></div>
+
+    <div class="field"><label>¿Con qué documento acredita su personalidad?</label>
+      <div class="chips" data-single id="docPers"><button type="button" class="chip" data-v="Acta constitutiva">Acta constitutiva</button><button type="button" class="chip" data-v="Poder notarial">Poder notarial</button><button type="button" class="chip" data-v="Otro">Otro documento</button></div>
+      <div class="inline" style="margin-top:9px"><input id="docPersDatos" placeholder="No. de escritura, notario…"><button type="button" class="btn" onclick="adj('persList')">📎 Adjuntar</button></div>
+      <div class="adjlist" id="persList"></div></div>
+
+    <div class="field"><label>Fecha de inscripción en el Registro Público de la Propiedad y de Comercio</label>
+      <div class="inline"><input id="rppcInput" placeholder="Escribe la fecha o toca el calendario" autocomplete="off" oninput="S.rppc=this.value;recompute()"><button type="button" class="btn" onclick="toggleRppc()">📅 Calendario</button></div>
+      <div id="rppcPop" class="hidden" style="margin-top:8px"></div>
+      <div class="hint">Admite ejercicios anteriores (años pasados).</div></div>
+
+    <div class="field"><label>¿Cómo firmará el contrato?</label>
+      <div class="sign" id="firmaModo">
+        <div class="sopt" data-v="digital"><div class="t">🔐 Digital <span class="tag ok">RECOMENDADA</span></div><div class="d">Con fecha cierta desde la app — NOM-151.</div></div>
+        <div class="sopt" data-v="fisica"><div class="t">✍️ Física (en papel)</div><div class="d">Firma autógrafa; se coordina una vez timbrado el CFDI.</div></div>
+      </div>
+      <div id="digitalBox" class="blk hidden">
+        <div class="gt">Firma digital — ¿con qué la haces?</div>
+        <div class="chips" data-single id="firmaTipo" style="margin-top:8px"><button type="button" class="chip" data-v="efirma">e.firma (FIEL)</button><button type="button" class="chip" data-v="bio">Datos biométricos</button></div>
+        <div id="efirmaBox" class="field hidden" style="margin-top:11px"><label>¿De quién es la e.firma?</label><div class="chips" data-single id="efirmaDe"><button type="button" class="chip" data-v="moral">De la persona moral</button><button type="button" class="chip" data-v="fisica">De la persona física (apoderado)</button></div></div>
+        <div id="bioBox" class="hidden" style="margin-top:12px">
+          <div class="gt">🧬 Verificación biométrica <span class="tag ok">INFORMATIVO</span></div>
+          <div class="aviso" style="background:var(--goldsoft);border-color:#e4d8bd">
+            <div class="h" style="color:var(--navy)">Opción disponible en la app PR&amp;M</div>
+            <div class="b" style="color:var(--gris)">Perfilamos esta opción desde ahora. La <b>captura biométrica con prueba de vida</b> y la firma con fecha cierta (NOM-151) <b>se ejecutan una vez timbrado el CFDI</b> y autorizada la operación, directamente desde la app. Tus datos se tratan conforme a la LFPDPPP a través de nuestro proveedor certificado.</div>
+          </div>
+        </div>
+      </div>
+      <div class="info" id="pasadoNote">↩️ Si la operación ya ocurrió, la firma digital con fecha cierta no aplica hacia atrás; el contrato se documenta con lo disponible.</div>
+    </div>
+    <div class="priv">🔒 Fecha cierta: SCJN 2a./J. 161/2019 · Digital: NOM-151 · Datos personales: LFPDPPP.</div>
+  </div>
+
+  <!-- ================= RUBRO 5 ================= -->
+  <div class="card" id="c5">
+    <div class="step"><div class="n">5</div><h2>Resumen y emisión</h2><span class="mod" id="mod5">—</span></div>
+    <div class="sub">Revisa tu compromiso con la información que nos entregas, refuerza lo que falte y genera tu solicitud.</div>
+
+    <div class="h3b"><span class="b">A</span> Evaluación de la información y documentación que proporcionas</div>
+    <div class="evalc">
+      <div style="display:flex;align-items:center;gap:12px"><svg width="62" height="62" viewBox="0 0 60 60"><circle cx="30" cy="30" r="25" fill="none" stroke="#2b4a56" stroke-width="6"/><circle id="ringT" cx="30" cy="30" r="25" fill="none" stroke="var(--gold)" stroke-width="6" stroke-linecap="round" stroke-dasharray="157.1" stroke-dashoffset="157.1" transform="rotate(-90 30 30)"/><text id="pctT" x="30" y="35" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">0%</text></svg>
+      <div><div style="font-family:var(--display);font-weight:600;font-size:15px">Tu compromiso con la información</div><div style="font-size:11.5px;color:#C9D3D2;max-width:210px">Qué tan completa nos entregas la información que <b>solo tú puedes aportar</b>. Es la base para construir tu materialidad y garantizar tu defensa fiscal sin costo.</div></div></div>
+      <div class="subs">
+        <div class="sub1"><svg width="44" height="44" viewBox="0 0 60 60"><circle cx="30" cy="30" r="25" fill="none" stroke="#2b4a56" stroke-width="7"/><circle id="ringE2" cx="30" cy="30" r="25" fill="none" stroke="var(--gold)" stroke-width="7" stroke-linecap="round" stroke-dasharray="157.1" stroke-dashoffset="157.1" transform="rotate(-90 30 30)"/><text id="pE2" x="30" y="36" text-anchor="middle" font-size="15" font-weight="700" fill="#fff">0%</text></svg><div class="lb">Operación</div></div>
+        <div class="sub1"><svg width="44" height="44" viewBox="0 0 60 60"><circle cx="30" cy="30" r="25" fill="none" stroke="#2b4a56" stroke-width="7"/><circle id="ringE3" cx="30" cy="30" r="25" fill="none" stroke="var(--gold)" stroke-width="7" stroke-linecap="round" stroke-dasharray="157.1" stroke-dashoffset="157.1" transform="rotate(-90 30 30)"/><text id="pE3" x="30" y="36" text-anchor="middle" font-size="15" font-weight="700" fill="#fff">0%</text></svg><div class="lb">Materialidad</div></div>
+        <div class="sub1"><svg width="44" height="44" viewBox="0 0 60 60"><circle cx="30" cy="30" r="25" fill="none" stroke="#2b4a56" stroke-width="7"/><circle id="ringE4" cx="30" cy="30" r="25" fill="none" stroke="var(--gold)" stroke-width="7" stroke-linecap="round" stroke-dasharray="157.1" stroke-dashoffset="157.1" transform="rotate(-90 30 30)"/><text id="pE4" x="30" y="36" text-anchor="middle" font-size="15" font-weight="700" fill="#fff">0%</text></svg><div class="lb">Contrato</div></div>
+      </div>
+    </div>
+    <div class="ex" style="margin-top:8px;line-height:1.55">Los tres rubros pesan <b>por igual (1:1:1)</b>. Este medidor evalúa tu <b>compromiso al entregar</b> la información —no su calidad, que analizamos después— para hacer robusta la materialidad que te ofrecemos.</div>
+
+    <div class="h3b"><span class="b">B</span> Puntos a reforzar</div>
+    <div class="pend" id="pendList"><div class="r"><span>Completa los rubros y aquí verás qué reforzar.</span></div></div>
+
+    <div class="h3b"><span class="b">C</span> ¿Qué sigue después de enviar tu solicitud?</div>
+    <div class="road">
+      <div class="rstep sug"><div class="rb">0</div><div><div class="rt">Aceptación de la cotización <span class="stag">sugerido</span></div><div class="rd">Confirmas la cotización que te emitimos; con eso arranca el proceso.</div></div></div>
+      <div class="rstep"><div class="rb">1</div><div><div class="rt">Se timbra el CFDI <span class="rday">Día 0</span></div><div class="rd">La <b>fecha de emisión del CFDI</b> marca el inicio de los plazos.</div></div></div>
+      <div class="rstep"><div class="rb">2</div><div><div class="rt">Se firma el contrato <span class="rday">≤ 10 días naturales</span></div><div class="rd">Con fecha cierta (NOM-151) desde la app PR&amp;M.</div></div></div>
+      <div class="rstep"><div class="rb">3</div><div><div class="rt">Completar información pendiente <span class="rday">≤ 30 días naturales</span></div><div class="rd">Inicia con la fecha de emisión del CFDI.</div></div></div>
+      <div class="rstep"><div class="rb">4</div><div><div class="rt">Entrega del proyecto / entregable <span class="rday">≤ 30 días naturales</span></div><div class="rd">Los 30 días inician <b>una vez entregado el 100%</b> de la información.</div></div></div>
+      <div class="rstep"><div class="rb">5</div><div><div class="rt">Emisión de documentales públicas</div><div class="rd">Cierre documental que robustece la materialidad de la operación.</div></div></div>
+      <div class="rstep sug"><div class="rb">✓</div><div><div class="rt">Resguardo del expediente <span class="stag">sugerido</span></div><div class="rd">Archivo con fecha cierta, listo ante cualquier revisión de la autoridad.</div></div></div>
+    </div>
+
+    <div class="h3b"><span class="b">D</span> Genera tu solicitud</div>
+    <div class="emit" id="genZone">
+      <div class="chk" id="terms" onclick="this.classList.toggle('on')" style="justify-content:center;display:inline-flex"><span class="bx"></span><span>Acepto los términos y el aviso de privacidad</span></div>
+      <div style="margin-top:12px"><button type="button" class="genbtn" onclick="generar()">📨 Generar cotización</button></div>
+      <div id="salida"></div>
+    </div>
+    <div class="info" style="margin-top:12px"><span id="semaforo">🟡</span> <b>Uso interno del despacho:</b> semáforo del prospecto <b id="semTxt">Amarillo</b>.</div>
+    <div class="priv">🔒 Aviso de privacidad — LFPDPPP · El acuse forma parte de tu contabilidad (arts. 28 y 30 CFF).</div>
+  </div>
+
+  <div class="foot">PR&amp;M Business Group · Un ADN de expertos · Documento de trabajo — no sustituye asesoría individualizada.</div>
+</div>
+
+<script>
+"use strict";
+var $=function(id){return document.getElementById(id)};
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+var SB={url:"https://uxinazonncaauouvxdzo.supabase.co",fn:"/functions/v1/recepcion",fnAdj:"/functions/v1/adjuntos",bucket:"expedientes",key:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4aW5hem9ubmNhYXVvdXZ4ZHpvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM4NTE2NjcsImV4cCI6MjA5OTQyNzY2N30.qrO4kH6mxR9oUr_LJm-4pJr2YS6tTXKljC5MBu67FHo"};
+var sbc=null;
+function sbClient(){if(!sbc&&window.supabase&&window.supabase.createClient){sbc=window.supabase.createClient(SB.url,SB.key);}return sbc;}
+var ADJ={};
+var S={gate:"",tipo:"",pasado:false,est:"",estPct:0,per:"",perData:{},cotejo:"",pago:"",firmaModo:"",firmaTipo:"",folio:1,rppc:""};
+var USO={
+  moral:[["G01","Adquisición de mercancías"],["G02","Devoluciones/descuentos"],["G03","Gastos en general"],["I01","Construcciones"],["I02","Mobiliario y equipo"],["I03","Equipo de transporte"],["I04","Equipo de cómputo"],["I08","Otra maquinaria y equipo"],["CP01","Pagos"],["S01","Sin efectos fiscales"]],
+  fisica:[["G01","Adquisición de mercancías"],["G03","Gastos en general"],["I01","Construcciones"],["I03","Equipo de transporte"],["I04","Equipo de cómputo"],["D01","Honorarios médicos"],["D02","Gastos médicos por incapacidad"],["D07","Primas de seguros de gastos médicos"],["D10","Colegiaturas"],["CP01","Pagos"],["S01","Sin efectos fiscales"]]
+};
+var SAT=[
+  ["Servicios de mantenimiento de maquinaria","73152100","E48","Servicio"],
+  ["Servicios de consultoría de negocios","80101500","E48","Servicio"],
+  ["Servicios contables","84111500","E48","Servicio"],
+  ["Servicios legales","80121600","E48","Servicio"],
+  ["Servicios de tecnologías de la información","81111500","E48","Servicio"],
+  ["Servicios de limpieza de edificios","76111500","E48","Servicio"],
+  ["Servicios de vigilancia y seguridad","92121500","E48","Servicio"],
+  ["Servicios de transporte de carga","78101800","E48","Servicio"],
+  ["Refacciones y accesorios de maquinaria","25171500","H87","Pieza"],
+  ["Computadoras","43211500","H87","Pieza"],
+  ["Artículos de oficina","44121600","H87","Pieza"],
+  ["Materiales de construcción","30111500","H87","Pieza"],
+  ["Equipo de seguridad industrial","46181500","H87","Pieza"],
+  ["Personal especializado (servicio)","80111600","E48","Servicio"]
+];
+var EVID={
+  servicio:{doc:["⭐ Acta de conformidad","Reportes / bitácoras","Lista de asistencia","Correo de instrucción"],foto:["Foto ANTES","Foto DESPUÉS","Personal en sitio"],razon:"contratar este servicio"},
+  producto:{doc:["⭐ Remisión / entrada de almacén","Foto del bien recibido","Guía de embarque","Número de serie"],foto:["Foto del producto","Empaque/etiqueta","Recepción en almacén"],razon:"comprar este producto"},
+  personal:{doc:["⭐ Contratos","Altas IMSS","Nómina","Registro REPSE vigente","Lista de asistencia"],foto:["Personal en sitio","Gafetes/uniformes","Bitácora de labores"],razon:"incorporar personal especializado (REPSE)"}
+};
+
+/* ---------- single-select chip groups ---------- */
+document.querySelectorAll('.chips[data-single]').forEach(function(g){
+  g.addEventListener('click',function(e){
+    var b=e.target.closest('.chip'); if(!b)return;
+    g.querySelectorAll('.chip').forEach(function(c){c.classList.remove('on')});
+    b.classList.add('on');
+    handleSingle(g.id,b.getAttribute('data-v'),b.getAttribute('data-pct'));
+  });
+});
+document.querySelectorAll('.pct .chip').forEach(function(){});
+$('pctBox').addEventListener('click',function(e){var b=e.target.closest('.chip[data-pct]');if(!b)return;$('pctBox').querySelectorAll('.chip').forEach(function(c){c.classList.remove('on')});b.classList.add('on');S.estPct=+b.getAttribute('data-pct');recompute();});
+document.querySelectorAll('.seg').forEach(function(s){s.addEventListener('click',function(e){var b=e.target.closest('span[data-v]');if(!b)return;s.querySelectorAll('span').forEach(function(x){x.classList.remove('on')});b.classList.add('on')})});
+
+function handleSingle(id,v,pct){
+  if(id==='gate'){S.gate=v;$('g_nuevo').classList.toggle('hidden',v!=='nuevo');$('g_rec').classList.toggle('hidden',v!=='recurrente');}
+  if(id==='cotejo'){S.cotejo=v;$('cotejoBox').classList.toggle('hidden',v!=='si');if(v==='si'&&!$('cotejoRows').children.length)addCotejo();}
+  if(id==='estado'){S.est=v;$('pctBox').classList.toggle('hidden',v!=='proceso');$('antic').classList.toggle('hidden',v==='term');updEstadoDoc();}
+  if(id==='periodo'){S.per=v;renderCal();}
+  if(id==='pago'){S.pago=v;}
+  if(id==='flete'){S.flete=v;$('fleteOtro').classList.toggle('hidden',v!=='Otro');}
+  if(id==='docPers'){S.docPers=v;}
+  if(id==='firmaTipo'){S.firmaTipo=v;$('efirmaBox').classList.toggle('hidden',v!=='efirma');$('bioBox').classList.toggle('hidden',v!=='bio');}
+  recompute();
+}
+
+/* ---------- tipo ---------- */
+$('tipoCards').addEventListener('click',function(e){var c=e.target.closest('.tcard');if(!c)return;
+  $('tipoCards').querySelectorAll('.tcard').forEach(function(x){x.classList.remove('on')});c.classList.add('on');
+  S.tipo=c.getAttribute('data-tipo');
+  $('fleteBox').classList.toggle('hidden',S.tipo!=='producto');
+  var ev=EVID[S.tipo];
+  $('estIniLbl').textContent='0%';
+  var estMap={servicio:['Por iniciar la prestación','En proceso','Terminado'],producto:['Por entregar','Parcialmente entregado','Entregado'],personal:['Por iniciar','En proceso','Concluido']};
+  var lbls=estMap[S.tipo];var eb=$('estado').querySelectorAll('.chip');
+  eb[0].childNodes[0].nodeValue=lbls[0]+' ';eb[1].childNodes[0].nodeValue=lbls[1]+' ';eb[2].childNodes[0].nodeValue=lbls[2]+' ';
+  $('razonLbl').textContent='¿Cuál es la razón de negocio que te lleva a '+ev.razon+'?';
+  $('docSug').innerHTML='Sugerido para <b>'+cap(S.tipo)+'</b>:';
+  $('docChips').innerHTML=ev.doc.map(function(d){return '<span class="s'+(d[0]==='⭐'?' star':'')+'">'+d+'</span>'}).join('');
+  $('fotoChips').innerHTML=ev.foto.map(function(d){return '<span class="s">'+d+'</span>'}).join('');
+  if(!$('conceptos').children.length)addConcepto();
+  recompute();
+});
+function cap(s){return s.charAt(0).toUpperCase()+s.slice(1)}
+
+/* ---------- tiempo pasado ---------- */
+function togglePasado(){var t=$('pasadoTog');t.classList.toggle('on');S.pasado=t.classList.contains('on');
+  $('pasadoNote').style.display=S.pasado?'block':'none';
+  updEstadoDoc();recompute();}
+$('pasadoNote').style.display='none';
+function updEstadoDoc(){
+  var d=$('estDoc');
+  if(S.pasado||S.est==='term'){d.innerHTML='🟢 <b>Operación ya realizada / terminada</b> → adjunta la evidencia que ya existe.';}
+  else if(S.est==='porini'||S.est==='proceso'){d.innerHTML='🟠 <b>En curso</b> → adjunta lo que tengas y fija tu <b>fecha compromiso</b> para el resto.';}
+  else{d.innerHTML='🟢 Adjunta la evidencia según el estado de tu operación.';}
+}
+
+/* ---------- uso cfdi ---------- */
+function renderUsoCfdi(){
+  var reg=$('regimen').value; var sel=$('usoCfdi');
+  if(!reg){sel.innerHTML='<option value="">Elige tu régimen primero</option>';return;}
+  sel.innerHTML='<option value="">Elige el uso</option>'+USO[reg].map(function(u){return '<option value="'+u[0]+' · '+u[1]+'">'+u[0]+' · '+u[1]+'</option>'}).join('');
+  sel.onchange=function(){$('usoInfo').innerHTML='Uso del CFDI: <b>'+(sel.value||'—')+'</b> <span style="color:var(--lgris)">(de Datos del contribuyente, editable)</span>';};
+}
+
+/* ---------- contacto ---------- */
+function usarContrib(){$('contNom').value=$('rs').value;$('contMail').value='';recompute();}
+function usarContactoMat(){var v=($('contNom').value||$('contNomR').value||'');var p=($('contPue').value||'');$('mRecibe').value=v+(p?' · '+p:'');recompute();}
+
+/* ---------- conceptos ---------- */
+var cCount=0;
+function addConcepto(desc,clave,uni,precio,cant){
+  cCount++;var i=cCount;var d=document.createElement('div');d.className='crow';d.id='cr'+i;
+  d.innerHTML='<div class="num">Renglón '+$('conceptos').children.length+1+'</div><button class="del" onclick="delConcepto(\''+d.id+'\')">✕ quitar</button>'+
+  '<div class="mini">Descripción del concepto <span style="color:var(--lgris);font-weight:500">— escribe y te sugerimos la clave</span></div>'+
+  '<div style="position:relative"><input class="cdesc" oninput="satSearch(this)" placeholder="p. ej. mantenimiento…" value="'+(desc||'')+'"><div class="dd-list hidden"></div></div>'+
+  '<div class="grid3"><div><div class="mini">Clave prod/serv (SAT)</div><input class="cclave" placeholder="al elegir" value="'+(clave||'')+'"></div>'+
+  '<div><div class="mini">Clave unidad</div><input class="cuni" placeholder="sugerida" value="'+(uni||'')+'"></div>'+
+  '<div><div class="mini">Cant. × precio</div><div style="display:flex;gap:5px"><input class="ccant" style="width:42px" oninput="calcTotal()" value="'+(cant||'1')+'"><input class="cprecio" oninput="calcTotal()" placeholder="$" value="'+(precio||'')+'"></div></div></div>';
+  $('conceptos').appendChild(d);renumber();calcTotal();
+}
+function delConcepto(id){var el=$(id);if(el)el.remove();renumber();calcTotal();recompute();}
+function dupConcepto(){var rows=$('conceptos').children;if(!rows.length){addConcepto();return;}var last=rows[rows.length-1];
+  addConcepto(last.querySelector('.cdesc').value,last.querySelector('.cclave').value,last.querySelector('.cuni').value,last.querySelector('.cprecio').value,last.querySelector('.ccant').value);}
+function renumber(){var r=$('conceptos').children;for(var i=0;i<r.length;i++){r[i].querySelector('.num').textContent='Renglón '+(i+1);}}
+function satSearch(inp){var q=inp.value.toLowerCase().trim();var box=inp.parentNode.querySelector('.dd-list');
+  if(q.length<2){box.classList.add('hidden');return;}
+  var m=SAT.filter(function(s){return s[0].toLowerCase().indexOf(q)>=0}).slice(0,5);
+  if(!m.length){box.classList.add('hidden');return;}
+  box.innerHTML=m.map(function(s){return '<div class="it" onclick="pickSat(this,\''+s[1]+'\',\''+s[2]+' · '+s[3]+'\',\''+s[0].replace(/'/g,'')+'\')"><span>'+s[0]+'</span><span class="ck">'+s[1]+'</span></div>'}).join('');
+  box.classList.remove('hidden');
+}
+function pickSat(el,clave,uni,desc){var row=el.closest('.crow');row.querySelector('.cdesc').value=desc;row.querySelector('.cclave').value=clave;row.querySelector('.cuni').value=uni;el.closest('.dd-list').classList.add('hidden');calcTotal();recompute();}
+function calcTotal(){var t=0;$('conceptos').querySelectorAll('.crow').forEach(function(r){var c=parseFloat(r.querySelector('.ccant').value)||0;var p=parseFloat((r.querySelector('.cprecio').value||'').replace(/[^0-9.]/g,''))||0;t+=c*p;});
+  $('totalOp').textContent='$'+t.toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2});S.total=t;recompute();}
+
+/* ---------- cotejo ---------- */
+var cjCount=0;
+function addCotejo(){cjCount++;var d=document.createElement('div');d.className='crow';d.innerHTML='<div class="num">Cotización '+($('cotejoRows').children.length+1)+'</div>'+
+  '<div class="row2"><div><div class="mini">Proveedor</div><input placeholder="Proveedor"></div><div><div class="mini">Monto</div><input placeholder="$"></div></div>'+
+  '<button type="button" class="btn dash" style="margin-top:8px" onclick="adjInline(this)">📎 Adjuntar documento</button>';
+  $('cotejoRows').appendChild(d);}
+function adjInline(btn){
+  var inp=document.createElement('input');inp.type='file';inp.accept='.pdf,.jpg,.jpeg,.png,.webp';inp.style.display='none';
+  inp.addEventListener('change',function(){if(inp.files[0]){ADJ.cotejo=ADJ.cotejo||[];ADJ.cotejo.push(inp.files[0]);btn.classList.remove('dash');btn.classList.add('done');btn.textContent='✓ '+inp.files[0].name;}inp.remove();});
+  document.body.appendChild(inp);inp.click();
+}
+
+/* ---------- adjuntos reales ---------- */
+var ADJCAT={docList:'evidencia_documental',fotoList:'evidencia_fotografica',idList:'identificacion',persList:'personalidad'};
+function adj(listId){
+  var inp=document.createElement('input');inp.type='file';inp.multiple=true;inp.accept='.pdf,.jpg,.jpeg,.png,.webp,.heic';inp.style.display='none';
+  inp.addEventListener('change',function(){ADJ[listId]=ADJ[listId]||[];for(var i=0;i<inp.files.length;i++)ADJ[listId].push(inp.files[i]);renderAdj(listId);recompute();inp.remove();});
+  document.body.appendChild(inp);inp.click();
+}
+function renderAdj(listId){var l=$(listId);var arr=ADJ[listId]||[];
+  l.innerHTML=arr.map(function(f,i){return '<div class="adjrow">✓ '+esc(f.name)+' <span class="adjx" onclick="delAdj(\''+listId+'\','+i+')">✕</span></div>';}).join('');}
+function delAdj(listId,i){if(ADJ[listId]){ADJ[listId].splice(i,1);renderAdj(listId);recompute();}}
+function contarAdj(){var n=0;Object.keys(ADJCAT).forEach(function(k){n+=(ADJ[k]||[]).length;});n+=(ADJ.cotejo||[]).length;return n;}
+function itemsAdj(){var items=[];Object.keys(ADJCAT).forEach(function(k){(ADJ[k]||[]).forEach(function(f){items.push({categoria:ADJCAT[k],file:f,nombre:f.name});});});(ADJ.cotejo||[]).forEach(function(f){items.push({categoria:'cotizacion_cotejo',file:f,nombre:f.name});});return items;}
+function subirAdjuntos(folio){
+  var items=itemsAdj();if(!items.length)return Promise.resolve({subidos:0,total:0});
+  var cli=sbClient();if(!cli)return Promise.reject(new Error('No se pudo iniciar el cliente de almacenamiento'));
+  return fetch(SB.url+SB.fnAdj,{method:'POST',headers:{'content-type':'application/json','apikey':SB.key,'Authorization':'Bearer '+SB.key},body:JSON.stringify({folio:folio,archivos:items.map(function(i){return {categoria:i.categoria,nombre:i.nombre};})})})
+    .then(function(r){return r.json();})
+    .then(function(urls){
+      if(!Array.isArray(urls))throw new Error((urls&&(urls.detalle||urls.error))||'respuesta inválida de adjuntos');
+      var seq=Promise.resolve(),okc=0;
+      urls.forEach(function(u,i){seq=seq.then(function(){
+        if(!u||!u.signedUrl||!u.token||!items[i])return;
+        return cli.storage.from(SB.bucket).uploadToSignedUrl(u.path,u.token,items[i].file).then(function(res){if(!res.error)okc++;}).catch(function(){});
+      });});
+      return seq.then(function(){return {subidos:okc,total:items.length};});
+    });
+}
+
+
+/* ---------- firma modo ---------- */
+$('firmaModo').addEventListener('click',function(e){var s=e.target.closest('.sopt');if(!s)return;$('firmaModo').querySelectorAll('.sopt').forEach(function(x){x.classList.remove('on')});s.classList.add('on');S.firmaModo=s.getAttribute('data-v');$('digitalBox').classList.toggle('hidden',S.firmaModo!=='digital');recompute();});
+
+/* ---------- calendarios ---------- */
+var calState={y:2026,m:0};
+function renderCal(){var box=$('calBox');if(S.per==='rango'){box.classList.remove('hidden');box.innerHTML='';box.appendChild(buildCal('range'));}
+  else if(S.per==='unica'){box.classList.remove('hidden');box.innerHTML='';box.appendChild(buildCal('single'));}
+  else if(S.per==='continuo'){box.classList.remove('hidden');box.innerHTML='<div class="reveal"><div class="mini">¿A partir de cuándo? (continuo, mes a mes)</div><input type="month" onchange="S.perData={desde:this.value};recompute()"></div>';}
+  else box.classList.add('hidden');}
+var MES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+function buildCal(mode,target){
+  var wrap=document.createElement('div');wrap.className='cal';
+  var st={y:(target==='rppc'?2019:2026),m:(target==='rppc'?2:0),sel:null,e1:null,e2:null,mode:mode,target:target||'periodo'};
+  wrap._st=st;
+  function draw(){
+    var y=st.y,m=st.m;var first=new Date(y,m,1).getDay();first=(first===0?6:first-1);
+    var days=new Date(y,m+1,0).getDate();
+    var html='';
+    if(st.target==='periodo'){html+='<div class="presets"><span class="p" data-pre="mes">Este mes</span><span class="p" data-pre="ant">Mes anterior</span><span class="p" data-pre="tri">Trimestre</span></div>';}
+    html+='<div class="calhead"><span class="nav" data-nav="-1">‹</span><span class="mo">'+MES[m]+' '+y+'</span><span class="nav" data-nav="1">›</span></div>';
+    html+='<div class="cg"><div class="dow">L</div><div class="dow">M</div><div class="dow">M</div><div class="dow">J</div><div class="dow">V</div><div class="dow">S</div><div class="dow">D</div>';
+    for(var i=0;i<first;i++)html+='<div class="d mut"></div>';
+    for(var dd=1;dd<=days;dd++){var cls='d';var key=y+'-'+m+'-'+dd;
+      if(mode==='single'&&st.sel===dd&&st._selm===m&&st._sely===y)cls+=' sel';
+      if(mode==='range'){if(sameDay(st.e1,y,m,dd))cls+=' e1';else if(sameDay(st.e2,y,m,dd))cls+=' e2';else if(inRange(st,y,m,dd))cls+=' rng';}
+      html+='<div class="'+cls+'" data-d="'+dd+'">'+dd+'</div>';}
+    html+='</div>';
+    if(mode==='range')html+='<div class="calsel"><div class="f"><div class="l">Del…</div><div class="v" id="cvDel_'+st.target+'">'+fmt(st.e1)+'</div></div><div class="f"><div class="l">Al…</div><div class="v" id="cvAl_'+st.target+'">'+fmt(st.e2)+'</div></div></div>';
+    else html+='<div class="calsel"><div class="f"><div class="l">Fecha</div><div class="v">'+(st.selDate?fmt(st.selDate):'—')+'</div></div></div>';
+    wrap.innerHTML=html;
+  }
+  wrap.addEventListener('click',function(e){
+    var nav=e.target.closest('.nav');if(nav){st.m+=(+nav.getAttribute('data-nav'));if(st.m<0){st.m=11;st.y--}if(st.m>11){st.m=0;st.y++}draw();return;}
+    var pre=e.target.closest('.p');if(pre){var now=new Date(2026,0,1);/*fixed base*/ if(pre.getAttribute('data-pre')==='mes'){st.e1={y:2026,m:0,d:1};st.e2={y:2026,m:0,d:31};}if(pre.getAttribute('data-pre')==='ant'){st.e1={y:2025,m:11,d:1};st.e2={y:2025,m:11,d:31};st.y=2025;st.m=11;}if(pre.getAttribute('data-pre')==='tri'){st.e1={y:2026,m:0,d:1};st.e2={y:2026,m:2,d:31};}commit();draw();return;}
+    var d=e.target.closest('.d[data-d]');if(!d)return;var dd=+d.getAttribute('data-d');
+    if(mode==='single'){st.sel=dd;st._selm=st.m;st._sely=st.y;st.selDate={y:st.y,m:st.m,d:dd};commit();draw();}
+    else{if(!st.e1||st.e2){st.e1={y:st.y,m:st.m,d:dd};st.e2=null;}else{var nd={y:st.y,m:st.m,d:dd};if(after(nd,st.e1)){st.e2=nd;}else{st.e2=st.e1;st.e1=nd;}}commit();draw();}
+  });
+  function commit(){if(st.target==='rppc'){S.rppc=st.selDate?fmt(st.selDate):'';if($('rppcInput'))$('rppcInput').value=S.rppc;if($('rppcPop'))$('rppcPop').classList.add('hidden');}else{S.perData={e1:st.e1,e2:st.e2,sel:st.selDate};}recompute();}
+  draw();return wrap;
+}
+function sameDay(o,y,m,d){return o&&o.y===y&&o.m===m&&o.d===d}
+function after(a,b){return new Date(a.y,a.m,a.d)>new Date(b.y,b.m,b.d)}
+function inRange(st,y,m,d){if(!st.e1||!st.e2)return false;var t=new Date(y,m,d);return t>new Date(st.e1.y,st.e1.m,st.e1.d)&&t<new Date(st.e2.y,st.e2.m,st.e2.d);}
+function fmt(o){if(!o)return'—';return o.d+' '+MES[o.m].toLowerCase().slice(0,3)+' '+o.y;}
+// RPPC calendar (single, past) — collapsible, discreet
+$('rppcPop').appendChild(buildCal('single','rppc'));
+function toggleRppc(){$('rppcPop').classList.toggle('hidden');}
+
+/* ---------- meters & recompute ---------- */
+function setRing(ring,txt,pct){var off=157.1*(1-pct/100);$(ring).setAttribute('stroke-dashoffset',off);$(txt).textContent=Math.round(pct)+'%';}
+function filled(id){var e=$(id);return e&&e.value&&e.value.trim()!==''}
+function anyOn(id){return $(id)&&$(id).querySelector('.chip.on')}
+function eval2(){var n=0,t=7;if(S.tipo)n++;if(filled('descripcion'))n++;var hasC=false;$('conceptos').querySelectorAll('.crow').forEach(function(r){if(r.querySelector('.cclave').value&&r.querySelector('.cprecio').value)hasC=true});if(hasC)n++;if(S.total>0)n++;if(S.est)n++;if(S.per&&(S.perData.e1||S.perData.sel||S.perData.desde))n++;if(S.pago)n++;return Math.round(n/t*100);}
+function eval3(){var n=0,t=6;if(anyOn('ind'))n++;if(anyOn('ben')||anyOn('ori'))n++;if(filled('razon'))n++;if(filled('mRecibe')||filled('mComo'))n++;if($('docList').children.length)n++;if($('fotoList').children.length)n++;return Math.round(n/t*100);}
+function eval4(){var n=0,t=5;if(filled('firmaNom'))n++;if($('idList').children.length)n++;if(S.docPers&&filled('docPersDatos'))n++;if(S.rppc)n++;if(S.firmaModo)n++;return Math.round(n/t*100);}
+function recompute(){
+  var e2=eval2(),e3=eval3(),e4=eval4();
+  setRing('ring2','pct2',e2);setRing('ring3','pct3',e3);
+  setRing('ringE2','pE2',e2);setRing('ringE3','pE3',e3);setRing('ringE4','pE4',e4);
+  var tot=Math.round((e2+e3+e4)/3);setRing('ringT','pctT',tot);
+  // mods
+  mod('mod1',(S.gate==='nuevo'&&filled('rfc'))||(S.gate==='recurrente'&&filled('rfcRec')));
+  mod('mod2',e2>=70);mod('mod3',e3>=60);mod('mod4',e4>=60);
+  // progress
+  var done=[ ($('mod1').classList.contains('done')),e2>=70,e3>=60,e4>=60 ].filter(Boolean).length;
+  var pg=Math.round(done/4*100);$('progFill').style.width=pg+'%';$('progLbl').textContent=pg+'% completado';
+  // semaforo
+  var sem=tot>=75?['🟢','Verde','var(--ok)']:(tot>=45?['🟡','Amarillo','var(--amb)']:['🔴','Rojo','var(--red)']);
+  $('semaforo').textContent=sem[0];$('semTxt').textContent=sem[1];$('semTxt').style.color=sem[2];
+  // cronologia
+  updCrono();updPend(e2,e3,e4);
+}
+function mod(id,ok){var e=$(id);e.textContent=ok?'Listo':(id==='mod5'?'—':'Pendiente');e.classList.toggle('done',ok);}
+function updCrono(){/* cronología ahora es un proceso fijo post-solicitud (estático) */}
+function updPend(e2,e3,e4){
+  var p=[];
+  if(!$('fotoList').children.length)p.push(['📷','Adjunta tu evidencia fotográfica','Refuerza tu materialidad.']);
+  if(!$('docList').children.length)p.push(['📄','Adjunta tu evidencia documental','Reportes, actas, bitácoras.']);
+  if(!S.pago)p.push(['💳','Indica la forma de pago','Protege tu deducción y tu IVA.']);
+  if(!S.firmaModo)p.push(['✍️','Elige cómo firmarás el contrato','Da fecha cierta a la operación.']);
+  if(!filled('razon'))p.push(['🎯','Escribe tu razón de negocios','El beneficio más allá del fiscal.']);
+  if(!p.length)p.push(['✅','Todo listo','Tu expediente quedó sólido.']);
+  $('pendList').innerHTML=p.map(function(x){return '<div class="r"><span>'+x[0]+'</span><span><b>'+x[1]+'</b><span class="s">'+x[2]+'</span></span></div>'}).join('');
+}
+
+/* ---------- generar (conectado a Supabase · Edge Function recepcion) ---------- */
+function getOn(id){var e=$(id);var b=e&&e.querySelector('.chip.on, .sopt.on, span.on');return b?b.getAttribute('data-v'):"";}
+function collectSolicitud(){
+  var rfc=S.gate==='recurrente'?($('rfcRec').value||''):($('rfc').value||'');
+  var nombre=S.gate==='recurrente'?($('contNomR').value||$('rfcRec').value||''):($('contNom').value||$('rs').value||'');
+  var email=S.gate==='recurrente'?($('contMailR').value||''):($('contMail').value||'');
+  var conceptos=[];$('conceptos').querySelectorAll('.crow').forEach(function(r){
+    var d=r.querySelector('.cdesc').value;if(!d&&!r.querySelector('.cprecio').value)return;
+    conceptos.push({descripcion:d,clave_prodserv:r.querySelector('.cclave').value,clave_unidad:r.querySelector('.cuni').value,cantidad:r.querySelector('.ccant').value,precio:r.querySelector('.cprecio').value});
+  });
+  var cotejos=[];$('cotejoRows').querySelectorAll('.crow').forEach(function(r){var i=r.querySelectorAll('input');cotejos.push({proveedor:i[0]?i[0].value:'',monto:i[1]?i[1].value:''});});
+  var tlbl={servicio:'Un servicio',producto:'Un producto',personal:'Personal especializado (REPSE)'}[S.tipo]||S.tipo;
+  return {
+    rfc:rfc,
+    tipo_operacion:S.tipo||'',
+    clase_operacion:tlbl,
+    descripcion:$('descripcion').value||'',
+    importe:S.total?String(S.total):'',
+    metodo_pago:S.pago||'',
+    canal:'Formulario web · Solicitud de Cotización',
+    contacto:{nombre:nombre,email:email,telefono:''},
+    contribuyente:{gate:S.gate,razon_social:$('rs').value||'',rfc:rfc,cp:$('cp').value||'',regimen:$('regimen').value||'',giro:$('giro').value||'',uso_cfdi:$('usoCfdi').value||'',domicilio:{calle:$('domCalle').value||'',colonia:$('domCol').value||'',municipio:$('domMun').value||''},contacto_puesto:$('contPue')?$('contPue').value:''},
+    operacion:{tiempo_pasado:S.pasado,conceptos:conceptos,importe_total:S.total||0,estado:S.est,avance_pct:S.estPct,factura_anticipada:$('antic').classList.contains('on'),flete:S.tipo==='producto'?{a_cargo:S.flete||'',otro:($('fleteOtroTxt')?$('fleteOtroTxt').value:'')}:null,periodo:{tipo:S.per,datos:S.perData},cotejos:cotejos},
+    materialidad:{indispensabilidad:getOn('ind'),beneficio:getOn('ben'),origen_recurso:getOn('ori'),razon_negocios:$('razon').value||'',recibe_supervisa:$('mRecibe').value||'',como_valida:$('mComo').value||'',geolocaliza_fotos:$('geo').classList.contains('on'),docs_adjuntos:$('docList').children.length,fotos_adjuntas:$('fotoList').children.length},
+    contrato:{firmante:$('firmaNom').value||'',id_adjunta:$('idList').children.length>0,documento_personalidad:S.docPers||'',doc_personalidad_datos:$('docPersDatos').value||'',fecha_rppc:S.rppc||'',firma_modo:S.firmaModo||'',firma_tipo:S.firmaTipo||'',efirma_de:getOn('efirmaDe')},
+    evaluacion:{operacion:eval2(),materialidad:eval3(),contrato:eval4(),compromiso_total:Math.round((eval2()+eval3()+eval4())/3)},
+    link:window.PREFILL||{},
+    origen:'solicitud_cotizacion_web_v2'
+  };
+}
+function generar(){
+  if(!$('terms').classList.contains('on')){alert('Acepta los términos y el aviso de privacidad para generar.');return;}
+  var btn=document.querySelector('.genbtn');if(btn){btn.disabled=true;btn.textContent='Enviando…';}
+  var body=collectSolicitud();
+  fetch(SB.url+SB.fn,{method:'POST',headers:{'content-type':'application/json','apikey':SB.key,'Authorization':'Bearer '+SB.key},body:JSON.stringify(body)})
+    .then(function(r){return r.json().catch(function(){return {error:'La respuesta del servidor no fue válida'};});})
+    .then(function(res){
+      if(res&&res.ok&&res.folio){
+        pintaExito(res,body);
+        var total=contarAdj();
+        if(total>0){
+          mostrarAdjEstado('⏳ Subiendo '+total+' adjunto(s) al expediente…');
+          subirAdjuntos(res.folio)
+            .then(function(rr){mostrarAdjEstado((rr.subidos===rr.total?'✓ ':'⚠ ')+rr.subidos+' de '+rr.total+' adjunto(s) subido(s) al expediente '+esc(res.folio)+'.');})
+            .catch(function(e){mostrarAdjEstado('⚠ La solicitud quedó registrada, pero los adjuntos no se subieron ('+esc(String((e&&e.message)||e))+'). Puedes reenviarlos.');});
+        }
+      } else {pintaError((res&&(res.detalle||res.error))||'No se recibió folio del servidor',body);}
+    })
+    .catch(function(e){pintaError(String((e&&e.message)||e),body);})
+    .finally(function(){if(btn){btn.disabled=false;btn.textContent='📨 Generar cotización';}});
+}
+function mostrarAdjEstado(txt){var r=$('salida').querySelector('.result');if(!r)return;var e=document.getElementById('adjEstado');if(!e){e=document.createElement('div');e.id='adjEstado';e.style.cssText='margin-top:10px;font-size:12px;font-weight:600;color:var(--navy2);background:var(--soft);border-radius:9px;padding:9px 12px';r.appendChild(e);}e.innerHTML=txt;}
+function pintaExito(res,body){
+  var conc=(body.operacion.conceptos||[]).map(function(c){return c.descripcion+' — '+(c.clave_prodserv||'s/clave');}).join(' / ')||'—';
+  var acuse=res.acuse_url?'<a class="btn" href="'+res.acuse_url+'" target="_blank" rel="noopener">📄 Ver / descargar acuse</a>':'';
+  var e0=res.empresas_sugeridas&&res.empresas_sugeridas[0];
+  var sug=e0?('<div style="font-size:11.5px;color:var(--gris);margin-top:8px">Emisora sugerida por PR&amp;M: <b>'+esc(e0.razon_social||e0.nombre||'—')+'</b></div>'):'';
+  var html='<div class="result"><div class="ok">✓ Solicitud recibida — <span class="folio">'+esc(res.folio)+'</span></div>'+
+    '<div style="font-size:12.5px;color:var(--gris);margin-top:8px;line-height:1.6"><b>'+esc(body.contacto.nombre||body.rfc||'—')+'</b><br>Tipo: '+esc(body.tipo_operacion||'—')+(body.operacion.tiempo_pasado?' · (operación ya realizada)':'')+'<br>Conceptos: '+esc(conc)+'<br>Importe: $'+esc(body.importe||'0')+'<br>Firma: '+esc(body.contrato.firma_modo||'—')+'</div>'+sug+
+    '<div class="acts">'+acuse+'<button type="button" class="btn ghost" onclick="window.print()">⬇ Imprimir</button></div>'+
+    '<div style="font-size:11.5px;color:var(--gris);margin-top:10px;line-height:1.6">🕒 Acuse con <b>sello de integridad SHA-256</b> y fecha/hora de recepción (hora del centro de México). · 📥 Copia registrada en el buzón de PR&amp;M. · Estado inicial: <b>recibida</b>.</div>'+
+    '<div style="font-size:11px;color:var(--lgris);margin-top:8px;font-family:Consolas,monospace;word-break:break-all">Sello SHA-256: '+esc(res.hash||'')+'</div></div>';
+  $('salida').innerHTML=html;$('salida').scrollIntoView({behavior:'smooth',block:'center'});
+}
+function pintaError(msg,body){
+  var html='<div class="result" style="border-color:#e6c9c2"><div class="ok" style="color:#A3372E">⚠ No se pudo enviar en este momento</div>'+
+    '<div style="font-size:12.5px;color:var(--gris);margin-top:8px;line-height:1.6">Tu información <b>no se perdió</b>. Puedes reintentar, o imprimir/guardar el resumen y enviarlo por otro canal.</div>'+
+    '<div class="acts"><button type="button" class="btn" onclick="generar()">↻ Reintentar</button><button type="button" class="btn ghost" onclick="window.print()">⬇ Imprimir resumen</button></div>'+
+    '<div style="font-size:11px;color:var(--lgris);margin-top:8px">Detalle técnico: '+esc(msg)+'</div></div>';
+  $('salida').innerHTML=html;$('salida').scrollIntoView({behavior:'smooth',block:'center'});
+}
+function scrollTo2(id){$(id).scrollIntoView({behavior:'smooth'});}
+
+/* ---------- prellenado por enlace (ligas por cliente) ---------- */
+window.PREFILL={};
+function prefillFromURL(){
+  var q;try{q=new URLSearchParams(location.search);}catch(e){return;}
+  var keys=[];q.forEach(function(v,k){keys.push(k);});if(!keys.length)return;
+  var g=(q.get('gate')||'').toLowerCase();
+  if(g==='nuevo'||g==='recurrente'){var gb=document.querySelector('#gate .chip[data-v="'+g+'"]');if(gb)gb.click();}
+  var rec=S.gate==='recurrente';
+  function set(id,v){var e=$(id);if(e&&v){e.value=v;}}
+  if(q.get('rfc'))set(rec?'rfcRec':'rfc',q.get('rfc'));
+  set('rs',q.get('rs')||q.get('razon'));
+  set('cp',q.get('cp'));set('giro',q.get('giro'));
+  set('descripcion',q.get('desc')||q.get('descripcion'));
+  var reg=q.get('regimen');if(reg&&$('regimen')){$('regimen').value=reg;renderUsoCfdi();}
+  set(rec?'contNomR':'contNom',q.get('nombre'));
+  set(rec?'contMailR':'contMail',q.get('email')||q.get('correo'));
+  set('contPue',q.get('puesto'));
+  var tipo=(q.get('tipo')||'').toLowerCase();
+  if(['servicio','producto','personal'].indexOf(tipo)>=0){var tc=document.querySelector('.tcard[data-tipo="'+tipo+'"]');if(tc)tc.click();}
+  window.PREFILL={promotor:q.get('promotor')||'',cliente:q.get('cliente')||'',via:q.get('via')||'link'};
+  recompute();
+}
+
+/* init */
+recompute();
+prefillFromURL();
+</script>
+</body>
+</html>
