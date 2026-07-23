@@ -5134,106 +5134,166 @@ async function viewConcBanco(c){
   let D=null;
   try{ const r=await fetch('conciliacion_bancaria.json'); D=await r.json(); }
   catch(e){ c.innerHTML='<div class="empty">No se encontró conciliacion_bancaria.json — súbalo al repositorio junto con app.js.</div>'; return; }
-  const MESES={'01':'Enero','02':'Febrero','03':'Marzo','04':'Abril','05':'Mayo','06':'Junio'};
+  const MESES={'01':'Enero','02':'Febrero','03':'Marzo','04':'Abril','05':'Mayo','06':'Junio','07':'Julio'};
+  const NL=String.fromCharCode(10);
   const mesesCubiertos = D.meses||['01','02','03','04'];
   const emp = D.empresas||{};
   const nombres = Object.keys(emp).sort();
-  const UMBRAL = 50; // diferencia en pesos a partir de la cual se marca en rojo
+  const pend = D.pendientes_lectura||[];
+  const st = { mes:'', banco:'', umbral:50, soloDif:false, q:'' };
 
-  function ultimoMes(e){
-    const ms = Object.keys(emp[e]).sort();
-    return ms.length? ms[ms.length-1] : null;
-  }
-  function cuentasDe(e){
-    // todas las cuentas (banco) vistas en cualquier mes, para no perder ninguna en el resumen
-    const set={};
-    Object.keys(emp[e]).forEach(function(m){
-      Object.keys(emp[e][m]).forEach(function(b){ set[b]=1; });
-    });
-    return Object.keys(set);
-  }
-
-  const resumen = nombres.map(function(e){
-    const um = ultimoMes(e);
-    const bancos = cuentasDe(e);
-    let saldoTotal = 0, conDif = 0, sinMatch = 0, conMatch = 0;
+  // ---- aplanar todas las cuenta-mes en un solo arreglo ----
+  const TODAS=[];
+  nombres.forEach(function(e){
     Object.keys(emp[e]).forEach(function(m){
       Object.keys(emp[e][m]).forEach(function(b){
-        const x = emp[e][m][b];
-        if(x.balanza_cuenta){
-          conMatch++;
-          if(x.diferencia!==null && x.diferencia!==undefined && Math.abs(x.diferencia)>UMBRAL) conDif++;
-        } else sinMatch++;
+        const x=emp[e][m][b];
+        const dif=(x.diferencia===undefined?null:x.diferencia);
+        TODAS.push({ e:e, m:m, b:b, cuenta:x.cuenta||'', moneda:x.moneda||'MXN',
+          si:(x.saldo_inicial==null?null:x.saldo_inicial), sf:(x.saldo_final==null?null:x.saldo_final),
+          bal:(x.balanza_saldo===undefined?null:x.balanza_saldo), dif:dif,
+          balnom:x.balanza_nombre||'', hasMatch:!!x.balanza_cuenta });
       });
     });
-    if(um) Object.keys(emp[e][um]).forEach(function(b){ const x=emp[e][um][b]; saldoTotal += (x.saldo_final||0); });
-    return {e:e, um:um, bancos:bancos.length, saldoTotal:saldoTotal, conDif:conDif, sinMatch:sinMatch, conMatch:conMatch};
-  }).sort(function(a,b){ return b.conDif-a.conDif; });
+  });
+  const BANCOS = Object.keys(TODAS.reduce(function(a,r){ a[r.b]=1; return a; },{})).sort();
 
-  const totalCuentasMes = resumen.reduce(function(a,x){ return a+x.conDif+x.sinMatch+x.conMatch; },0);
-  const totalConDif = resumen.reduce(function(a,x){ return a+x.conDif; },0);
-  const totalSinMatch = resumen.reduce(function(a,x){ return a+x.sinMatch; },0);
-  const totalConMatch = resumen.reduce(function(a,x){ return a+x.conMatch; },0);
-
-  function fila(x){
-    return '<tr class="clk" data-e="'+esc(x.e)+'"><td><b>'+esc(x.e)+'</b></td>'+
-      '<td>'+(x.um?MESES[x.um]:'—')+'</td>'+
-      '<td class="num-r">'+mny(x.saldoTotal)+'</td>'+
-      '<td class="num-r">'+x.bancos+'</td>'+
-      '<td class="num-r">'+(x.conDif?('<b style="color:var(--danger)">'+x.conDif+'</b>'):'0')+'</td>'+
-      '<td class="num-r">'+(x.sinMatch?('<span style="color:#e67e22">'+x.sinMatch+'</span>'):'0')+'</td></tr>';
+  function filtradas(){
+    const u=Math.abs(st.umbral)||0;
+    return TODAS.filter(function(r){
+      if(st.mes && r.m!==st.mes) return false;
+      if(st.banco && r.b!==st.banco) return false;
+      if(st.q && r.e.toLowerCase().indexOf(st.q)<0) return false;
+      if(st.soloDif && !(r.dif!==null && Math.abs(r.dif)>u)) return false;
+      return true;
+    });
   }
 
-  const pend = D.pendientes_lectura||[];
+  // ---- exportar a CSV (respeta filtros activos, con BOM para Excel) ----
+  function q(v){ v=(v===null||v===undefined)?'':String(v); if(v.indexOf(',')>=0||v.indexOf('"')>=0||v.indexOf(NL)>=0){ v='"'+v.split('"').join('""')+'"'; } return v; }
+  function toCSV(rows){
+    const head=['Empresa','Mes','Banco','Cuenta','Moneda','Saldo inicial','Saldo final (banco)','Saldo balanza','Diferencia','Cuenta en balanza'];
+    const lines=[head.map(q).join(',')];
+    rows.forEach(function(r){
+      lines.push([r.e,MESES[r.m]||r.m,r.b,r.cuenta,r.moneda,(r.si==null?'':r.si),(r.sf==null?'':r.sf),(r.bal==null?'':r.bal),(r.dif==null?'':r.dif),r.balnom].map(q).join(','));
+    });
+    return lines.join(NL);
+  }
+  function descargarCSV(){
+    const csv=toCSV(filtradas());
+    const blob=new Blob([String.fromCharCode(0xFEFF)+csv],{type:'text/csv;charset=utf-8;'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a'); a.href=url;
+    a.download='conciliacion_bancaria'+(st.mes?('_'+MESES[st.mes]):'')+'.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+  }
 
-  c.innerHTML='<h1 class="pg">Conciliación bancaria</h1>'+
-    '<div class="pgsub">Cruce real, cuenta por cuenta, entre los estados de cuenta bancarios (PDF originales de cada banco) y las cuentas de banco de la balanza de comprobación de cada empresa · '+mesesCubiertos.map(function(m){return MESES[m];}).join('–')+' 2026. No es una estimación: cada cifra viene directo del PDF del banco o del renglón de la balanza.</div>'+
-    '<div class="kpis">'+
-      tile(nombres.length,'Empresas con estado de cuenta','var(--navy)')+
-      tile(totalConMatch+totalConDif,'Cuentas-mes cruzadas contra balanza','var(--teal)')+
-      tile(totalConDif,'Con diferencia > $'+UMBRAL,totalConDif?'var(--danger)':'var(--ok)')+
-      tile(totalSinMatch,'Sin cuenta correspondiente en balanza','#e67e22')+
-    '</div>'+
-    (pend.length?('<div class="card no-print"><div class="body" style="font-size:12.5px;color:var(--muted)">⚠ '+pend.length+' estado(s) de cuenta no se pudieron leer como texto (posiblemente escaneados) y no están incluidos en este cruce: '+pend.map(function(p){ return esc(p.empresa+' · '+p.banco+' · '+MESES[p.mes]); }).join(', ')+'.</div></div>'):'')+
-    '<div class="card"><div class="body"><input id="cb_q" class="mini" placeholder="Buscar empresa…" style="min-width:260px"></div>'+
-    '<div style="overflow-x:auto"><table style="font-size:12.5px"><thead><tr><th>Empresa</th><th>Último mes con datos</th><th class="num-r">Saldo bancario total</th><th class="num-r">Cuentas</th><th class="num-r">Con diferencia</th><th class="num-r">Sin balanza</th></tr></thead><tbody id="cb_body">'+resumen.map(fila).join('')+'</tbody></table></div></div>'+
-    '<div id="cb_det"></div>';
+  function difTxt(dif,u){
+    if(dif===null||dif===undefined) return '<span style="color:var(--muted)">sin balanza</span>';
+    return '<b style="color:'+(Math.abs(dif)>u?'var(--danger)':'var(--ok)')+'">'+mny(dif)+'</b>';
+  }
+
+  function render(){
+    const u=Math.abs(st.umbral)||0;
+    const F=filtradas();
+    // KPIs sobre el conjunto filtrado
+    const nEmp=Object.keys(F.reduce(function(a,r){a[r.e]=1;return a;},{})).length;
+    const cruzadas=F.filter(function(r){return r.hasMatch;}).length;
+    const conDif=F.filter(function(r){return r.dif!==null && Math.abs(r.dif)>u;});
+    const sumDifAbs=conDif.reduce(function(a,r){return a+Math.abs(r.dif);},0);
+    const sinBal=F.filter(function(r){return !r.hasMatch;}).length;
+
+    // tabla "diferencias a revisar" (ordenada por magnitud desc)
+    const rev=conDif.slice().sort(function(a,b){return Math.abs(b.dif)-Math.abs(a.dif);});
+    const revRows=rev.map(function(r){
+      return '<tr class="clk" data-e="'+esc(r.e)+'"><td><b>'+esc(r.e)+'</b></td><td>'+(MESES[r.m]||r.m)+'</td><td>'+esc(r.b)+'</td>'+
+        '<td style="font-size:11px;color:var(--muted)">'+esc(r.cuenta)+(r.moneda==='USD'?' (USD)':'')+'</td>'+
+        '<td class="num-r">'+mny(r.sf)+'</td><td class="num-r">'+(r.bal==null?'—':mny(r.bal))+'</td>'+
+        '<td class="num-r">'+difTxt(r.dif,u)+'</td></tr>';
+    }).join('');
+
+    // resumen por empresa (sobre el conjunto filtrado)
+    const porEmp={};
+    F.forEach(function(r){
+      const g=porEmp[r.e]||(porEmp[r.e]={e:r.e, meses:{}, saldoUlt:0, conDif:0, sinBal:0, cuentas:{}});
+      g.cuentas[r.b]=1; g.meses[r.m]=1;
+      if(r.dif!==null && Math.abs(r.dif)>u) g.conDif++;
+      if(!r.hasMatch) g.sinBal++;
+    });
+    Object.keys(porEmp).forEach(function(e){
+      const g=porEmp[e]; const ms=Object.keys(g.meses).sort(); const um=ms[ms.length-1];
+      g.um=um||null; g.saldoUlt=0;
+      F.forEach(function(r){ if(r.e===e && r.m===um) g.saldoUlt+=(r.sf||0); });
+      g.nCuentas=Object.keys(g.cuentas).length;
+    });
+    const empList=Object.keys(porEmp).map(function(e){return porEmp[e];}).sort(function(a,b){return b.conDif-a.conDif;});
+    const empRows=empList.map(function(x){
+      return '<tr class="clk" data-e="'+esc(x.e)+'"><td><b>'+esc(x.e)+'</b></td><td>'+(x.um?MESES[x.um]:'—')+'</td>'+
+        '<td class="num-r">'+mny(x.saldoUlt)+'</td><td class="num-r">'+x.nCuentas+'</td>'+
+        '<td class="num-r">'+(x.conDif?('<b style="color:var(--danger)">'+x.conDif+'</b>'):'0')+'</td>'+
+        '<td class="num-r">'+(x.sinBal?('<span style="color:#e67e22">'+x.sinBal+'</span>'):'0')+'</td></tr>';
+    }).join('');
+
+    const mesOpts='<option value="">Todos los meses</option>'+mesesCubiertos.map(function(m){return '<option value="'+m+'"'+(st.mes===m?' selected':'')+'>'+MESES[m]+'</option>';}).join('');
+    const bancoOpts='<option value="">Todos los bancos</option>'+BANCOS.map(function(b){return '<option value="'+b+'"'+(st.banco===b?' selected':'')+'>'+esc(b)+'</option>';}).join('');
+
+    c.innerHTML='<h1 class="pg">Conciliación bancaria</h1>'+
+      '<div class="pgsub">Cruce real, cuenta por cuenta, entre los estados de cuenta bancarios (PDF originales) y las cuentas de banco de la balanza de comprobación · '+mesesCubiertos.map(function(m){return MESES[m];}).join('–')+' 2026. Cada cifra viene directo del PDF del banco o del renglón de la balanza.</div>'+
+      '<div class="kpis">'+
+        tile(nEmp,'Empresas'+(st.mes||st.banco||st.q||st.soloDif?' (filtro)':''),'var(--navy)')+
+        tile(cruzadas,'Cuentas-mes cruzadas vs balanza','var(--teal)')+
+        tile(conDif.length,'Con diferencia > $'+u,conDif.length?'var(--danger)':'var(--ok)')+
+        tile(mny(sumDifAbs),'Suma de diferencias (abs.)',sumDifAbs>0?'var(--danger)':'var(--ok)')+
+      '</div>'+
+      '<div class="card no-print"><div class="body" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">'+
+        '<select id="cb_mes" class="mini">'+mesOpts+'</select>'+
+        '<select id="cb_banco" class="mini">'+bancoOpts+'</select>'+
+        '<label style="font-size:12px;color:var(--muted)">Umbral $ <input id="cb_umbral" class="mini" type="number" value="'+u+'" style="width:90px"></label>'+
+        '<label style="font-size:12px;display:flex;align-items:center;gap:5px"><input id="cb_solo" type="checkbox"'+(st.soloDif?' checked':'')+'> Solo con diferencia</label>'+
+        '<input id="cb_q" class="mini" placeholder="Buscar empresa…" value="'+esc(st.q)+'" style="min-width:200px">'+
+        '<button id="cb_export" class="btn2" style="margin-left:auto">⬇ Exportar a Excel (CSV)</button>'+
+      '</div></div>'+
+      (pend.length?('<div class="card no-print"><div class="body" style="font-size:12.5px;color:var(--muted)">⚠ '+pend.length+' estado(s) de cuenta no se pudieron leer como texto (posiblemente escaneados) y no están en este cruce: '+pend.map(function(p){ return esc(p.empresa+' · '+p.banco+' · '+MESES[p.mes]); }).join(', ')+'.</div></div>'):'')+
+      '<div class="card"><h3>Diferencias a revisar ('+rev.length+')</h3><div class="body" style="padding-top:0"><div style="font-size:11.5px;color:var(--muted);margin-bottom:8px">Cuentas cuyo saldo del banco no coincide con la balanza por más de $'+u+', ordenadas de mayor a menor. Haz clic en una fila para ver el detalle completo de esa empresa.</div>'+
+        '<div style="overflow-x:auto"><table style="font-size:12px"><thead><tr><th>Empresa</th><th>Mes</th><th>Banco</th><th>Cuenta</th><th class="num-r">Saldo banco</th><th class="num-r">Saldo balanza</th><th class="num-r">Diferencia</th></tr></thead><tbody>'+(revRows||'<tr><td colspan=7 class="empty">Sin diferencias arriba del umbral con los filtros actuales 🎉</td></tr>')+'</tbody></table></div></div></div>'+
+      '<div class="card"><h3>Resumen por empresa ('+empList.length+')</h3><div class="body" style="padding-top:0">'+
+        '<div style="overflow-x:auto"><table style="font-size:12.5px"><thead><tr><th>Empresa</th><th>Último mes</th><th class="num-r">Saldo bancario</th><th class="num-r">Cuentas</th><th class="num-r">Con diferencia</th><th class="num-r">Sin balanza</th></tr></thead><tbody>'+(empRows||'<tr><td colspan=6 class="empty">Sin resultados</td></tr>')+'</tbody></table></div></div></div>'+
+      '<div id="cb_det"></div>';
+
+    // wiring de controles
+    document.getElementById('cb_mes').onchange=function(){ st.mes=this.value; render(); };
+    document.getElementById('cb_banco').onchange=function(){ st.banco=this.value; render(); };
+    document.getElementById('cb_umbral').onchange=function(){ st.umbral=parseFloat(this.value)||0; render(); };
+    document.getElementById('cb_solo').onchange=function(){ st.soloDif=this.checked; render(); };
+    document.getElementById('cb_export').onclick=descargarCSV;
+    const qi=document.getElementById('cb_q');
+    qi.onkeyup=function(){ st.q=this.value.trim().toLowerCase(); render(); setTimeout(function(){ const n=document.getElementById('cb_q'); if(n){ n.focus(); n.setSelectionRange(n.value.length,n.value.length); } },0); };
+    c.querySelectorAll('tr.clk').forEach(function(tr){ tr.onclick=function(){ detalle(tr.getAttribute('data-e')); }; });
+  }
 
   function detalle(e){
+    const u=Math.abs(st.umbral)||0;
     const meses = Object.keys(emp[e]).sort();
     const rows = [];
     meses.forEach(function(m){
       Object.keys(emp[e][m]).sort().forEach(function(b){
         const x = emp[e][m][b];
-        const dif = x.diferencia;
-        const difTxt = (dif===null||dif===undefined) ? '<span style="color:var(--muted)">sin balanza</span>' :
-          '<b style="color:'+(Math.abs(dif)>UMBRAL?'var(--danger)':'var(--ok)')+'">'+mny(dif)+'</b>';
         rows.push('<tr><td>'+MESES[m]+'</td><td><b>'+esc(b)+'</b></td><td style="font-size:11px;color:var(--muted)">'+esc(x.cuenta||'')+(x.moneda==='USD'?' (USD)':'')+'</td>'+
           '<td class="num-r">'+mny(x.saldo_inicial)+'</td>'+
           '<td class="num-r">'+mny(x.saldo_final)+'</td>'+
           '<td class="num-r">'+(x.balanza_saldo!==undefined?mny(x.balanza_saldo):'—')+'</td>'+
-          '<td class="num-r">'+difTxt+'</td>'+
+          '<td class="num-r">'+difTxt(x.diferencia,u)+'</td>'+
           '<td style="font-size:11px;color:var(--muted)">'+esc(x.balanza_nombre||'sin cuenta correspondiente en la balanza')+'</td></tr>');
       });
     });
     document.getElementById('cb_det').innerHTML='<div class="card"><h3>'+esc(e)+' · detalle por banco y mes</h3><div class="body">'+
       '<div style="overflow-x:auto"><table style="font-size:12px"><thead><tr><th>Mes</th><th>Banco</th><th>Cuenta</th><th class="num-r">Saldo inicial</th><th class="num-r">Saldo final (banco)</th><th class="num-r">Saldo balanza</th><th class="num-r">Diferencia</th><th>Cuenta en balanza</th></tr></thead><tbody>'+rows.join('')+'</tbody></table></div>'+
-      '<div style="font-size:11px;color:var(--muted);margin-top:8px">Diferencia = saldo final según el banco − saldo actual de la cuenta en la balanza de comprobación. "Sin balanza" significa que esa cuenta bancaria no está desglosada en la balanza de esa empresa para ese mes (no que falte dinero).</div>'+
+      '<div style="font-size:11px;color:var(--muted);margin-top:8px">Diferencia = saldo final según el banco − saldo actual de la cuenta en la balanza. "Sin balanza" significa que esa cuenta bancaria no está desglosada en la balanza de esa empresa para ese mes (no que falte dinero).</div>'+
       '</div></div>';
     document.getElementById('cb_det').scrollIntoView({behavior:'smooth',block:'start'});
   }
-  function wire(){
-    c.querySelectorAll('#cb_body tr.clk').forEach(function(tr){
-      tr.onclick=function(){ detalle(tr.getAttribute('data-e')); };
-    });
-  }
-  wire();
-  document.getElementById('cb_q').onkeyup=function(){
-    const t=this.value.trim().toLowerCase();
-    const f = t? resumen.filter(function(x){ return x.e.toLowerCase().indexOf(t)>=0; }) : resumen;
-    document.getElementById('cb_body').innerHTML=f.map(fila).join('');
-    wire();
-  };
+
+  render();
 }
 
 /* ===== v27 · Cuotas IMSS (SUA) — cédulas reales de liquidación ===== */
