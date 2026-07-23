@@ -131,10 +131,11 @@ async function boot(){
   $('#who').textContent = session.user.email;
   window.__email = session.user.email;
   let rol='pendiente';
-  const {data:perf} = await sb.from('perfiles').select('rol,unidad,rfc_cliente,rfc_empresa,departamento').eq('id', session.user.id).maybeSingle();
+  const {data:perf} = await sb.from('perfiles').select('rol,unidad,rfc_cliente,rfc_empresa,departamento,debe_cambiar_password').eq('id', session.user.id).maybeSingle();
   if(perf && perf.rol) rol = perf.rol;
   $('#roleBadge').textContent = (rol==='consulta'?'Solo lectura':rol);
   window.__perfil = perf||{}; window.__rol = rol;
+  if(perf && perf.debe_cambiar_password===true){ renderCambioPassword(); return; }
   if(rol==='pendiente'){ renderPendiente(); return; }
   if(rol==='direccion'||rol==='interno'||rol==='consulta'){ await renderInterno(rol); return; }
   renderExterno(rol);
@@ -146,6 +147,35 @@ function renderPendiente(){
     '<div class="center-msg"><div class="em">⏳</div><h2>Tu cuenta está en revisión</h2>'+
     '<p>Ya quedó registrada. La Dirección de PR&amp;M te asignará tu rol y acceso en breve. '+
     'Cuando esté listo, al volver a entrar verás tu módulo.</p></div>';
+}
+
+function renderCambioPassword(){
+  $('#nav').innerHTML='';
+  const sel=$('#deptPreview'); if(sel) sel.classList.add('hidden');
+  $('#content').innerHTML =
+    '<div class="center-msg" style="max-width:440px;margin:40px auto"><div class="em">🔒</div>'+
+    '<h2>Cambia tu contraseña</h2>'+
+    '<p>Entraste con una contraseña provisional. Por seguridad, define ahora tu propia contraseña para continuar.</p>'+
+    '<div style="text-align:left;margin-top:14px">'+
+      '<label style="display:block;font-size:13px;margin-bottom:4px">Nueva contraseña</label>'+
+      '<input id="np1" type="password" placeholder="Mínimo 8 caracteres" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:8px;margin-bottom:10px">'+
+      '<label style="display:block;font-size:13px;margin-bottom:4px">Confírmala</label>'+
+      '<input id="np2" type="password" placeholder="Escríbela otra vez" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:8px">'+
+    '</div>'+
+    '<button id="npGo" class="btn2" style="margin-top:14px;width:100%">Guardar y entrar</button>'+
+    '<div id="npMsg" style="font-size:13px;margin-top:10px"></div></div>';
+  const msg=$('#npMsg'), go=$('#npGo');
+  go.onclick=async ()=>{
+    const p1=$('#np1').value, p2=$('#np2').value;
+    if(p1.length<8){ msg.textContent='La contraseña debe tener al menos 8 caracteres.'; msg.style.color='var(--danger)'; return; }
+    if(p1!==p2){ msg.textContent='Las dos contraseñas no coinciden.'; msg.style.color='var(--danger)'; return; }
+    go.disabled=true; go.textContent='Guardando…'; msg.textContent='';
+    const {error}=await sb.auth.updateUser({password:p1});
+    if(error){ go.disabled=false; go.textContent='Guardar y entrar'; msg.textContent='No se pudo: '+traducir(error.message); msg.style.color='var(--danger)'; return; }
+    await sb.rpc('marcar_password_cambiada');
+    msg.textContent='Listo. Entrando…'; msg.style.color='var(--teal)';
+    boot();
+  };
 }
 
 const MERGE_AREAS = [
@@ -1223,9 +1253,9 @@ async function viewCaptura(c){
 }
 
 async function viewAccesos(c){
-  if(!window.__acc) window.__acc={openId:null,openEmail:'',tipo:'cliente'};
+  if(!window.__acc) window.__acc={openId:null,openEmail:'',tipo:'cliente',showAlta:false};
   const st=window.__acc;
-  const {data,error}=await sb.rpc('admin_perfiles_vinculacion');
+  const [{data,error},{data:altas}]=await Promise.all([ sb.rpc('admin_perfiles_vinculacion'), sb.rpc('admin_listar_altas_pendientes') ]);
   if(error) throw error;
   const roles=['pendiente','direccion','interno','consulta','cliente','promotor','trabajador','socio'];
   const deptos=(window.__deptos||[]);
@@ -1238,10 +1268,13 @@ async function viewAccesos(c){
   const pend=d.filter(x=>x.rol==='pendiente').length;
   const vincBadge=(u)=> u.vinc_tipo ? `<span class="tag on">${u.vinc_tipo}: ${esc(u.vinculo||'')}</span>` : '<span class="tag off">sin vincular</span>';
   const rows=d.map((u,i)=>`<tr><td><b>${esc(u.email||'(sin correo)')}</b>${u.rol==='pendiente'?' <span class="tag" style="background:#e67e22;color:#fff">nuevo</span>':''}</td><td><select id="rol_${i}">${roleOpts(u.rol)}</select></td><td><select id="dep_${i}">${depOpts(u.departamento)}</select></td><td><select id="uni_${i}" style="padding:5px 7px;border:1px solid var(--line);border-radius:6px;font-size:12px">${ofiOpts(u.unidad)}</select></td><td>${vincBadge(u)}</td><td style="white-space:nowrap"><button class="mini gsave" data-id="${u.id}" data-i="${i}">Guardar</button> <button class="mini vinc" data-id="${u.id}" data-em="${esc(u.email||'')}" style="background:var(--teal)">Vincular</button></td></tr>`).join('');
+  const altaForm = st.showAlta ? renderAltaForm(deptos, ofis) : '<button class="btn2" id="alta_open">+ Dar de alta nuevo usuario</button>';
   c.innerHTML='<h1 class="pg">Accesos y vinculación</h1><div class="pgsub">'+d.length+' usuario(s) registrado(s)'+(pend?(' · '+pend+' por asignar'):'')+'. Asigna rol y departamento, y vincula cada cuenta con su ficha real.</div>'+
-    '<div class="banner">Registro: pide a la persona entrar a <b>consola.prm360.com.mx</b> y darse de alta con su correo. <b>Vincular</b> conecta ese login con su expediente en la app Conecta (cliente, trabajador o promotor). Un <b>socio que además opera</b> (director de oficina) va como rol <b>interno</b> con su <b>Oficina</b> anotada. Sin vínculo, la cuenta entra pero ve su portal vacío.</div>'+
+    '<div class="banner"><b>Dar de alta un usuario</b> crea su cuenta al instante con una contraseña provisional — no necesita registrarse en la web. Al entrar por primera vez el sistema le obliga a cambiarla. Luego <b>Vincular</b> conecta ese login con su expediente (cliente, trabajador o promotor). Un <b>socio que además opera</b> (director de oficina) va como rol <b>interno</b> con su <b>Oficina</b> anotada.</div>'+
     '<div class="card"><table><thead><tr><th>Correo</th><th>Rol</th><th>Departamento</th><th>Oficina</th><th>Vínculo</th><th></th></tr></thead><tbody>'+
     (rows||'<tr><td colspan=6 class="empty">Aún no hay usuarios registrados</td></tr>')+'</tbody></table></div>'+
+    '<div class="card" style="margin-top:14px"><h3>Dar de alta a un nuevo usuario</h3><div class="body">'+(st.altaResult?renderAltaResult(st.altaResult):'')+altaForm+'</div></div>'+
+    renderAltasPendientes(altas||[])+
     (st.openId?renderLinker(st):'');
   c.querySelectorAll('button.gsave').forEach(b=>b.onclick=async()=>{
     const i=b.dataset.i;
@@ -1251,7 +1284,94 @@ async function viewAccesos(c){
     b.textContent = e?'Error':(res==='ok'?'✓':res); if(e||res!=='ok'){ b.disabled=false; } else setTimeout(()=>{b.textContent='Guardar';b.disabled=false;},1200);
   });
   c.querySelectorAll('button.vinc').forEach(b=>b.onclick=()=>{ st.openId=b.dataset.id; st.openEmail=b.dataset.em; st.tipo='cliente'; viewAccesos(c); });
+  const altaOpenBtn=c.querySelector('#alta_open');
+  if(altaOpenBtn) altaOpenBtn.onclick=()=>{ st.showAlta=true; st.altaResult=null; viewAccesos(c); };
+  const altaCancelBtn=c.querySelector('#alta_cancel');
+  if(altaCancelBtn) altaCancelBtn.onclick=()=>{ st.showAlta=false; viewAccesos(c); };
+  const altaGenBtn=c.querySelector('#alta_gen');
+  if(altaGenBtn) altaGenBtn.onclick=()=>{ c.querySelector('#alta_pass').value=genPassword(); };
+  const altaResCopy=c.querySelector('#alta_res_copy');
+  if(altaResCopy) altaResCopy.onclick=()=>{
+    const t=(st.altaResult?('Correo: '+st.altaResult.email+'\nContraseña provisional: '+st.altaResult.password):'');
+    if(navigator.clipboard){ navigator.clipboard.writeText(t); altaResCopy.textContent='¡Copiado!'; setTimeout(()=>{altaResCopy.textContent='Copiar datos';},1400); }
+  };
+  const altaResClose=c.querySelector('#alta_res_close');
+  if(altaResClose) altaResClose.onclick=()=>{ st.altaResult=null; st.showAlta=false; viewAccesos(c); };
+  const altaGuardarBtn=c.querySelector('#alta_guardar');
+  if(altaGuardarBtn) altaGuardarBtn.onclick=async()=>{
+    const email=c.querySelector('#alta_email').value.trim();
+    const msg=c.querySelector('#alta_msg');
+    let pass=c.querySelector('#alta_pass').value.trim();
+    if(!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ msg.textContent='Correo inválido.'; msg.style.color='var(--danger)'; return; }
+    if(!pass || pass.length<8){ msg.textContent='La contraseña provisional debe tener al menos 8 caracteres (usa "Generar").'; msg.style.color='var(--danger)'; return; }
+    altaGuardarBtn.disabled=true; msg.textContent='Creando cuenta…'; msg.style.color='var(--muted)';
+    let out=null, httpErr=null;
+    try{
+      const {data:sess}=await sb.auth.getSession();
+      const token=sess&&sess.session?sess.session.access_token:'';
+      const resp=await fetch(SUPABASE_URL+'/functions/v1/admin_crear_usuario',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+token,'apikey':SUPABASE_ANON},
+        body:JSON.stringify({email,password:pass,nombre:c.querySelector('#alta_nombre').value.trim(),rol:c.querySelector('#alta_rol').value,departamento:c.querySelector('#alta_dep').value,unidad:c.querySelector('#alta_uni').value})
+      });
+      out=await resp.json().catch(()=>null);
+    }catch(err){ httpErr=err; }
+    altaGuardarBtn.disabled=false;
+    if(httpErr || !out || out.ok!==true){
+      const map={ya_registrado:'Ese correo ya tiene cuenta — asígnale el rol directamente en la tabla de arriba.',email_invalido:'Correo inválido.',password_corta:'La contraseña debe tener al menos 8 caracteres.',no_autorizado:'Solo Dirección puede dar de alta usuarios.',sin_sesion:'Tu sesión expiró, vuelve a entrar.'};
+      const code=out?out.error:null;
+      msg.textContent = httpErr? ('Error de conexión: '+httpErr.message) : (map[code]||('No se pudo: '+(code||'error')));
+      msg.style.color='var(--danger)';
+      return;
+    }
+    st.altaResult={email:out.email,password:out.password};
+    st.showAlta=true;
+    viewAccesos(c);
+  };
+  c.querySelectorAll('button.alta_del').forEach(b=>b.onclick=async()=>{
+    b.disabled=true;
+    await sb.rpc('admin_borrar_alta',{p_email:b.dataset.email});
+    viewAccesos(c);
+  });
   if(st.openId) wireLinker(c, st);
+}
+
+function genPassword(){
+  const abc='ABCDEFGHJKLMNPQRSTUVWXYZ', num='23456789', low='abcdefghijkmnpqrstuvwxyz';
+  const pick=(s)=>s[Math.floor(Math.random()*s.length)];
+  let p=pick(abc)+pick(low)+pick(low)+pick(low)+num[Math.floor(Math.random()*num.length)]+num[Math.floor(Math.random()*num.length)]+pick(low)+pick(abc);
+  return 'PRM-'+p;
+}
+
+function renderAltaForm(deptos, ofis){
+  const roles=['interno','direccion','consulta','cliente','promotor','trabajador','socio'];
+  const pass0=genPassword();
+  return '<div class="frm">'+
+    '<label>Correo<input id="alta_email" placeholder="nombre@prm360.com.mx" style="min-width:220px"></label>'+
+    '<label>Nombre<input id="alta_nombre" placeholder="Nombre completo" style="min-width:200px"></label>'+
+    '<label>Rol<select id="alta_rol">'+roles.map(r=>`<option ${r==='interno'?'selected':''}>${r}</option>`).join('')+'</select></label>'+
+    '<label>Departamento<select id="alta_dep"><option value="">— sin departamento —</option>'+(deptos||[]).map(d=>`<option value="${d.clave}">${esc(d.nombre)}</option>`).join('')+'</select></label>'+
+    '<label>Oficina<select id="alta_uni"><option value="">— sin oficina —</option>'+(ofis||[]).map(o=>`<option value="${o.clave}">${esc(o.nombre)}</option>`).join('')+'</select></label>'+
+    '<label>Contraseña provisional<input id="alta_pass" value="'+pass0+'" style="min-width:150px;font-family:monospace"></label>'+
+    '<button class="btn2 ghost" id="alta_gen" type="button">Generar</button>'+
+    '<button class="btn2" id="alta_guardar">Dar de alta</button> <button class="btn2 ghost" id="alta_cancel">Cancelar</button>'+
+    '</div><div id="alta_msg" style="font-size:12.5px;margin-top:8px"></div>'+
+    '<div style="font-size:12px;color:var(--muted);margin-top:6px">Se crea la cuenta al instante. Entrégale a la persona su <b>correo</b> y esta <b>contraseña provisional</b>; al entrar por primera vez el sistema le pedirá cambiarla por una suya. Después usa <b>Vincular</b> (en la tabla de arriba) para conectarla con su expediente.</div>';
+}
+
+function renderAltaResult(r){
+  return '<div class="card" style="border:1.5px solid var(--teal);background:#f0faf8;margin-bottom:14px"><div class="body">'+
+    '<div style="font-weight:700;color:var(--teal);margin-bottom:6px">✓ Cuenta creada — entrégale estos datos a la persona</div>'+
+    '<div style="font-size:13.5px;line-height:1.9">Correo: <b>'+esc(r.email)+'</b><br>Contraseña provisional: <b style="font-family:monospace;font-size:15px;background:#fff;padding:2px 8px;border-radius:5px;border:1px solid var(--line)">'+esc(r.password)+'</b></div>'+
+    '<div style="font-size:12px;color:var(--muted);margin-top:8px">Al entrar por primera vez a consola.prm360.com.mx con estos datos, el sistema le obligará a cambiar la contraseña. Guarda o copia esto ahora — no se vuelve a mostrar.</div>'+
+    '<div style="margin-top:10px"><button class="btn2" id="alta_res_copy" type="button">Copiar datos</button> <button class="btn2 ghost" id="alta_res_close" type="button">Cerrar</button></div>'+
+  '</div></div>';
+}
+
+function renderAltasPendientes(altas){
+  if(!altas.length) return '';
+  const rows=altas.map(a=>`<tr><td><b>${esc(a.email)}</b>${a.nombre?(' · '+esc(a.nombre)):''}</td><td>${esc(a.rol)}</td><td>${esc(a.departamento||'—')}</td><td>${esc(a.unidad||'—')}</td><td><button class="mini alta_del" data-email="${esc(a.email)}" style="background:var(--danger)">Cancelar</button></td></tr>`).join('');
+  return '<div class="card" style="margin-top:14px"><h3>Altas pendientes de registro ('+altas.length+')</h3><div class="pgsub">Esperando a que la persona entre a consola.prm360.com.mx y se dé de alta con ese correo.</div><table><thead><tr><th>Correo</th><th>Rol</th><th>Departamento</th><th>Oficina</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>';
 }
 
 function renderLinker(st){
